@@ -63,7 +63,7 @@ body {
         .split-item { display: block; font-weight: 800; font-size: 1.1rem; }
         .split-label { font-size: 0.65rem; text-transform: uppercase; font-weight: bold; color: var(--text-dim); }
 
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;  }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px; padding: 15px;  }
         .panel { background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border-color); position: relative; padding: 15px; }
         .panel h2 { margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; color: var(--text-main); margin-right: 5px; }
 

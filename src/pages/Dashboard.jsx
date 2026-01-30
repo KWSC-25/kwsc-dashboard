@@ -48,7 +48,7 @@ const Dashboard = () => {
       <Header />
       <KpiCards stats={stats} />
       
-      <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', padding: '20px' }}>
+      <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', padding: '15px 0' }}>
         {/* Column 1: Water Underperforming */}
         <UnderperformingTable 
           title="UNDERPERFORMING ENGINEERS (WATER)" 
@@ -68,7 +68,7 @@ const Dashboard = () => {
         />
 
         {/* Column 3: Top Performers (Vertical Split) */}
-        <div className="panel" style={{ padding: '10px' }}>
+        <div className="panel" style={{ padding: '15px' }}>
           <div>
             <TopPerformersTable 
               title="TOP ENGINEERS (WATER)" 
