@@ -40,7 +40,7 @@ const KpiCards = ({ stats }) => {
           <div className="kpi-label">Resolved</div>
           <div className="kpi-val-group">
             <div className="kpi-main-val">{Number(stats.total_resolved).toLocaleString()}</div>
-            <div className="kpi-percent2">{calculatePercent(stats.total_resolved)}%</div>
+            <div className="kpi-percent2" style={{ color: 'var(--green-ok)' }}>{calculatePercent(stats.total_resolved)}%</div>
           </div>
           <span className="yesterday-stat">From yesterday <span className="stat-highlight">{resolvedTrend}%</span></span>
         </div>
