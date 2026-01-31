@@ -12,7 +12,7 @@ const TopPerformersTable = ({ title, data }) => {
                         <th>Name (Town)</th>
                         <th>Res/Total</th>
                         <th>Pen Rate</th>
-                        <th>Time</th>
+                        <th>Res Time (Avg) </th>
                     </tr>
                 </thead>
                 <tbody>

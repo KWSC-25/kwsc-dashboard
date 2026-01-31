@@ -15,7 +15,7 @@ export const getTownWiseStats = async (req, res) => {
         LEFT JOIN complaint c ON t.id = c.town_id 
             AND c.type_id = ? 
         GROUP BY t.id, t.town
-        ORDER BY t.town ASC;
+        ORDER BY total_registered ASC;
     `;
 
     try {

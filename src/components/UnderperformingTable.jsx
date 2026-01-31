@@ -16,7 +16,7 @@ const maxPendingRate = data?.length > 0
                         <th>Name (Town)</th>
                         <th>Pen/Total</th>
                         <th>Res Rate</th>
-                        <th style={{ color: '#f87171' }}>Time</th>
+                        <th style={{ color: '#f87171' }}>Res Time (Avg)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,7 +49,7 @@ const maxPendingRate = data?.length > 0
                     <span style={{ flex: '0.8' }}>Comp No.</span>
                     <span style={{ flex: '1.5' }}>Type</span>
                     <span style={{ flex: '1.5' }}>Town</span>
-                    <span style={{ flex: '0.7', textAlign: 'right' }}>Overdue</span>
+                    <span style={{ flex: '0.7', textAlign: 'right' }}>Overdue (Avg) </span>
                 </div>
                 {idleData?.map((item, idx) => (
                     <div key={idx} className="idle-row-data" style={{ display: 'flex', gap: '5px', fontSize: '0.65rem' }}>
