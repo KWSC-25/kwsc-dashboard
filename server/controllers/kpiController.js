@@ -7,7 +7,7 @@ export const getKpiStats = async (req, res) => {
           COUNT(*) AS total_registered,
           SUM(type_id = 2) AS total_registered_water,
           SUM(type_id = 1) AS total_registered_sewer,
-          SUM(type_id NOT IN (1, 2)) AS total_registered_others,
+          SUM(type_id NOT IN (1, 2)) AS total_registered_others, SUM(DATE(created_at) = CURDATE()) AS total_registered_today,
           SUM(status = 1) AS total_resolved,
           SUM(status = 1 AND type_id = 2) AS total_resolved_water,
           SUM(status = 1 AND type_id = 1) AS total_resolved_sewer,

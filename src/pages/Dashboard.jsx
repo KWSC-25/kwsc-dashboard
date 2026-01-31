@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import KpiCards from '../components/KpiCards';
 import UnderperformingTable from '../components/UnderperformingTable';
 import TopPerformersTable from '../components/TopPerformersTable';
-import TownCharts from '../components/TownCharts'; // Import new component
+import TownCharts from '../components/TownCharts';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
@@ -14,7 +14,6 @@ const Dashboard = () => {
     const [sewerIdle, setSewerIdle] = useState([]);
     const [topPerformers, setTopPerformers] = useState({ waterBest: [], sewBest: [] });
     
-    // New Chart States
     const [waterChartData, setWaterChartData] = useState([]);
     const [sewChartData, setSewChartData] = useState([]);
     const [avgStats, setAvgStats] = useState(null);
@@ -49,7 +48,7 @@ const Dashboard = () => {
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 5000); // 10s for charts
+        const interval = setInterval(fetchData, 5000); 
         return () => clearInterval(interval);
     }, []);
 

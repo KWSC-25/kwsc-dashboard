@@ -9,7 +9,7 @@ export const getIntelData = async (req, res) => {
         COUNT(c.id) AS total_count
       FROM complaint c
       JOIN sub_types st ON c.subtype_id = st.id
-      WHERE c.created_at >= DATE_SUB(CURDATE(), INTERVAL 14 DAY)
+      WHERE c.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
       GROUP BY c.subtype_id, st.title
       ORDER BY total_count DESC
       LIMIT 3;

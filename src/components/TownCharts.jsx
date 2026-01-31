@@ -16,6 +16,11 @@ const TownCharts = ({ waterData, sewData, avgStats }) => {
     const commonOptions = {
         maintainAspectRatio: false,
         responsive: true,
+        layout: {
+                padding: {
+                    bottom: 0 
+                }
+            },
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -31,11 +36,14 @@ const TownCharts = ({ waterData, sewData, avgStats }) => {
                 stacked: true, 
                 grid: { display: false }, 
                 ticks: { 
-                    color: '#94a3b8', 
-                    font: { size: 7 }, // Tiny font for many towns
-                    autoSkip: false, 
-                    maxRotation: 90, 
-                    minRotation: 90 
+                color: '#f1f5f9', 
+                font: { 
+                    size: 10, 
+                    family: 'monospace' 
+                }, 
+                autoSkip: false, 
+                maxRotation: 45, 
+                minRotation: 45
                 } 
             },
             y: { 
@@ -47,7 +55,7 @@ const TownCharts = ({ waterData, sewData, avgStats }) => {
     };
 
     const formatData = (dataset, resolvedColor) => ({
-        labels: dataset.map(d => d.town_name),
+        labels: dataset.map(d => d.town_name.replace(/\bTOWN\b/gi, '').trim()),
         datasets: [
             { label: 'Pending', data: dataset.map(d => d.total_pending), backgroundColor: '#f87171', barThickness: 5 },
             { label: 'WIP', data: dataset.map(d => d.total_wip), backgroundColor: '#fbbf24', barThickness: 5 },

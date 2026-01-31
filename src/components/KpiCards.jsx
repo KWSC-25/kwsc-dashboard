@@ -27,9 +27,9 @@ const KpiCards = ({ stats }) => {
             <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--water-blue)' }}>{stats.total_registered_water}</span></div>
             <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--sew-purple)' }}>{stats.total_registered_sewer}</span></div>
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2px' }}>
-            <span className="split-label" style={{ color: 'yellow' }}>Others </span>
-            <span className="split-item" style={{ color: 'yellow', display: 'inline' }}>{stats.total_registered_others}</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
+            <div><span className="split-label">OTHERS</span><span className="split-item" style={{ color: 'yellow' }}>{stats.total_registered_others}</span></div>
+            <div><span className="split-label">TODAY</span><span className="split-item" style={{ color: 'white' }}>{stats.total_registered_today}</span></div>
           </div>
         </div>
       </div>

@@ -25,7 +25,7 @@ body {
 }
 .btn-tiny:hover { background: var(--border-color); color: white; }
 
-.intel-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; height: 90px; }
+.intel-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; height: 90px; }
 .intel-card { 
     background: var(--panel-bg); border: 1px solid var(--border-color); 
     border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-around;
@@ -37,7 +37,7 @@ body {
 .stat-highlight { color: var(--green-ok); font-weight: bold; }
 .stat-highlight.bad { color: yellow; }
 
-.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;     margin-bottom: -1px; /* Tight margin to charts */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: -10px; /* Tight margin to charts */
 }
 .kpi-card {
     background: var(--panel-bg); border-radius: 12px; padding: 15px;
@@ -110,9 +110,9 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     display: grid; 
     grid-template-columns: 1fr 1fr 1fr; 
     gap: 15px;
-    margin-bottom: 10px; /* Tight margin to charts */
+    margin-bottom: 10px;
     padding: 10px 0;
-    height: auto; /* Allow section to grow with content */
+    height: auto; 
 
 }
 
@@ -125,19 +125,17 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     display: flex;
     flex-direction: column;
     min-width: 0;
-    /* FIX: Changed height to auto and added min-height */
     height: auto; 
     min-height: 260px; 
 }
 
-/* Ensure the charts section clears the tables */
 .chart-grid { 
     display: flex; 
     flex-wrap: wrap; 
     gap: 15px; 
     padding: 0;
     width: 100%;
-    margin-top: 5px; /* Very little margin as requested */
+    margin-top: -20px; /* Very little margin as requested */
     clear: both;
 }
 
