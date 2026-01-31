@@ -38,7 +38,7 @@ body {
 .stat-highlight.bad { color: yellow; }
 
 .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: -10px; /* Tight margin to charts */
-}
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));}
 .kpi-card {
     background: var(--panel-bg); border-radius: 12px; padding: 15px;
     display: flex; justify-content: space-between; align-items: center;
@@ -158,5 +158,18 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     }
     .panel {
         flex: 1 1 100%;
+    }
+}
+@media (max-width: 768px) {
+    .kpi-row {
+        grid-template-columns: 1fr !important; /* Forces cards to stack vertically */
+    }
+    
+    .kpi-card {
+        padding: 10px; /* Optional: slightly reduce padding on mobile */
+    }
+
+    .kpi-main-val {
+        font-size: 1.8rem; /* Optional: shrink text slightly to prevent overflow */
     }
 }
