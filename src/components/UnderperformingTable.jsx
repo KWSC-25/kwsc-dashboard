@@ -49,14 +49,14 @@ const maxPendingRate = data?.length > 0
                     <span style={{ flex: '0.8' }}>Comp No.</span>
                     <span style={{ flex: '1.5' }}>Type</span>
                     <span style={{ flex: '1.5' }}>Town</span>
-                    <span style={{ flex: '0.7', textAlign: 'right' }}>Overdue (Avg) </span>
+                    <span style={{ flex: '0.7', textAlign: 'right' }}>Overdue </span>
                 </div>
                 {idleData?.map((item, idx) => (
-                    <div key={idx} className="idle-row-data" style={{ display: 'flex', gap: '5px', fontSize: '0.65rem' }}>
-                        <span style={{ flex: '0.8' }}>{item.complaint_no?.split('-')[1] || item.complaint_no}</span>
-                        <span style={{ flex: '1.5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.type}</span>
-                        <span style={{ flex: '1.5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.town}</span>
-                        <span style={{ flex: '0.7', color: '#f87171', fontWeight: 'bold', textAlign: 'right' }}>{item.overdue_hrs}h</span>
+                    <div key={idx} className="idle-row-data" style={{ fontSize: '0.75rem' }}>
+                        <span style={{ whiteSpace: 'nowrap' }}>{item.complaint_no?.split('-')[1] || item.complaint_no}</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.type}</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.town}</span>
+                        <span style={{ color: '#f87171', fontWeight: 'bold', textAlign: 'right' }}>{item.overdue_hrs}h</span>
                     </div>
                 ))}
             </div>
