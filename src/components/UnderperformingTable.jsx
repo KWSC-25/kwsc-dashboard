@@ -45,7 +45,7 @@ const maxPendingRate = data?.length > 0
                 <div className="idle-header">
                     <i className="fas fa-exclamation-triangle"></i> Idle complaints (need urgent action)
                 </div>
-                <div className="idle-row-data" style={{ fontWeight: 'bold', borderBottom: '1px solid #f87171', fontSize: '0.65rem' }}>
+                <div className="idle-row-data" style={{ fontWeight: 'bold', borderBottom: '1px solid #f87171' }}>
                     <span style={{ flex: '0.8' }}>Comp No.</span>
                     <span style={{ flex: '1.5' }}>Type</span>
                     <span style={{ flex: '1.5' }}>Town</span>
