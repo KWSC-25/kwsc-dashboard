@@ -14,7 +14,8 @@ export const getIdleComplaints = async (req, res) => {
         JOIN towns t ON c.town_id = t.id
         JOIN complaint_assign_agent caa on caa.complaint_id = c.id 
         WHERE c.status = 0 
-          AND c.type_id = 2 AND c.created_at != c.updated_at 
+          AND c.type_id = ?
+          AND c.created_at != c.updated_at 
         ORDER BY c.created_at ASC
         LIMIT 3;
     `;
