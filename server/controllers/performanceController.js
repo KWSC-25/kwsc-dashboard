@@ -32,7 +32,8 @@ FROM (
     JOIN users u ON ma.user_id = u.id
     JOIN towns t ON ma.town_id = t.id
     JOIN complaint c ON c.town_id = ma.town_id AND c.type_id = ma.type_id
-    WHERE ma.type_id = ? AND ma.status = 1
+    JOIN complaint_assign_agent caa on caa.complaint_id = c.id 
+    WHERE ma.type_id = ? AND ma.status = 1 AND c.created_at != c.updated_at 
     GROUP BY ma.user_id, ma.town_id, u.name, t.town
 ) AS metrics
 ORDER BY performance_score ${order}, avg_res_time ${order === 'ASC' ? 'DESC' : 'ASC'}

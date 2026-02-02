@@ -46,8 +46,8 @@ const IntelCards = () => {
               {formatTimestamp(log.ts)}
             </span>
             <span className="log-msg" style={{ flexGrow: 1, fontSize: '0.7rem' }}>
-              {cleanTownName(log.town) } {log.action === 'REGISTERED' ? '+1' : 
-              <span style={{ color: 'var(--green-ok)' }}>resolved</span>}
+              {cleanTownName(log.town) } {log.action === 'REGISTERED' ? '| LAST REGISTERED' : 
+              <span style={{ color: 'var(--green-ok)' }}>| RESOLVED NOW</span>}
             </span>
           </>
         ) : (
