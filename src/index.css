@@ -25,12 +25,6 @@ body {
 }
 .btn-tiny:hover { background: var(--border-color); color: white; }
 
-.intel-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; height: 90px; }
-.intel-card { 
-    background: var(--panel-bg); border: 1px solid var(--border-color); 
-    border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-around;
-}
-.log-line { font-size: 0.7rem; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 2px 0; }
 .log-time { color: #e6e650; font-family: monospace; font-weight: bold; margin-right: 5px; }
 .log-msg { flex-grow: 1; }
 .yesterday-stat { font-size: 0.9rem; color: var(--text-dim); margin-top: 8px; display: block; }
@@ -51,6 +45,7 @@ body {
 .kpi-val-group { display: flex; align-items: baseline; gap: 10px; }
 
 .kpi-main-val { font-size: 2.2rem; font-weight: 800; line-height: 1; color: #fff; }
+
 .kpi-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
 .kpi-labelw { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--water-blue); margin-bottom: 5px; }
 .kpi-labels { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--sew-purple); margin-bottom: 5px; }
@@ -61,9 +56,8 @@ body {
 .trend-count { color: var(--yellow-wip); }
 .kpi-split { text-align: right; border-left: 2px solid rgba(255,255,255,0.1); padding-left: 15px; }
 .split-item { display: block; font-weight: 800; font-size: 1.1rem; }
+
 .split-label { font-size: 0.65rem; text-transform: uppercase; font-weight: bold; color: var(--text-dim); }
-
-
 
 .panel h2 { margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; color: var(--text-main); margin-right: 5px; }
 
@@ -91,7 +85,6 @@ body {
 .idle-header { color: var(--red-crit); font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
 .idle-row-data { 
     display: grid; 
-    /* This ensures columns are perfectly vertical across all rows */
     grid-template-columns: 0.8fr 1.5fr 1.5fr 0.7fr; 
     align-items: center;
     font-size: 0.75rem; 
@@ -99,7 +92,6 @@ body {
     padding: 6px 0; 
 }
 
-/* Ensure consistent spacing even if text is long */
 .idle-row-data span {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -119,9 +111,6 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
 .top-performers-split { display: grid; grid-template-rows: 1fr 1fr; gap: 10px; height: 100%; }
 .sub-panel { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
 
-
-
-
 .grid-3 { 
     display: grid; 
     grid-template-columns: 1fr 1fr 1fr; 
@@ -131,7 +120,6 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     height: auto; 
 
 }
-
 .panel { 
     background: var(--panel-bg); 
     border-radius: 12px; 
@@ -143,25 +131,9 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     min-width: 0;
     height: auto; 
     min-height: 260px; 
+    overflow: hidden;
 }
 
-.chart-grid { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 15px; 
-    padding: 0;
-    width: 100%;
-    margin-top: -20px; /* Very little margin as requested */
-    clear: both;
-}
-
-/* Maintain chart height inside the panels */
-.chart-wrap {
-    height: 200px;
-    width: 100%;
-}
-
-/* Responsive fixes */
 @media (max-width: 1024px) {
     .grid-3 {
         grid-template-columns: 1fr 1fr;
@@ -178,14 +150,121 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
 }
 @media (max-width: 768px) {
     .kpi-row {
-        grid-template-columns: 1fr !important; /* Forces cards to stack vertically */
+        grid-template-columns: 1fr !important; 
     }
     
     .kpi-card {
-        padding: 10px; /* Optional: slightly reduce padding on mobile */
+        padding: 10px; 
     }
 
     .kpi-main-val {
-        font-size: 1.8rem; /* Optional: shrink text slightly to prevent overflow */
+        font-size: 1.8rem; }
+}
+@keyframes signal-blink {
+  0% { background-color: rgba(230, 230, 80, 0.6); }
+  50% { background-color: transparent; }
+  100% { background-color: rgba(230, 230, 80, 0.6); }
+}
+
+.blink-new {
+  animation: signal-blink 0.5s ease-in-out 50; 
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: -20px; 
+}
+
+.chart-panel {
+    height: 280px !important; 
+    padding: 10px 5px !important;
+}
+
+.chart-wrap {
+    height: 210px;
+    width: 100%;
+    margin-top: auto;
+    display: block;
+}
+
+.chart-title {
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+}
+
+.chart-panel canvas {
+    font-smooth: always;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 2px;
+}
+
+.water-text { color: var(--water-blue); }
+.sew-text { color: var(--sew-purple); }
+.water-border { border: 1px solid var(--water-blue); background: rgba(56, 189, 248, 0.05); }
+.sew-border { border: 1px solid var(--sew-purple); background: rgba(167, 139, 250, 0.05); }
+
+
+.intel-row { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px; 
+    margin-bottom: 20px; 
+    width: 70%; 
+}
+
+.intel-card { 
+    background: var(--panel-bg); 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    padding: 10px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start;
+min-height: 95px;    height: auto; 
+}
+
+
+.water-card-border { border-left: 4px solid var(--water-blue) !important; }
+.sew-card-border { border-left: 4px solid var(--sew-purple) !important; }
+.trending-card-border { border-left: 4px solid var(--yellow-wip) !important; }
+
+.log-line { 
+    font-size: 0.7rem; 
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: space-between; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    padding: 4px 0; 
+}
+
+.trend-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+@media (max-width: 768px) {
+    .intel-row {
+        /* Force single column like the KPI row */
+        grid-template-columns: 1fr !important; 
+        width: 100%;
+    }
+    
+    .intel-card {
+        /* Ensure the card doesn't have a fixed height so text can wrap */
+        height: auto !important;
+        min-height: 100px;
+    }
+
+    .log-line {
+        /* Stack timestamp and message if the screen is very narrow */
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
     }
 }

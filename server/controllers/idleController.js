@@ -5,18 +5,30 @@ export const getIdleComplaints = async (req, res) => {
     
     const query = `
         SELECT 
-            c.comp_num AS complaint_no,
-            st.title AS type,
-            t.town AS town,
-            TIMESTAMPDIFF(HOUR, c.created_at, NOW()) AS overdue_hrs
-        FROM complaint c
-        JOIN sub_types st ON c.subtype_id = st.id
-        JOIN towns t ON c.town_id = t.id
-        JOIN complaint_assign_agent caa on caa.complaint_id = c.id 
-        WHERE c.status = 0 
-          AND c.type_id = ?
-          AND c.created_at != c.updated_at 
-        ORDER BY c.created_at ASC
+            complaint_no,
+            type,
+            town,
+            CASE 
+                WHEN overdue_hrs_raw >= 8760 THEN CONCAT(ROUND(overdue_hrs_raw / 8760, 1), ' Years')
+                WHEN overdue_hrs_raw >= 720  THEN CONCAT(ROUND(overdue_hrs_raw / 720, 1), ' Months')
+                WHEN overdue_hrs_raw >= 24   THEN CONCAT(ROUND(overdue_hrs_raw / 24, 1), ' Days')
+                ELSE CONCAT(ROUND(overdue_hrs_raw, 1), ' Hours')
+            END AS overdue_hrs
+        FROM (
+            SELECT 
+                c.comp_num AS complaint_no,
+                st.title AS type,
+                t.town AS town,
+                TIMESTAMPDIFF(HOUR, c.created_at, NOW()) AS overdue_hrs_raw
+            FROM complaint c
+            JOIN sub_types st ON c.subtype_id = st.id
+            JOIN towns t ON c.town_id = t.id
+            JOIN complaint_assign_agent caa on caa.complaint_id = c.id 
+            WHERE c.status = 0 
+            AND c.type_id = ?
+            AND c.created_at != c.updated_at 
+        ) AS idle_metrics
+        ORDER BY overdue_hrs_raw DESC 
         LIMIT 3;
     `;
 

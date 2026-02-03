@@ -28,11 +28,29 @@ export const getTownWiseStats = async (req, res) => {
 
 export const getAvgResolutionStats = async (req, res) => {
     const query = `
-        SELECT 
-            ROUND(AVG(CASE WHEN type_id = 2 AND status = 1 THEN TIMESTAMPDIFF(SECOND, created_at, updated_at) END) / 3600, 1) AS water_avg_res_hrs,
-            ROUND(AVG(CASE WHEN type_id = 1 AND status = 1 THEN TIMESTAMPDIFF(SECOND, created_at, updated_at) END) / 3600, 1) AS sew_avg_res_hrs
-        FROM complaint
-        WHERE status = 1 
+SELECT 
+    -- Format Water Average
+    CASE 
+        WHEN water_raw >= 8760 THEN CONCAT(ROUND(water_raw / 8760, 1), ' Years')
+        WHEN water_raw >= 720  THEN CONCAT(ROUND(water_raw / 720, 1), ' Months')
+        WHEN water_raw >= 24   THEN CONCAT(ROUND(water_raw / 24, 1), ' Days')
+        ELSE CONCAT(ROUND(water_raw, 1), ' Hours')
+    END AS water_avg_res_time,
+    
+    -- Format Sewerage Average
+    CASE 
+        WHEN sew_raw >= 8760 THEN CONCAT(ROUND(sew_raw / 8760, 1), ' Years')
+        WHEN sew_raw >= 720  THEN CONCAT(ROUND(sew_raw / 720, 1), ' Months')
+        WHEN sew_raw >= 24   THEN CONCAT(ROUND(sew_raw / 24, 1), ' Days')
+        ELSE CONCAT(ROUND(sew_raw, 1), ' Hours')
+    END AS sew_avg_res_time
+FROM (
+    SELECT 
+        AVG(CASE WHEN type_id = 2 AND status = 1 THEN TIMESTAMPDIFF(SECOND, created_at, updated_at) END) / 3600 AS water_raw,
+        AVG(CASE WHEN type_id = 1 AND status = 1 THEN TIMESTAMPDIFF(SECOND, created_at, updated_at) END) / 3600 AS sew_raw
+    FROM complaint
+    WHERE status = 1
+) AS global_metrics;
     `;
 
     try {

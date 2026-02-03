@@ -10,9 +10,9 @@ const TopPerformersTable = ({ title, data }) => {
                 <thead>
                     <tr>
                         <th>Name (Town)</th>
-                        <th>Res/Total</th>
-                        <th>Pen Rate</th>
-                        <th>Res Time (Avg) </th>
+                        <th>Resolved/Total</th>
+                        <th>Pending Rate</th>
+                        <th>Resolution Time (Avg) </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -26,9 +26,9 @@ const TopPerformersTable = ({ title, data }) => {
                                 <td style={{ color: 'var(--green-ok)', fontWeight: 'bold' }}>
                                     {eng.resolved_count}/{eng.total_count}
                                 </td>
-                                <td style={{ color: 'var(--red-crit)', fontWeight: 'bold' }}>{eng.pending_rate}%</td>
+                                <td style={{ color: 'var(--red-crit)', fontWeight: 'bold' }}>{eng.pending_rate}% ({eng.pending_count})</td>
                                 <td style={{ color: '#e6e650', fontWeight: 'bold' }}>
-                                    {Math.floor(eng.avg_res_time)}h {Math.round((eng.avg_res_time % 1) * 60)}m
+                                {eng.avg_res_time || "0"}
                                 </td>
                             </tr>
                         ))

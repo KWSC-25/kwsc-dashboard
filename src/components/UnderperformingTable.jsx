@@ -14,9 +14,9 @@ const maxPendingRate = data?.length > 0
                 <thead>
                     <tr>
                         <th>Name (Town)</th>
-                        <th>Pen/Total</th>
-                        <th>Res Rate</th>
-                        <th style={{ color: '#f87171' }}>Res Time (Avg)</th>
+                        <th>Pending/Total</th>
+                        <th>Resolution Rate</th>
+                        <th>Resolution Time (Avg)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,12 +28,12 @@ const maxPendingRate = data?.length > 0
                                 <span style={{ fontWeight: 'bold' }}>{eng.xen_name}</span><br />
                                 <small style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{eng.town_name}</small>
                             </td>
-                            <td style={{ fontWeight: 'bold' }}>{eng.pending_count}/{eng.total_count}</td>
-                            <td style={{ color: eng.resolution_percentage < 50 ? '#f87171' : 'inherit' }}>
-                                {eng.resolution_percentage}%
+                            <td style={{ fontWeight: 'bold' , color:  'var(--red-crit)' }}>{eng.pending_count}/{eng.total_count}</td>
+                            <td style={{ color:  'var(--green-ok)' }}>
+                                {eng.resolution_percentage}% ({eng.resolved_count})
                             </td>
-                            <td style={{ color: '#f87171', fontWeight: 'bold' }}>
-                                {Math.floor(eng.avg_res_time)}h {Math.round((eng.avg_res_time % 1) * 60)}m
+                            <td style={{ color: '#e6e650', fontWeight: 'bold' }}>
+                                {eng.avg_res_time || "0"}
                             </td>
                         </tr>
                     );
@@ -56,7 +56,7 @@ const maxPendingRate = data?.length > 0
                         <span style={{ whiteSpace: 'nowrap' }}>{item.complaint_no?.split('-')[1] || item.complaint_no}</span>
                         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.type}</span>
                         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.town}</span>
-                        <span style={{ color: '#f87171', fontWeight: 'bold', textAlign: 'right' }}>{item.overdue_hrs}h</span>
+                        <span style={{ color: '#f87171', fontWeight: 'bold', textAlign: 'right' }}>{item.overdue_hrs}</span>
                     </div>
                 ))}
             </div>
