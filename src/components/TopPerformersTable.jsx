@@ -1,4 +1,3 @@
-import React from 'react';
 
 const TopPerformersTable = ({ title, data }) => {
     return (

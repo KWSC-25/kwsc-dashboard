@@ -10,8 +10,8 @@ const Dashboard = () => {
     const [stats, setStats] = useState(null);
     const [waterPerf, setWaterPerf] = useState([]);
     const [sewerPerf, setSewerPerf] = useState([]);
-    const [waterIdle, setWaterIdle] = useState([]);
-    const [sewerIdle, setSewerIdle] = useState([]);
+    const [waterType, setWaterType] = useState([]);
+    const [sewerType, setSewerType] = useState([]);
     const [topPerformers, setTopPerformers] = useState({ waterBest: [], sewBest: [] });
     
     const [waterChartData, setWaterChartData] = useState([]);
@@ -22,11 +22,11 @@ const Dashboard = () => {
         const fetchData = async () => {
             try {
                 const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes] = await Promise.all([
-                    api.get('/kpis/stats'),
+                    api.get('/kpis/stats'), 
                     api.get('/performance/underperforming?typeId=2'),
                     api.get('/performance/underperforming?typeId=1'),
-                    api.get('/idle?typeId=2'),
-                    api.get('/idle?typeId=1'),
+                    api.get('/type?typeId=2'),
+                    api.get('/type?typeId=1'), 
                     api.get('/performance/top-performers'),
                     api.get('/charts/town-wise?typeId=2'), // Water Chart
                     api.get('/charts/town-wise?typeId=1'), // Sew Chart
@@ -36,8 +36,8 @@ const Dashboard = () => {
                 setStats(kpi.data);
                 setWaterPerf(wP.data);
                 setSewerPerf(sP.data);
-                setWaterIdle(wI.data);
-                setSewerIdle(sI.data);
+                setWaterType(wI.data);
+                setSewerType(sI.data);
                 setTopPerformers(topP.data);
                 setWaterChartData(cWater.data);
                 setSewChartData(cSew.data);
@@ -62,21 +62,21 @@ const Dashboard = () => {
             {/* Table Section */}
             <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', padding: '15px 0' }}>
                 <UnderperformingTable 
-                    title="UNDERPERFORMING ENGINEERS (WATER)" 
-                    data={waterPerf} idleData={waterIdle}
+                    title="UNDERPERFORMING ENGINEERS (WATER) LAST 3 MONTHS" 
+                    data={waterPerf} TypeData={waterType}
                     typeColor="#38bdf8" iconClass="fas fa-tint" 
                 />
 
                 <UnderperformingTable 
-                    title="UNDERPERFORMING ENGINEERS (SEWERAGE)" 
-                    data={sewerPerf} idleData={sewerIdle}
+                    title="UNDERPERFORMING ENGINEERS (SEWERAGE) LAST 3 MONTHS" 
+                    data={sewerPerf} TypeData={sewerType}
                     typeColor="#a78bfa" iconClass="fas fa-biohazard" 
                 />
 
                 <div className="panel" style={{ padding: '15px' }}>
-                    <TopPerformersTable title="TOP ENGINEERS (WATER)" data={topPerformers.waterBest} />
+                    <TopPerformersTable title="TOP ENGINEERS (WATER) LAST 3 MONTHS" data={topPerformers.waterBest} />
                     <div style={{ height: '10px' }}></div>
-                    <TopPerformersTable title="TOP ENGINEERS (SEWERAGE)" data={topPerformers.sewBest} />
+                    <TopPerformersTable title="TOP ENGINEERS (SEWERAGE) LAST 3 MONTHS" data={topPerformers.sewBest} />
                 </div>
             </div>
 

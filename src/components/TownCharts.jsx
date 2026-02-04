@@ -84,7 +84,7 @@ const TownCharts = ({ waterData, sewData, avgStats }) => {
             {/* Water Chart Panel */}
             <div className="panel chart-panel">
                 <h2 className=" water-text" style={{ color: 'var(--water-blue)'}}>
-                    <i className="fas fa-tint" style={{ color: 'var(--water-blue)'}}></i> WATER: TOWN-WISE
+                    <i className="fas fa-tint" style={{ color: 'var(--water-blue)'}}></i> WATER: TOWN-WISE (OVERALL)
                 </h2>
                 <div className="avg-time-container">
                     <div className="avg-mini-card water-border">
@@ -103,7 +103,7 @@ const TownCharts = ({ waterData, sewData, avgStats }) => {
             {/* Sewerage Chart Panel */}
             <div className="panel chart-panel">
                 <h2 className="sew-text" style={{ color: 'var(--sew-purple)'}}>
-                    <i className="fas fa-biohazard" style={{ color: 'var(--sew-purple)'}}></i> SEWERAGE: TOWN-WISE
+                    <i className="fas fa-biohazard" style={{ color: 'var(--sew-purple)'}}></i> SEWERAGE: TOWN-WISE (OVERALL)
                 </h2>
                 <div className="avg-time-container">
                     <div className="avg-mini-card sew-border">

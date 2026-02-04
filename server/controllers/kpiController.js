@@ -24,6 +24,7 @@ export const getKpiStats = async (req, res) => {
         SUM(status = 1 AND type_id NOT IN (1, 2)) AS total_resolved_others,
         -- Total resolved count as of the end of yesterday
         SUM(status = 1 AND DATE(updated_at) <= DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AS total_resolved_yesterday,
+        SUM(status = 1 AND DATE(updated_at) = CURDATE()) AS total_resolved_today,
 
         /* 3. WORK IN PROGRESS CARD */
         SUM(status = 2) AS total_wip,

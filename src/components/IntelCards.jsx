@@ -57,7 +57,7 @@ const IntelCards = () => {
                       )}
                   </span>
                 </>
-              ) : (
+              ) : ( 
                 <span className="log-msg" style={{ color: 'var(--text-dim)', fontSize: '0.7rem' }}>---</span>
               )}
             </div>

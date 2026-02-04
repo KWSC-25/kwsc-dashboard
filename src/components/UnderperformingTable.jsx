@@ -1,6 +1,7 @@
-import React from 'react';
 
-const UnderperformingTable = ({ data, idleData, title, typeColor, iconClass }) => {
+const UnderperformingTable = ({ data, TypeData, title, typeColor, iconClass }) => {
+    const themeClass = typeColor === "#38bdf8" ? "water-theme" : "sewer-theme";
+    const accentColor = typeColor;
 const maxPendingRate = data?.length > 0 
     ? Math.max(...data.map(e => parseFloat(e.pending_rate))) 
     : 0;
@@ -41,22 +42,29 @@ const maxPendingRate = data?.length > 0
                 </tbody>
             </table>
 
-            <div className="idle-card">
-                <div className="idle-header">
-                    <i className="fas fa-exclamation-triangle"></i> Idle complaints (need urgent action)
+            {/* Trending Types Card */}
+            <div className={`type-card ${themeClass}`}>
+                <div className="type-header">
+                    <i className="fas fa-chart-line"></i> Trending Types (Last 3 Months)
                 </div>
-                <div className="idle-row-data" style={{ fontWeight: 'bold', borderBottom: '1px solid #f87171' }}>
-                    <span style={{ flex: '0.8' }}>Comp No.</span>
-                    <span style={{ flex: '1.5' }}>Type</span>
-                    <span style={{ flex: '1.5' }}>Town</span>
-                    <span style={{ flex: '0.7', textAlign: 'right' }}>Overdue </span>
+                
+                {/* Header Row */}
+                <div className="type-row-data header-row">
+                    <span className="col-type">Complaint Type</span>
+                    <span className="col-num" style={{color: accentColor}}>Registered</span>
+                    <span className="col-num" style={{color: 'var(--green-ok)'}}>Resolved</span>
+                    <span className="col-num" style={{color: '#fbbf24'}}>WIP</span>
+                    <span className="col-num" style={{color: 'var(--red-crit)'}}>Pending</span>
                 </div>
-                {idleData?.map((item, idx) => (
-                    <div key={idx} className="idle-row-data" style={{ fontSize: '0.75rem' }}>
-                        <span style={{ whiteSpace: 'nowrap' }}>{item.complaint_no?.split('-')[1] || item.complaint_no}</span>
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.type}</span>
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.town}</span>
-                        <span style={{ color: '#f87171', fontWeight: 'bold', textAlign: 'right' }}>{item.overdue_hrs}</span>
+
+                {/* Data Rows */}
+                {TypeData?.map((item, idx) => (
+                    <div key={idx} className="type-row-data">
+                        <span className="col-type" title={item.subtype_name}>{item.subtype_name}</span>
+                        <span className="col-num">{item.total_registered}</span>
+                        <span className="col-num">{item.total_resolved}</span>
+                        <span className="col-num">{item.total_wip}</span>
+                        <span className="col-num">{item.total_pending}</span>
                     </div>
                 ))}
             </div>

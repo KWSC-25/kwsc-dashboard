@@ -81,23 +81,7 @@ body {
 }
 .row-alarm td { color: #ffffff !important; }
 
-.idle-card { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--red-crit); border-radius: 8px; padding: 10px; margin-top: 15px; }
-.idle-header { color: var(--red-crit); font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
-.idle-row-data { 
-    display: grid; 
-    grid-template-columns: 0.8fr 1.5fr 1.5fr 0.7fr; 
-    align-items: center;
-    font-size: 0.75rem; 
-    border-bottom: 1px solid rgba(248,113,113,0.1); 
-    padding: 6px 0; 
-}
 
-.idle-row-data span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-right: 5px;
-}
 
 .avg-time-container { position: absolute; right: 18px; top: 12px; display: flex; gap: 10px; }
 .avg-mini-card { padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
@@ -268,3 +252,67 @@ min-height: 95px;    height: auto;
         gap: 2px;
     }
 }
+.header-row {
+    font-weight: bold; 
+    border-bottom: 1px solid var(--water-blue) !important;
+    color: var(--text-main);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+/* --- Shared Layout for Trending Type Cards --- */
+.type-card {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+.type-header {
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.type-row-data {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr; /* Adjusted for better spacing */
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 6px 0;
+}
+
+.type-row-data span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.header-row {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+}
+
+.col-type { padding-left: 5px; }
+.col-num { text-align: right; padding-right: 10px; font-family: monospace; }
+
+/* --- Theme Specifics: WATER --- */
+.water-theme.type-card { border: 1px solid var(--water-blue); }
+.water-theme .type-header { color: var(--water-blue); }
+.water-theme .header-row { border-bottom: 1px solid var(--water-blue) !important; }
+.water-theme .type-row-data { border-bottom: 1px solid rgba(56, 189, 248, 0.15); }
+.water-theme .type-row-data:not(.header-row):hover { background: rgba(56, 189, 248, 0.1); }
+
+/* --- Theme Specifics: SEWERAGE --- */
+.sewer-theme.type-card { border: 1px solid var(--sew-purple); }
+.sewer-theme .type-header { color: var(--sew-purple); }
+.sewer-theme .header-row { border-bottom: 1px solid var(--sew-purple) !important; }
+.sewer-theme .type-row-data { border-bottom: 1px solid rgba(167, 139, 250, 0.15); }
+.sewer-theme .type-row-data:not(.header-row):hover { background: rgba(167, 139, 250, 0.1); }

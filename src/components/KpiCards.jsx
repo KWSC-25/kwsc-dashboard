@@ -75,14 +75,45 @@ const KpiCards = ({ stats }) => {
 
       {/* Resolved */}
       <div className="kpi-card green">
-        <div>
-          <div className="kpi-label">Resolved</div>
-          <div className="kpi-val-group">
-            <div className="kpi-main-val">{Number(stats.total_resolved).toLocaleString()}</div>
-            <div className="kpi-percent2" style={{ color: 'var(--green-ok)' }}>{calculatePercent(stats.total_resolved)}%</div>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div className="kpi-label">Resolved</div>
+            <div className="kpi-val-group">
+              <div className="kpi-main-val">{Number(stats.total_resolved).toLocaleString()}</div>
+              <div className="kpi-percent2" style={{ color: 'var(--green-ok)' }}>{calculatePercent(stats.total_resolved)}%</div>
+            </div>
           </div>
-          <span className="yesterday-stat">From yesterday: <span className="stat-highlight">{renderTrend(resolvedTrend)}</span></span>
+
+          {/* Flex container for Trend and Today Badge */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            marginTop: '4px',
+            gap: '8px' 
+          }}>
+            <span className="yesterday-stat" style={{ whiteSpace: 'nowrap' }}>
+              From yesterday: <span className="stat-highlight">{renderTrend(resolvedTrend)}</span>
+            </span>
+
+            {/* Today Resolved Badge */}
+            <div style={{ 
+              background: 'rgba(74, 222, 128, 0.2)', // Light green translucent background
+              padding: '1px 10px', 
+              borderRadius: '4px', 
+              border: '1px solid rgba(74, 222, 128, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 'bold' }}>TODAY:</span>
+              <span style={{ fontSize: '1rem', color: 'var(--green-ok)', fontWeight: '500' }}>
+                {Number(stats.total_resolved_today || 0).toLocaleString()}
+              </span>
+            </div>
+          </div>
         </div>
+
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
             <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{stats.total_resolved_water}</span></div>
