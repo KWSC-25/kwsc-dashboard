@@ -21,17 +21,19 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes] = await Promise.all([
-                    api.get('/kpis/stats'), 
-                    api.get('/performance/underperforming?typeId=2'),
-                    api.get('/performance/underperforming?typeId=1'),
-                    api.get('/type?typeId=2'),
-                    api.get('/type?typeId=1'), 
-                    api.get('/performance/top-performers'),
-                    api.get('/charts/town-wise?typeId=2'), // Water Chart
-                    api.get('/charts/town-wise?typeId=1'), // Sew Chart
-                    api.get('/charts/avg-resolution')      // Avg Time
-                ]);
+            // Inside your fetchData function, update the type calls:
+            const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes] = await Promise.all([
+                api.get('/kpis/stats'), 
+                api.get('/performance/underperforming?typeId=2'),
+                api.get('/performance/underperforming?typeId=1'),
+                // Pass the specific IDs here
+                api.get('/type?typeId=2&subTypeIds=1,13,16'), // Water IDs
+                api.get('/type?typeId=1&subTypeIds=21,108'), // Sew IDs
+                api.get('/performance/top-performers'),
+                api.get('/charts/town-wise?typeId=2'),
+                api.get('/charts/town-wise?typeId=1'),
+                api.get('/charts/avg-resolution')
+            ]);
 
                 setStats(kpi.data);
                 setWaterPerf(wP.data);

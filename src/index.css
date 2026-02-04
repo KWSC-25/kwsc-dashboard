@@ -280,7 +280,7 @@ min-height: 95px;    height: auto;
 
 .type-row-data {
     display: grid;
-    grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr; /* Adjusted for better spacing */
+    grid-template-columns: 1.5fr 0.5fr 1fr 1fr 1fr 1fr; /* Adjusted for better spacing */
     align-items: center;
     font-size: 0.85rem;
     padding: 6px 0;

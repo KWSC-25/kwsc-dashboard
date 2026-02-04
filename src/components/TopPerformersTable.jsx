@@ -27,7 +27,7 @@ const TopPerformersTable = ({ title, data }) => {
                                 </td>
                                 <td style={{ color: 'var(--red-crit)', fontWeight: 'bold' }}>{eng.pending_rate}% ({eng.pending_count})</td>
                                 <td style={{ color: '#e6e650', fontWeight: 'bold' }}>
-                                {eng.avg_res_time || "0"}
+                                {eng.avg_res_time || "Resolved None"}
                                 </td>
                             </tr>
                         ))
