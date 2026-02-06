@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 
 const IntelCards = () => {
-  const [intel, setIntel] = useState({ waterLogs: [], sewerLogs: [], trending: [] });
+  const [intel, setIntel] = useState({ waterLogs: [], sewerLogs: [], trending: [], 
+    cok: { total_registered: 0, total_resolved: 0, total_pending: 0 }});
 
   useEffect(() => {
     const fetchIntel = async () => {
@@ -94,7 +95,38 @@ const IntelCards = () => {
         )}
       </div>
       
-    </div>
+      <div className="intel-card" style={{ borderLeft: '4px solid #00ffcc', background: 'var(--panel-bg)', borderRadius: '8px', padding: '8px', border: '1px solid var(--border-color)' }}>
+        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#00ffcc', marginBottom: '10px' }}>Source: Commissioner of Karachi</div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
+          {/* REG Section */}
+          <div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--water-blue)' }}>REG</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--water-blue)' }}>{intel.cok.total_registered || "0"}</div>
+          </div>
+          
+          {/* PEN Section */}
+          <div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--red-crit)' }}>PEN</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--red-crit)' }}>{intel.cok.total_pending || "0"}</div>
+          </div>
+          
+          {/* RES Section */}
+          <div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--green-ok)' }}>RES</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--green-ok)' }}>{intel.cok.total_resolved || "0"}</div>
+          </div>
+
+          {/* WIP Section - Now wrapped in a div to keep label and number together */}
+          <div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--yellow-wip)' }}>WIP</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--yellow-wip)' }}>{intel.cok.total_wip || "0"}</div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+
   );
 };
 

@@ -23,7 +23,7 @@ const db = mysql.createPool({
 // 3. Immediate Test to verify connection on startup
 try {
   const connection = await db.getConnection();
-  console.log("✅ Database 'kwsb' connected successfully from root .env!");
+  console.log("✅ Database connected successfully from root .env!");
   connection.release();
 } catch (error) {
   console.error("❌ Database connection failed. Check your .env values.");
