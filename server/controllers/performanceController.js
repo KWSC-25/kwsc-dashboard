@@ -9,7 +9,6 @@ SELECT
         WHEN avg_res_time_raw >= 8760 THEN CONCAT(ROUND(avg_res_time_raw / 8760, 1), ' Years')
         WHEN avg_res_time_raw >= 720  THEN CONCAT(ROUND(avg_res_time_raw / 720, 1), ' Months')
         WHEN avg_res_time_raw >= 24   THEN CONCAT(ROUND(avg_res_time_raw / 24, 1), ' Days')
-        WHEN avg_res_time_raw IS NULL THEN '0'
         ELSE CONCAT(ROUND(avg_res_time_raw, 1), ' Hours')
     END AS avg_res_time,
     performance_score
