@@ -9,6 +9,7 @@ SELECT
         WHEN avg_res_time_raw >= 8760 THEN CONCAT(ROUND(avg_res_time_raw / 8760, 1), ' Years')
         WHEN avg_res_time_raw >= 720  THEN CONCAT(ROUND(avg_res_time_raw / 720, 1), ' Months')
         WHEN avg_res_time_raw >= 24   THEN CONCAT(ROUND(avg_res_time_raw / 24, 1), ' Days')
+        WHEN avg_res_time_raw IS NULL THEN '0'
         ELSE CONCAT(ROUND(avg_res_time_raw, 1), ' Hours')
     END AS avg_res_time,
     performance_score
@@ -25,13 +26,13 @@ FROM (
         ROUND(
             (
                 COALESCE(((SUM(c.status = 1) / COUNT(c.id)) * 100 - MIN((SUM(c.status = 1) / COUNT(c.id)) * 100) OVER()) / 
-                NULLIF(MAX((SUM(c.status = 1) / COUNT(c.id)) * 100) OVER() - MIN((SUM(c.status = 1) / COUNT(c.id)) * 100) OVER(), 0) * 35, 35)
+                NULLIF(MAX((SUM(c.status = 1) / COUNT(c.id)) * 100) OVER() - MIN((SUM(c.status = 1) / COUNT(c.id)) * 100) OVER(), 0) * 35, 0)
             ) + (
                 COALESCE((1 - ((SUM(c.status = 0) / COUNT(c.id)) * 100 - MIN((SUM(c.status = 0) / COUNT(c.id)) * 100) OVER()) / 
-                NULLIF(MAX((SUM(c.status = 0) / COUNT(c.id)) * 100) OVER() - MIN((SUM(c.status = 0) / COUNT(c.id)) * 100) OVER(), 0)) * 35, 35)
+                NULLIF(MAX((SUM(c.status = 0) / COUNT(c.id)) * 100) OVER() - MIN((SUM(c.status = 0) / COUNT(c.id)) * 100) OVER(), 0)) * 35, 0)
             ) + (
                 COALESCE((1 - ( (AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(SECOND, c.created_at, c.updated_at) END) / 3600) - MIN(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(SECOND, c.created_at, c.updated_at) END) / 3600) OVER() ) / 
-                NULLIF(MAX(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(SECOND, c.created_at, c.updated_at) END) / 3600) OVER() - MIN(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(SECOND, c.created_at, c.updated_at) END) / 3600) OVER(), 0)) * 30, 30)
+                NULLIF(MAX(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(SECOND, c.created_at, c.updated_at) END) / 3600) OVER() - MIN(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(SECOND, c.created_at, c.updated_at) END) / 3600) OVER(), 0)) * 30, 0)
             ), 2) AS performance_score
     FROM mobile_agent ma
     JOIN users u ON ma.user_id = u.id
