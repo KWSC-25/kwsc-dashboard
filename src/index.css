@@ -133,7 +133,7 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
         flex: 1 1 100%;
     }
 }
-@media (max-width: 768px) {
+@media (max-width: 700px) {
     .kpi-row {
         grid-template-columns: 1fr !important; 
     }
@@ -478,7 +478,7 @@ min-height: 95px;    height: auto;
 .town-table-wrapper::-webkit-scrollbar { height: 4px; }
 .town-table-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-@media (max-width: 768px) {
+@media (max-width: 790px) {
     .town-table-wrapper {
         overflow-x: auto !important; /* Enable horizontal scroll */
         -webkit-overflow-scrolling: touch;
