@@ -13,7 +13,7 @@ export const getTownWiseStats = async (req, res) => {
             SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_pending
         FROM towns t
         LEFT JOIN complaint c ON t.id = c.town_id 
-            AND c.type_id = ? 
+            AND c.type_id = ? AND c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
         GROUP BY t.id, t.town
         ORDER BY total_registered ASC;
     `;
@@ -49,7 +49,8 @@ FROM (
         AVG(CASE WHEN type_id = 2 AND status = 1 THEN TIMESTAMPDIFF(SECOND, created_at, updated_at) END) / 3600 AS water_raw,
         AVG(CASE WHEN type_id = 1 AND status = 1 THEN TIMESTAMPDIFF(SECOND, created_at, updated_at) END) / 3600 AS sew_raw
     FROM complaint
-    WHERE status = 1
+    WHERE status = 1 AND created_at BETWEEN '2024-10-23' AND CURDATE() + 1
+
 ) AS global_metrics;
     `;
 

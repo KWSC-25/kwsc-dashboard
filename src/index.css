@@ -124,7 +124,7 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
     .grid-3, .chart-grid {
         grid-template-columns: 1fr !important;
     }
@@ -266,7 +266,7 @@ min-height: 95px;    height: auto;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 10px;
-    margin-top: 15px;
+    margin-top: 5px;
 }
 
 .type-header {

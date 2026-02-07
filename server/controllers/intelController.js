@@ -49,17 +49,17 @@ export const getIntelData = async (req, res) => {
         ORDER BY c.updated_at DESC LIMIT 1
       );
     `);
-    const [cokData] = await db.query(`
+    const [sourceData] = await db.query(`
       SELECT 
+        source,
         COUNT(id) AS total_registered,
         SUM(status = 1) AS total_resolved,
         SUM(status = 0) AS total_pending,
         SUM(status = 2) AS total_wip
-
       FROM complaint
-      WHERE source = 'COK';
-    `);
-    // Organize logs by category
+      WHERE source IS NOT NULL AND source != ''
+      GROUP BY source;
+`);
     const waterLogs = logs.filter(l => l.category === 'WATER');
     const sewerLogs = logs.filter(l => l.category === 'SEWERAGE');
 
@@ -67,8 +67,8 @@ export const getIntelData = async (req, res) => {
       waterLogs, 
       sewerLogs,
       trending,
-      cok: cokData[0] || { total_registered: 0, total_resolved: 0, total_pending: 0,total_wip:0 }
-    });
+      sources: sourceData});
+
   } catch (error) {
     console.error("Intel Controller Error:", error);
     res.status(500).json({ error: error.message });

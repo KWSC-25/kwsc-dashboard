@@ -1,7 +1,8 @@
 
-const KpiCards = ({ stats }) => {
-  if (!stats) return null;
-
+const KpiCards = ({ stats, assignments, today }) => {
+  if (!stats || !assignments || !today) return null;
+  const regToday = today?.total_registered_today || 0;
+  const resToday = today?.total_resolved_today || 0;
   const calculatePercent = (val) => ((val / stats.total_registered) * 100).toFixed(1);
   
   const resolvedTrend = stats.total_resolved_yesterday > 0 
@@ -39,19 +40,15 @@ const KpiCards = ({ stats }) => {
           <div className="kpi-main-val" style={{ lineHeight: '1' }}>
             {Number(stats.total_registered).toLocaleString()}
           </div>
-          
-          {/* NEW: Today Count Highlighted */}
-          <div style={{ 
-            marginTop: '8px', 
-            padding: '4px 8px', 
-            background: 'rgba(255, 255, 255, 0.1)', 
-            borderRadius: '4px',
-            width: 'fit-content'
-          }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>TODAY:</span>
-            <span style={{ fontSize: '1.2rem', color: '#fbbf24', fontWeight: '800' }}>
-              {Number(stats.total_registered_today || 0).toLocaleString()}
-            </span>
+          <div>
+            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>Assigned: </span>
+            <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: '500' }}>
+            {Number(assignments.total_assigned).toLocaleString()}            </span>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>Un-Assigned:</span>
+            <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: '500' }}>
+            {Number(assignments.total_unassigned).toLocaleString()} </span>
           </div>
         </div>
 
@@ -65,6 +62,18 @@ const KpiCards = ({ stats }) => {
 
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
+          <div style={{ 
+            marginTop: '8px', 
+            padding: '4px 8px', 
+            background: 'rgba(255, 255, 255, 0.1)', 
+            borderRadius: '4px',
+            width: 'fit-content'
+          }}>
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>TODAY:</span>
+            <span style={{ fontSize: '1.2rem', color: '#fbbf24', fontWeight: '800' }}>
+              {Number(regToday || 0).toLocaleString()}
+            </span>
+          </div>
             <div><span className="split-label">Social</span><span className="split-item" >{stats.total_registered_social}</span></div>
             <div><span className="split-label">HYD</span><span className="split-item" >{stats.total_registered_hyd}</span></div>
             <div><span className="split-label">Info</span><span className="split-item">{stats.total_registered_req}</span></div>
@@ -108,7 +117,7 @@ const KpiCards = ({ stats }) => {
             }}>
               <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 'bold' }}>TODAY:</span>
               <span style={{ fontSize: '1rem', color: 'var(--green-ok)', fontWeight: '500' }}>
-                {Number(stats.total_resolved_today || 0).toLocaleString()}
+                {Number(resToday|| 0).toLocaleString()}
               </span>
             </div>
           </div>
@@ -148,14 +157,35 @@ const KpiCards = ({ stats }) => {
       </div>
 
       {/* Pending */}
+     
+      {/* Pending Card */}
       <div className="kpi-card red">
-        <div>
-          <div className="kpi-label">Pending</div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          
+          {/* Header row with Title and Trend on one line */}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
+            <div className="kpi-label" style={{ margin: 0 }}>Pending</div>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+              Yesterday: {renderTrend(pendingTrend, true)}
+            </div>
+          </div>
+
           <div className="kpi-val-group">
-            <div className="kpi-main-val" style={{ color: 'var(--red-crit)' }}>{Number(stats.total_pending).toLocaleString()}</div>
+            <div className="kpi-main-val" style={{ color: 'var(--red-crit)' }}>
+              {Number(stats.total_pending).toLocaleString()}
+            </div>
             <div className="kpi-percent2">{calculatePercent(stats.total_pending)}%</div>
           </div>
-          <span className="yesterday-stat">From yesterday: <span className="stat-highlight bad">{renderTrend(pendingTrend, true)}</span></span>
+          <div>
+            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>Assigned: </span>
+            <span style={{ fontSize: '0.9rem', color: 'var(--red-crit)', fontWeight: '500' }}>
+            {Number(assignments.pending_assigned).toLocaleString()}</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>Un-Assigned:</span>
+            <span style={{ fontSize: '0.9rem', color: 'var(--red-crit)', fontWeight: '500' }}>
+            {Number(assignments.pending_unassigned).toLocaleString()}</span>
+          </div>
         </div>
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>

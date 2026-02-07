@@ -54,13 +54,16 @@ const Dashboard = () => {
         return () => clearInterval(interval);
     }, []);
 
-    if (!stats) return <div className="loading">Loading CEO Dashboard...</div>;
+    if (!stats || !stats.mainKpis || !stats.todaystats) return <div className="loading">Loading CEO Dashboard...</div>;
 
     return (
         <div className="dashboard-wrapper">
             <Header />
-            <KpiCards stats={stats} />
-            
+            <KpiCards 
+            stats={stats.mainKpis} 
+            assignments={stats.assignmentStats} 
+            today= {stats.todaystats}
+            />            
             {/* Table Section */}
             <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', padding: '15px 0' }}>
                 <UnderperformingTable 

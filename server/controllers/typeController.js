@@ -20,7 +20,7 @@ export const getTypesData = async (req, res) => {
             2) AS impact_percentage
         FROM sub_types st
         LEFT JOIN complaint c ON c.subtype_id = st.id
-        WHERE st.id IN (${ids.map(() => '?').join(',')})
+        WHERE st.id IN (${ids.map(() => '?').join(',')}) AND c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
         GROUP BY st.id, st.title
         ORDER BY FIELD(st.id, ${ids.map(() => '?').join(',')});
     `;

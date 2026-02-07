@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 
 const IntelCards = () => {
-  const [intel, setIntel] = useState({ waterLogs: [], sewerLogs: [], trending: [], 
-    cok: { total_registered: 0, total_resolved: 0, total_pending: 0 }});
+  const [intel, setIntel] = useState({ waterLogs: [], sewerLogs: [], trending: []})
+  const [sourceIndex, setSourceIndex] = useState(0);
+    const sources = intel.sources || [];
 
   useEffect(() => {
     const fetchIntel = async () => {
@@ -18,6 +19,22 @@ const IntelCards = () => {
     const interval = setInterval(fetchIntel, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-slide logic
+  useEffect(() => {
+    if (sources.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setSourceIndex((prev) => (prev + 1) % sources.length);
+    }, 5000); // Slides every 5 seconds
+
+    return () => clearInterval(timer);
+  }, [sources.length]);
+
+  // Safeguard if no data exists
+  if (sources.length === 0) return <div>No Source Data</div>;
+
+  const currentSource = sources[sourceIndex];
 
   const cleanTownName = (name) => {
       if (!name) return "";
@@ -95,38 +112,61 @@ const IntelCards = () => {
         )}
       </div>
       
-      <div className="intel-card" style={{ borderLeft: '4px solid #00ffcc', background: 'var(--panel-bg)', borderRadius: '8px', padding: '8px', border: '1px solid var(--border-color)' }}>
-        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#00ffcc', marginBottom: '10px' }}>Source: Commissioner of Karachi</div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
-          {/* REG Section */}
-          <div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--water-blue)' }}>REG</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--water-blue)' }}>{intel.cok.total_registered || "0"}</div>
-          </div>
-          
-          {/* PEN Section */}
-          <div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--red-crit)' }}>PEN</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--red-crit)' }}>{intel.cok.total_pending || "0"}</div>
-          </div>
-          
-          {/* RES Section */}
-          <div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--green-ok)' }}>RES</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--green-ok)' }}>{intel.cok.total_resolved || "0"}</div>
-          </div>
+      <div className="intel-card" style={{ 
+            borderLeft: '4px solid #00ffcc', 
+            background: 'var(--panel-bg)', 
+            borderRadius: '8px', 
+            padding: '8px', 
+            border: '1px solid var(--border-color)',
+            transition: 'all 0.5s ease' // Smooth fade effect
+          }}>
+            {/* Dynamic Header */}
+            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#00ffcc', marginBottom: '10px' }}>
+              Source: {currentSource.source}
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
+              <div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--water-blue)' }}>REG</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--water-blue)' }}>
+                  {currentSource.total_registered}
+                </div>
+              </div>
+              
+              <div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--red-crit)' }}>PEN</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--red-crit)' }}>
+                  {currentSource.total_pending}
+                </div>
+              </div>
+              
+              <div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--green-ok)' }}>RES</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--green-ok)' }}>
+                  {currentSource.total_resolved}
+                </div>
+              </div>
 
-          {/* WIP Section - Now wrapped in a div to keep label and number together */}
-          <div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--yellow-wip)' }}>WIP</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--yellow-wip)' }}>{intel.cok.total_wip || "0"}</div>
-          </div>
+              <div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--yellow-wip)' }}>WIP</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--yellow-wip)' }}>
+                  {currentSource.total_wip}
+                </div>
+              </div>
+            </div>
+
+            {/* Optional: Visual Dots to show multiple sources exist */}
+            {sources.length > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '8px' }}>
+                {sources.map((_, i) => (
+                  <div key={i} style={{ 
+                    width: '5px', height: '5px', borderRadius: '50%', 
+                    background: i === sourceIndex ? '#00ffcc' : '#334155' 
+                  }} />
+                ))}
+              </div>)}
         </div>
-      </div>
-      </div>
-
-
+    </div>
   );
 };
 
