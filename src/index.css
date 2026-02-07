@@ -15,7 +15,7 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   font-family: 'Segoe UI', sans-serif;
-  margin: 0; padding: 10px;
+  margin: 0; padding: 0;
 }
 
 .stealth-btns { position: absolute; top: 5px; left: 20px; display: flex; gap: 5px; }
@@ -31,7 +31,7 @@ body {
 .stat-highlight { color: var(--green-ok); font-weight: bold; }
 .stat-highlight.bad { color: yellow; }
 
-.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: -10px; /* Tight margin to charts */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; /* Tight margin to charts */
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));}
 .kpi-card {
     background: var(--panel-bg); border-radius: 12px; padding: 15px;
@@ -116,6 +116,7 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     height: auto; 
     min-height: 260px; 
     overflow: hidden;
+    margin-bottom: -5px;
 }
 
 @media (max-width: 1024px) {
@@ -198,7 +199,7 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 15px; 
-    margin-bottom: 20px; 
+    margin-bottom: 22px; 
     width: 70%; 
 }
 
@@ -316,3 +317,196 @@ min-height: 95px;    height: auto;
 .sewer-theme .header-row { border-bottom: 1px solid var(--sew-purple) !important; }
 .sewer-theme .type-row-data { border-bottom: 1px solid rgba(167, 139, 250, 0.15); }
 .sewer-theme .type-row-data:not(.header-row):hover { background: rgba(167, 139, 250, 0.1); }
+
+
+/*newww*/
+.dashboard-viewport {
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto; /* Change to auto to allow vertical scroll */
+    overflow-x: hidden; /* Keep horizontal hidden for the slider */
+    background: #0f172a;
+}
+
+.dashboard-stage {
+    display: flex;
+    width: 200%; /* Changed from 200vw for better stability */
+    height: 100vh;
+    transition: transform 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.view-pane {
+    width: 50%; /* Since the parent is 200%, 50% of parent = 100% of screen */
+    height: 100vh;
+    flex-shrink: 0;
+    padding: 15px; 
+    box-sizing: border-box; /* This ensures padding doesn't add to the width */
+    display: flex;
+    flex-direction: column;
+}
+.full-view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: calc(100vh - 100px); 
+}
+.full-chart-panel {
+    flex: 1; min-height: 0;
+}
+.big-chart-wrap { flex-grow: 1; width: 100%; min-height: 0; }
+.full-chart-header {
+    padding: 0 5px 10px 5px; display: flex; justify-content: space-between;
+    align-items: center; border-bottom: 2px solid var(--border-color); margin-bottom: 15px;
+}
+.avg-time-badge {
+    position: absolute; top: 15px; right: 20px;
+    background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; text-align: right;
+}
+.avg-time-badge .val { font-size: 1.2rem; font-weight: bold;  }
+.avg-time-badge .lab { font-size: 0.6rem; color: var(--text-dim); }
+
+/*town table*/
+/* --- TOWN TABLE PANEL CONTAINER --- */
+.town-table-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 15px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    min-height: auto; /* Removed the forced height to eliminate empty space at bottom */
+    overflow: hidden;
+}
+
+.town-header-compact {
+    margin: 0 0 10px 0 !important;
+    font-size: 1rem !important;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #00ffcc;
+    
+    display: flex;
+    justify-content: center; /* Centers the main title */
+    align-items: center;
+    position: relative;      /* Allows the indicator to float relative to this bar */
+    width: 100%;
+}
+
+.page-indicator {
+    position: absolute;      /* Pulls the indicator out of the center flow */
+    right: 0;                /* Snaps it to the far right */
+    font-size: 0.6rem;
+    background: var(--border-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--yellow-wip);
+}
+
+/* --- TABLE CORE STRUCTURE --- */
+.town-table-wrapper {
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+}
+
+.town-dynamic-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* --- CELL SPACING & FONTS --- */
+.town-dynamic-table th, 
+.town-dynamic-table td {
+    padding: 8px 2px !important; /* Reduced from 14px to 8px to fix your "too much space" issue */
+    font-size: 0.85rem !important;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    vertical-align: middle;
+}
+
+/* Sticky Metric Column (REG, RES, etc.) */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: #1e293b;
+    z-index: 5;
+    text-align: left !important;
+    padding-left: 12px !important;
+    width: 65px;
+    font-weight: bold;
+    color: var(--text-dim);
+    border-right: 2px solid var(--water-blue) !important;
+    font-size: 1rem;
+}
+
+/* --- COLORS & ALERTS --- */
+.town-name {
+    color: #ffffff;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.val-reg, .label-reg { color: var(--water-blue);font-weight: bold; }
+.val-reg, .label-res { color: var(--green-ok);font-weight: bold; }
+.val-reg, .label-wip { color: var(--yellow-wip);font-weight: bold; }
+.val-reg, .label-pen { color: var(--red-crit);font-weight: bold; }
+
+.text-green { color: var(--green-ok); font-weight: bold; }
+.text-red { color: var(--red-crit); font-weight: bold;}
+.text-yellow { color: var(--yellow-wip);font-weight: bold; }
+
+/* --- BLINKING LOGIC FOR TOP 3 --- */
+@keyframes critical-pulse-red {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(248, 113, 113, 0.4); }
+    100% { background-color: transparent; }
+}
+
+.critical-blink {
+    animation: critical-pulse-red 1s infinite ease-in-out;
+    border-radius: 4px;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+}
+
+/* Custom Scrollbar (if wrapper ever overflows) */
+.town-table-wrapper::-webkit-scrollbar { height: 4px; }
+.town-table-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+@media (max-width: 768px) {
+    .town-table-wrapper {
+        overflow-x: auto !important; /* Enable horizontal scroll */
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory; /* Makes it snap like a slider */
+    }
+
+    .town-dynamic-table {
+        table-layout: auto; /* Allow columns to define width */
+        width: max-content; /* Force table to be wider than the screen */
+    }
+
+    .town-dynamic-table th, 
+    .town-dynamic-table td {
+        /* (Screen width - sticky column width) / 4 towns = approx 22vw per column */
+        min-width: 22vw; 
+        scroll-snap-align: start; /* Snap point */
+    }
+
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background: var(--panel-bg); /* Ensure it's not transparent while scrolling */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.3); /* Visual cue that it's fixed */
+    }
+
+    /* Hide scrollbar for a cleaner "app" look, or keep it if you prefer */
+    .town-table-wrapper::-webkit-scrollbar {
+        height: 3px;
+    }
+}

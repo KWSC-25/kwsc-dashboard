@@ -16,7 +16,7 @@ export const getTypesData = async (req, res) => {
             SUM(c.status = 0) AS total_pending,
             ROUND((SUM(c.status = 0) / NULLIF(COUNT(c.id), 0)) * 100, 2) AS pending_percentage,
             ROUND(
-                (SUM(c.status = 0) / (SELECT NULLIF(SUM(status = 0), 0) FROM complaint)) * 100, 
+                (SUM(c.status = 0) / (SELECT NULLIF(SUM(status = 0 AND created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)), 0) FROM complaint)) * 100, 
             2) AS impact_percentage
         FROM sub_types st
         LEFT JOIN complaint c ON c.subtype_id = st.id

@@ -49,27 +49,22 @@ export const getKpiStats = async (req, res) => {
     `);
     const [rows2] = await db.query(`
 
-          SELECT
-        SUM(is_assigned = 1) AS total_assigned,
-        SUM(is_assigned = 0) AS total_unassigned,
-        SUM(is_assigned = 1 AND status = 0) AS pending_assigned,
-        SUM(is_assigned = 0 AND status = 0) AS pending_unassigned
-    FROM (
-        SELECT 
-            c.id,
-            c.status,
-            CASE 
-                WHEN all_assignments.complaint_id IS NOT NULL THEN 1 
-                ELSE 0 
-            END AS is_assigned
-        FROM complaint c
-        LEFT JOIN (
-            SELECT complaint_id FROM complaint_assign_agent
-            UNION
-            SELECT complaint_id FROM complaint_assign_department
-        ) AS all_assignments ON c.id = all_assignments.complaint_id
-        WHERE c.created_at BETWEEN '2024-10-23' AND CURDATE() + 1
-    ) AS assignment_status;
+        SELECT
+    SUM(is_assigned = 1) AS total_assigned,
+    SUM(is_assigned = 0) AS total_unassigned,
+    SUM(is_assigned = 1 AND status = 0) AS pending_assigned,
+    SUM(is_assigned = 0 AND status = 0) AS pending_unassigned
+FROM (
+    SELECT c.id, c.status,
+        (all_assignments.complaint_id IS NOT NULL) AS is_assigned
+    FROM complaint c
+    LEFT JOIN (
+        SELECT complaint_id FROM complaint_assign_agent
+        UNION
+        SELECT complaint_id FROM complaint_assign_department
+    ) AS all_assignments ON c.id = all_assignments.complaint_id
+    WHERE c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+) AS assignment_status;
   `);
 
   //today
