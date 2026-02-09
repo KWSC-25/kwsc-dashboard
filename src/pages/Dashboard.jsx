@@ -6,7 +6,6 @@ import UnderperformingTable from '../components/UnderperformingTable';
 import TopPerformersTable from '../components/TopPerformersTable';
 import TownCharts from '../components/TownCharts';
 import TownTable from '../components/TownTable';
-import SourceDeepDiveTable from '../components/SourceDeepDiveTable';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
@@ -65,7 +64,7 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        const durations = [60000, 20000, 30000]; // Slide 1 (60s), Slide 2 (20s), Slide 3 (30s)
+        const durations = [60000, 1000, 30000]; // Slide 1 (60s), Slide 2 (20s), Slide 3 (30s)
         const timer = setTimeout(() => {
             setActiveSlide((prev) => (prev === 2 ? 0 : prev + 1));
         }, durations[activeSlide]);
