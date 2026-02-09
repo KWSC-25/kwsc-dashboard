@@ -6,7 +6,6 @@ import UnderperformingTable from '../components/UnderperformingTable';
 import TopPerformersTable from '../components/TopPerformersTable';
 import TownCharts from '../components/TownCharts';
 import TownTable from '../components/TownTable';
-import SourceDeepDiveTable from '../components/SourceDeepDiveTable';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
@@ -20,14 +19,14 @@ const Dashboard = () => {
     const [avgStats, setAvgStats] = useState(null);
     const [townWaterStats, setTownWaterStats] = useState([]);
     const [townSewStats, setTownSewStats] = useState([]);    
-    const [sourceData, setSourceData] = useState([]);
 
     const [activeSlide, setActiveSlide] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes, tWater, tSew, sDeep] = await Promise.all([
+                // Removed the 12th source deep dive call to prevent ETIMEDOUT and mismatch
+                const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes, tWater, tSew] = await Promise.all([
                     api.get('/kpis/stats'), 
                     api.get('/performance/underperforming?typeId=2'),
                     api.get('/performance/underperforming?typeId=1'),
@@ -38,8 +37,7 @@ const Dashboard = () => {
                     api.get('/charts/town-wise?typeId=1'),
                     api.get('/charts/avg-resolution'),
                     api.get('/towns/town-stats?typeId=2'), 
-                    api.get('/towns/town-stats?typeId=1'),
-                    api.get('/sources/deep-dive')
+                    api.get('/towns/town-stats?typeId=1')
                 ]);
 
                 setStats(kpi.data);
@@ -53,37 +51,41 @@ const Dashboard = () => {
                 setAvgStats(aRes.data);
                 setTownWaterStats(tWater.data);
                 setTownSewStats(tSew.data);
-                setSourceData(sDeep.data);
             } catch (err) {
                 console.error("Fetch Error:", err);
             }
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 10000); 
+        const interval = setInterval(fetchData, 5000); // 30s interval is safer for DB
         return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
-        const durations = [180000, 20000, 1000]; // Slide 1 (60s), Slide 2 (20s), Slide 3 (30s)
+        // Updated for 2 slides only
+        const durations = [2000, 10000]; // Slide 1 (180s), Slide 2 (30s)
         const timer = setTimeout(() => {
-            setActiveSlide((prev) => (prev === 2 ? 0 : prev + 1));
+            setActiveSlide((prev) => (prev === 1 ? 0 : prev + 1));
         }, durations[activeSlide]);
         return () => clearTimeout(timer);
     }, [activeSlide]);
 
-    if (!stats || !stats.mainKpis || !stats.todaystats) return <div className="loading">Loading Dashboard...</div>;
+    if (!stats || !stats.mainKpis || !stats.todaystats) {
+        return <div className="loading">Loading Dashboard...</div>;
+    }
 
     return (
         <div className="dashboard-viewport">
-            {/* Stage width 300% for 3 slides */}
+            {/* Stage width 200% for 2 slides */}
             <div className="dashboard-stage" style={{ 
-                width: '300%',
-                transform: `translateX(-${activeSlide * (100 / 3)}%)` 
+                width: '200%',
+                transform: `translateX(-${activeSlide * 50}%)`,
+                display: 'flex',
+                transition: 'transform 1s ease-in-out'
             }}>
                 
                 {/* SLIDE 1: MAIN KPI */}
-                <div className="view-pane" style={{ width: '33.33%' }}>
+                <div className="view-pane" style={{ width: '50%' }}>
                     <Header />
                     <div className="content-padding">
                         <KpiCards stats={stats.mainKpis} assignments={stats.assignmentStats} today={stats.todaystats} />
@@ -100,22 +102,14 @@ const Dashboard = () => {
                 </div>
 
                 {/* SLIDE 2: CHARTS */}
-                <div className="view-pane" style={{ width: '33.33%' }}>
-                    <div className="full-chart-header"><h1>TOWN PERFORMANCE ANALYTICS</h1></div>
+                <div className="view-pane" style={{ width: '50%' }}>
+                    <div className="full-chart-header">
+                        <h1 style={{ color: '#00ffcc', textAlign: 'center', fontSize: '2rem', padding: '20px' }}>
+                            TOWN PERFORMANCE ANALYTICS
+                        </h1>
+                    </div>
                     <TownCharts waterData={waterChartData} sewData={sewChartData} avgStats={avgStats} isFullView={true} />
                 </div>
-
-                {/* SLIDE 3: SOURCE DEEP DIVE */}
-                <div className="view-pane" style={{ width: '33.33%' }}>
-                     <div className="md-main-title-compact">
-                        <h1>LANDING SOURCE DETAILED ANALYTICS</h1>
-                        <div className="live-indicator"></div>
-                    </div>
-                    <div className="content-padding">
-                        <SourceDeepDiveTable data={sourceData} />
-                    </div>
-                </div>
-
             </div>
         </div>
     );

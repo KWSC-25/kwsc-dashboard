@@ -7,7 +7,6 @@ import performanceRoutes from './routes/performanceRoutes.js';
 import typeRoutes from './routes/typeRoutes.js';
 import chartRoutes from './routes/chartRoutes.js';
 import townRoutes from './routes/townRoutes.js';
-import sourceRoutes from './routes/sourceRoutes.js';
 
 const app = express();
 app.use(cors());
@@ -20,6 +19,5 @@ app.use('/api/performance', performanceRoutes);
 app.use('/api/type', typeRoutes);
 app.use('/api/charts', chartRoutes);
 app.use('/api/towns', townRoutes);
-app.use('/api/sources', sourceRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
