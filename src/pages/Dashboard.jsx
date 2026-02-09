@@ -63,7 +63,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         // Updated for 2 slides only
-        const durations = [2000, 10000]; // Slide 1 (180s), Slide 2 (30s)
+        const durations = [120000, 10000]; // Slide 1 (180s), Slide 2 (30s)
         const timer = setTimeout(() => {
             setActiveSlide((prev) => (prev === 1 ? 0 : prev + 1));
         }, durations[activeSlide]);
