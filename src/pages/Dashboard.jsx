@@ -64,7 +64,7 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        const durations = [60000, 1000, 30000]; // Slide 1 (60s), Slide 2 (20s), Slide 3 (30s)
+        const durations = [200000, 1000, 30000]; 
         const timer = setTimeout(() => {
             setActiveSlide((prev) => (prev === 2 ? 0 : prev + 1));
         }, durations[activeSlide]);
