@@ -510,3 +510,107 @@ min-height: 95px;    height: auto;
         height: 3px;
     }
 }
+
+/* --- COMPACT SOURCE ANALYTICS --- */
+
+.source-analytics-wrapper-compact {
+    padding: 10px;
+    height: 95vh; /* Utilizes full viewport height */
+    overflow: hidden;
+}
+
+.md-main-title-compact {
+    color: #00ffcc;
+    font-size: 1rem; /* Scaled down */
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 2px solid #00ffcc;
+    display: inline-block;
+}
+
+.table-container-compact {
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-height: 85vh; /* Keeps it within the MD's screen */
+}
+
+.modern-data-table-compact {
+    width: 100%;
+    border-collapse: collapse;
+    color: #f8fafc;
+    font-size: 0.85rem; /* Small font for high density */
+}
+
+/* Headers */
+.main-header-row {
+    background-color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.cat-group {
+    padding: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sub-header-row {
+    background-color: #0f172a;
+    font-size: 0.75rem;
+}
+
+/* Color Group Borders */
+.water-border { color: #38bdf8; border-bottom: 2px solid #38bdf8; }
+.sew-border   { color: #a78bfa; border-bottom: 2px solid #a78bfa; }
+.other-border { color: #fbbf24; border-bottom: 2px solid #fbbf24; }
+
+/* Thick separation between Water/Sew/Other blocks */
+.water-border-heavy, .sew-border-heavy {
+    border-right: 3px solid #334155 !important;
+}
+
+/* Rows */
+.data-row-compact {
+    border-bottom: 1px solid #1e293b;
+}
+
+.data-row-compact:nth-child(even) {
+    background-color: rgba(30, 41, 59, 0.4);
+}
+
+.source-cell-compact {
+    text-align: left;
+    padding: 15px 16px; /* Tight padding to fit 35 rows */
+    font-weight: 800;
+    color: #94a3b8;
+    border-right: 3px solid #334155;
+    white-space: nowrap;
+}
+.source-name-column {
+    text-align: left;
+    padding: 15px 16px; /* Tight padding to fit 35 rows */
+    font-weight: 800;
+    color: #d8f613;
+    border-right: 3px solid #334155;
+    white-space: nowrap;
+    font-size: 1rem;
+}
+
+.val-compact {
+    padding: 6px 4px;
+    font-weight: 700;
+    text-align: center;
+    border-right: 1px solid #1e293b;
+}
+
+/* Status specific colors inside each block */
+.reg-text { color: #38bdf8; } /* Blue */
+.res-text { color: #22c55e; } /* Green */
+.pen-text { color: #ef4444; } /* Red */
+.wip-text { color: #eab308; } /* Yellow */
+
+/* Remove scrolling */
+body {
+    overflow: hidden;
+}

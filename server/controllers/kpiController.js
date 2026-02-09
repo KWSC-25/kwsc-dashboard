@@ -49,7 +49,7 @@ export const getKpiStats = async (req, res) => {
     `);
     const [rows2] = await db.query(`
 
-        SELECT
+    SELECT
     SUM(is_assigned = 1) AS total_assigned,
     SUM(is_assigned = 0) AS total_unassigned,
     SUM(is_assigned = 1 AND status = 0) AS pending_assigned,
