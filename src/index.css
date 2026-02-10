@@ -134,17 +134,39 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
         flex: 1 1 100%;
     }
 }
-@media (max-width: 700px) {
+@media (max-width: 768px) {
+    /* Stack KPI cards one per row */
     .kpi-row {
-        grid-template-columns: 1fr !important; 
-    }
-    
-    .kpi-card {
-        padding: 10px; 
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+        margin-top: 10px;
     }
 
-    .kpi-main-val {
-        font-size: 1.8rem; }
+    .kpi-card {
+        flex-direction: column; /* Stack left and right sections vertically */
+        align-items: flex-start;
+        height: auto; /* Let content define height */
+        padding: 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Remove the left border on mobile and add a top one instead */
+    .kpi-split {
+        border-left: none !important;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-left: 0 !important;
+        padding-top: 15px;
+        margin-top: 15px;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* Align items to the left for better mobile readability */
+    .kpi-split > div {
+        justify-content: flex-start !important;
+        flex-wrap: wrap; /* Allow categories to wrap if they hit the edge */
+    }
 }
 @keyframes signal-blink {
   0% { background-color: rgba(230, 230, 80, 0.6); }
@@ -534,4 +556,47 @@ body {
 /* Allow body to scroll again */
 body {
     overflow: auto !important;
+}
+@media (max-width: 768px) {
+    .chart-wrapper-bottom, .chart-wrap {
+        width: 800px; /* Force a wider width to give labels room */
+    }
+    
+    /* Make the parent panel scrollable horizontally */
+    .chart-panel-bottom, .chart-panel {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    .avg-time-badge-inline, .avg-time-badge {
+        position: relative !important;
+        top: 0 !important;
+        right: 0 !important;
+        margin-bottom: 10px;
+        align-self: flex-end; /* Keeps it on the right side */
+        width: fit-content;
+    }
+    
+}
+/* Update your Emergency Types table row to balance spacing */
+.type-row-data {
+    display: grid;
+    /* Adjusted ratios: give less to 'Type' and more to 'Numbers' */
+    grid-template-columns: 1.2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.8fr; 
+    align-items: center;
+    font-size: 0.75rem; /* Slightly smaller font for mobile density */
+    padding: 6px 2px; /* Tighten horizontal padding */
+}
+
+/* Ensure headers don't truncate with dots */
+.header-row span {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap;
+    font-weight: 800;
+}
+
+/* Specific fix for the REG, RES, PEN columns */
+.col-num {
+    text-align: center; /* Center them so they align under the headers */
+    padding: 0 2px;
 }
