@@ -5,7 +5,6 @@ import KpiCards from '../components/KpiCards';
 import UnderperformingTable from '../components/UnderperformingTable';
 import TopPerformersTable from '../components/TopPerformersTable';
 import TownCharts from '../components/TownCharts';
-import TownTable from '../components/TownTable';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
@@ -17,16 +16,11 @@ const Dashboard = () => {
     const [waterChartData, setWaterChartData] = useState([]);
     const [sewChartData, setSewChartData] = useState([]);
     const [avgStats, setAvgStats] = useState(null);
-    const [townWaterStats, setTownWaterStats] = useState([]);
-    const [townSewStats, setTownSewStats] = useState([]);    
-
-    const [activeSlide, setActiveSlide] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Removed the 12th source deep dive call to prevent ETIMEDOUT and mismatch
-                const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes, tWater, tSew] = await Promise.all([
+                const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes] = await Promise.all([
                     api.get('/kpis/stats'), 
                     api.get('/performance/underperforming?typeId=2'),
                     api.get('/performance/underperforming?typeId=1'),
@@ -35,9 +29,7 @@ const Dashboard = () => {
                     api.get('/performance/top-performers'),
                     api.get('/charts/town-wise?typeId=2'),
                     api.get('/charts/town-wise?typeId=1'),
-                    api.get('/charts/avg-resolution'),
-                    api.get('/towns/town-stats?typeId=2'), 
-                    api.get('/towns/town-stats?typeId=1')
+                    api.get('/charts/avg-resolution')
                 ]);
 
                 setStats(kpi.data);
@@ -49,66 +41,46 @@ const Dashboard = () => {
                 setWaterChartData(cWater.data);
                 setSewChartData(cSew.data);
                 setAvgStats(aRes.data);
-                setTownWaterStats(tWater.data);
-                setTownSewStats(tSew.data);
             } catch (err) {
                 console.error("Fetch Error:", err);
             }
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 5000); // 30s interval is safer for DB
+        const interval = setInterval(fetchData, 30000); 
         return () => clearInterval(interval);
     }, []);
-
-    useEffect(() => {
-        // Updated for 2 slides only
-        const durations = [120000, 10000]; // Slide 1 (180s), Slide 2 (30s)
-        const timer = setTimeout(() => {
-            setActiveSlide((prev) => (prev === 1 ? 0 : prev + 1));
-        }, durations[activeSlide]);
-        return () => clearTimeout(timer);
-    }, [activeSlide]);
 
     if (!stats || !stats.mainKpis || !stats.todaystats) {
         return <div className="loading">Loading Dashboard...</div>;
     }
 
     return (
-        <div className="dashboard-viewport">
-            {/* Stage width 200% for 2 slides */}
-            <div className="dashboard-stage" style={{ 
-                width: '200%',
-                transform: `translateX(-${activeSlide * 50}%)`,
-                display: 'flex',
-                transition: 'transform 1s ease-in-out'
-            }}>
+        <div className="dashboard-fixed-container">
+            <Header />
+            <div className="content-padding main-scroll-area">
+                {/* TOP SECTION: KPI CARDS */}
+                <KpiCards stats={stats.mainKpis} assignments={stats.assignmentStats} today={stats.todaystats} />
                 
-                {/* SLIDE 1: MAIN KPI */}
-                <div className="view-pane" style={{ width: '50%' }}>
-                    <Header />
-                    <div className="content-padding">
-                        <KpiCards stats={stats.mainKpis} assignments={stats.assignmentStats} today={stats.todaystats} />
-                        <div className="grid-3">
-                            <UnderperformingTable title="UNDERPERFORMING (WATER)" data={waterPerf} TypeData={waterType} typeColor="#38bdf8" iconClass="fas fa-tint" />
-                            <UnderperformingTable title="UNDERPERFORMING (SEWERAGE)" data={sewerPerf} TypeData={sewerType} typeColor="#a78bfa" iconClass="fas fa-biohazard" />
-                            <div className="panel" style={{ padding: '15px' }}>
-                                <TopPerformersTable title="TOP (WATER)" data={topPerformers.waterBest} />
-                                <TopPerformersTable title="TOP (SEWERAGE)" data={topPerformers.sewBest} />
-                            </div>
-                        </div>
-                        <TownTable waterData={townWaterStats} sewData={townSewStats} />
+                {/* MIDDLE SECTION: TABLES */}
+                <div className="grid-3">
+                    <UnderperformingTable title="UNDERPERFORMING (WATER)" data={waterPerf} TypeData={waterType} typeColor="#38bdf8" iconClass="fas fa-tint" />
+                    <UnderperformingTable title="UNDERPERFORMING (SEWERAGE)" data={sewerPerf} TypeData={sewerType} typeColor="#a78bfa" iconClass="fas fa-biohazard" />
+                    <div className="panel" style={{ padding: '15px' }}>
+                        <TopPerformersTable title="TOP (WATER)" data={topPerformers.waterBest} />
+                        <TopPerformersTable title="TOP (SEWERAGE)" data={topPerformers.sewBest} />
                     </div>
                 </div>
 
-                {/* SLIDE 2: CHARTS */}
-                <div className="view-pane" style={{ width: '50%' }}>
-                    <div className="full-chart-header">
-                        <h1 style={{ color: '#00ffcc', textAlign: 'center', fontSize: '2rem', padding: '20px' }}>
-                            TOWN PERFORMANCE ANALYTICS
-                        </h1>
-                    </div>
-                    <TownCharts waterData={waterChartData} sewData={sewChartData} avgStats={avgStats} isFullView={true} />
+                {/* BOTTOM SECTION: CHARTS */}
+                <div className="charts-bottom-section">
+                    {/* <h1 className="section-divider-title">TOWN PERFORMANCE ANALYTICS</h1> */}
+                    <TownCharts 
+                        waterData={waterChartData} 
+                        sewData={sewChartData} 
+                        avgStats={avgStats} 
+                        isFullView={false} 
+                    />
                 </div>
             </div>
         </div>

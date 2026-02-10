@@ -15,6 +15,7 @@ export const getKpiStats = async (req, res) => {
         SUM(type_id = 12) AS total_registered_social,
         SUM(type_id = 19) AS total_registered_hyd,
         SUM(type_id =24) AS total_registered_req,
+        
 
         /* 2. RESOLVED CARD */
         SUM(status = 1) AS total_resolved,

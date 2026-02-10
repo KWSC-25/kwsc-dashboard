@@ -31,8 +31,8 @@ body {
 .stat-highlight { color: var(--green-ok); font-weight: bold; }
 .stat-highlight.bad { color: yellow; }
 
-.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; /* Tight margin to charts */
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));}
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; /* Tight margin to charts */
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: -22px;}
 .kpi-card {
     background: var(--panel-bg); border-radius: 12px; padding: 15px;
     display: flex; justify-content: space-between; align-items: center;
@@ -115,8 +115,9 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     min-width: 0;
     height: auto; 
     min-height: 260px; 
-    overflow: hidden;
-    margin-bottom: -5px;
+    overflow: auto;
+    margin-bottom: -10px;
+    margin-top: -5px;
 }
 
 @media (max-width: 1024px) {
@@ -322,9 +323,10 @@ min-height: 95px;    height: auto;
 /*newww*/
 .dashboard-viewport {
     width: 100vw;
-    height: 100vh;
-    overflow-y: auto; /* Change to auto to allow vertical scroll */
-    overflow-x: hidden; /* Keep horizontal hidden for the slider */
+    height: auto; /* Change from 100vh to auto */
+    min-height: 100vh;
+    overflow-y: visible; 
+    background: #0f172a;
     background: #0f172a;
 }
 
@@ -334,13 +336,22 @@ min-height: 95px;    height: auto;
     height: 100vh;
     transition: transform 1.5s cubic-bezier(0.65, 0, 0.35, 1);
 }
+/* Update these specific blocks */
+.dashboard-fixed-container {
+    min-height: auto; /* Change from 100vh */
+    background: #0f172a;
+    overflow-y: hidden; /* Prevent double scrollbars */
+    width: 100%;
+    display: block;
+}
 
 .view-pane {
-    width: 50%; /* Since the parent is 200%, 50% of parent = 100% of screen */
-    height: 100vh;
+    width: 50%; 
+    height: auto; /* Change from 100vh to allow content to define height */
+    min-height: 0; 
     flex-shrink: 0;
     padding: 15px; 
-    box-sizing: border-box; /* This ensures padding doesn't add to the width */
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
@@ -365,159 +376,6 @@ min-height: 95px;    height: auto;
 .avg-time-badge .val { font-size: 1.2rem; font-weight: bold;  }
 .avg-time-badge .lab { font-size: 0.6rem; color: var(--text-dim); }
 
-/*town table*/
-/* --- TOWN TABLE PANEL CONTAINER --- */
-.town-table-panel {
-    background: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 10px 15px;
-    margin-top: 5px;
-    display: flex;
-    flex-direction: column;
-    min-height: auto; /* Removed the forced height to eliminate empty space at bottom */
-    overflow: hidden;
-}
-
-.town-header-compact {
-    margin: 0 0 10px 0 !important;
-    font-size: 1rem !important;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    color: #00ffcc;
-    
-    display: flex;
-    justify-content: center; /* Centers the main title */
-    align-items: center;
-    position: relative;      /* Allows the indicator to float relative to this bar */
-    width: 100%;
-}
-
-.page-indicator {
-    position: absolute;      /* Pulls the indicator out of the center flow */
-    right: 0;                /* Snaps it to the far right */
-    font-size: 0.6rem;
-    background: var(--border-color);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: var(--yellow-wip);
-}
-
-/* --- TABLE CORE STRUCTURE --- */
-.town-table-wrapper {
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-}
-
-.town-dynamic-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-}
-
-/* --- CELL SPACING & FONTS --- */
-.town-dynamic-table th, 
-.town-dynamic-table td {
-    padding: 8px 2px !important; /* Reduced from 14px to 8px to fix your "too much space" issue */
-    font-size: 0.85rem !important;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.05);
-    vertical-align: middle;
-}
-
-/* Sticky Metric Column (REG, RES, etc.) */
-.sticky-col {
-    position: sticky;
-    left: 0;
-    background: #1e293b;
-    z-index: 5;
-    text-align: left !important;
-    padding-left: 12px !important;
-    width: 65px;
-    font-weight: bold;
-    color: var(--text-dim);
-    border-right: 2px solid var(--water-blue) !important;
-    font-size: 1rem;
-}
-
-/* --- COLORS & ALERTS --- */
-.town-name {
-    color: #ffffff;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.val-reg, .label-reg { color: var(--water-blue);font-weight: bold; }
-.val-reg, .label-res { color: var(--green-ok);font-weight: bold; }
-.val-reg, .label-wip { color: var(--yellow-wip);font-weight: bold; }
-.val-reg, .label-pen { color: var(--red-crit);font-weight: bold; }
-
-.text-green { color: var(--green-ok); font-weight: bold; }
-.text-red { color: var(--red-crit); font-weight: bold;}
-.text-yellow { color: var(--yellow-wip);font-weight: bold; }
-
-/* --- BLINKING LOGIC FOR TOP 3 --- */
-@keyframes critical-pulse-red {
-    0% { background-color: transparent; }
-    50% { background-color: rgba(248, 113, 113, 0.4); }
-    100% { background-color: transparent; }
-}
-
-.critical-blink {
-    animation: critical-pulse-red 1s infinite ease-in-out;
-    border-radius: 4px;
-    color: #ffffff !important;
-    font-weight: 900 !important;
-}
-
-/* Custom Scrollbar (if wrapper ever overflows) */
-.town-table-wrapper::-webkit-scrollbar { height: 4px; }
-.town-table-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-
-@media (max-width: 790px) {
-    .town-table-wrapper {
-        overflow-x: auto !important; /* Enable horizontal scroll */
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory; /* Makes it snap like a slider */
-    }
-
-    .town-dynamic-table {
-        table-layout: auto; /* Allow columns to define width */
-        width: max-content; /* Force table to be wider than the screen */
-    }
-
-    .town-dynamic-table th, 
-    .town-dynamic-table td {
-        /* (Screen width - sticky column width) / 4 towns = approx 22vw per column */
-        min-width: 22vw; 
-        scroll-snap-align: start; /* Snap point */
-    }
-
-    .sticky-col {
-        position: sticky;
-        left: 0;
-        z-index: 10;
-        background: var(--panel-bg); /* Ensure it's not transparent while scrolling */
-        box-shadow: 2px 0 5px rgba(0,0,0,0.3); /* Visual cue that it's fixed */
-    }
-
-    /* Hide scrollbar for a cleaner "app" look, or keep it if you prefer */
-    .town-table-wrapper::-webkit-scrollbar {
-        height: 3px;
-    }
-}
-
-/* --- COMPACT SOURCE ANALYTICS --- */
-
-.source-analytics-wrapper-compact {
-    padding: 10px;
-    height: 95vh; /* Utilizes full viewport height */
-    overflow: hidden;
-}
 
 .md-main-title-compact {
     color: #00ffcc;
@@ -613,4 +471,67 @@ min-height: 95px;    height: auto;
 /* Remove scrolling */
 body {
     overflow: hidden;
+}
+
+
+
+.main-scroll-area {
+    padding: 20px;
+    padding-bottom: 0px;
+}
+
+.section-divider-title {
+    color: #00ffcc;
+    text-align: left;
+    font-size: 1.5rem;
+}
+
+/* --- Charts Bottom Flex Layout --- */
+.town-charts-flex-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.chart-panel-bottom {
+    flex: 1;
+    min-width: 0; /* Critical for chart responsiveness */
+    height: 290px;
+    position: relative;
+}
+
+.chart-wrapper-bottom {
+    height: 230px; /* Space for X-axis labels */
+    width: 100%;
+}
+
+.avg-time-badge-inline {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 900px) {
+    .town-charts-flex-container {
+        flex-direction: column; /* Stack charts on mobile */
+    }
+    
+    .chart-panel-bottom {
+        height: 350px;
+    }
+
+    .grid-3 {
+        grid-template-columns: 1fr !important; /* Stack tables on mobile */
+    }
+}
+  
+
+/* Allow body to scroll again */
+body {
+    overflow: auto !important;
 }
