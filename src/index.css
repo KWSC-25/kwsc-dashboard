@@ -32,7 +32,7 @@ body {
 .stat-highlight.bad { color: yellow; }
 
 .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; /* Tight margin to charts */
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: -22px;}
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: -12px;}
 .kpi-card {
     background: var(--panel-bg); border-radius: 12px; padding: 15px;
     display: flex; justify-content: space-between; align-items: center;
@@ -498,7 +498,7 @@ body {
 
 
 .main-scroll-area {
-    padding: 20px;
+    padding: 10px;
     padding-bottom: 0px;
 }
 
@@ -599,4 +599,401 @@ body {
 .col-num {
     text-align: center; /* Center them so they align under the headers */
     padding: 0 2px;
+}
+
+/* Source Slider Root Container */
+.source-slider-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 380px;
+}
+
+/* Single Line Master Header */
+.source-master-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #334155;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.source-label {
+  color: #38bdf8;
+  font-size: 20px;
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+
+.source-value {
+  color: #38bdf8;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.header-right {
+  display: flex;
+  gap: 20px;
+}
+
+.global-stat {
+  font-size: 14px;
+  color: #94a3b8;
+  font-weight: 600;
+  background: #1e293b;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.global-stat span {
+  font-size: 16px;
+  margin-left: 5px;
+}
+
+/* 2-Column Grid */
+.sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.type-section {
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #334155;
+  min-height: 280px;
+}
+
+.type-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #475569;
+}
+
+.type-name {
+  color: #f8fafc;
+  font-weight: bold;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.type-count-pill {
+  font-size: 11px;
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid #38bdf8;
+}
+
+/* Table Design */
+.subtype-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subtype-table th {
+  font-size: 15px;
+  padding: 6px 4px;
+  border-bottom: 1px solid #334155;
+  text-transform: uppercase;
+}
+
+.subtype-table td {
+  padding: 8px 4px;
+  font-size: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+
+}
+
+.sub-name-cell {
+  color: #cbd5e1;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: bold;
+}
+
+/* Value Colors */
+.val-white { color: #ffffff; }
+.val-green, .text-green { color: #4ade80; }
+.val-red, .text-red { color: #f87171; }
+.val-yellow, .text-yellow { color: #fbbf24; }
+.text-white { color: #fff; }
+
+/* Animation */
+.fade-row {
+  animation: tableFadeIn 0.5s ease-in;
+}
+
+@keyframes tableFadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.type-placeholder {
+  min-height: 280px;
+  visibility: hidden;
+}
+
+/* Container for the table */
+.subtype-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Crucial for alignment */
+}
+
+/* Header and Cell Base Styles */
+.subtype-table th, 
+.subtype-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #1e293b;
+}
+
+/* Column Width Definitions */
+/* Subtype Name gets the remaining space */
+.subtype-table th:nth-child(1),
+.subtype-table td:nth-child(1) {
+    width: 40%;
+    text-align: left;
+}
+
+/* Stats columns get fixed, equal widths */
+.subtype-table th:nth-child(2), .subtype-table td:nth-child(2),
+.subtype-table th:nth-child(3), .subtype-table td:nth-child(3),
+.subtype-table th:nth-child(4), .subtype-table td:nth-child(4),
+.subtype-table th:nth-child(5), .subtype-table td:nth-child(5) {
+    width: 15%;
+    text-align: center; /* Center aligning numbers makes them look cleaner */
+    font-family: 'Courier New', monospace; /* Optional: Monospace keeps numbers aligned */
+}
+
+/* Specific colors for the data points */
+.text-reg { color: var(--water-blue);  font-weight: bold; }
+.text-res { color: var(--green-ok);  font-weight: bold; }
+.text-pen { color: var(--red-crit); font-weight: bold; }
+.text-wip { color: var(--yellow-wip);  font-weight: bold; }
+
+
+                .compact-layout { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                .compact-layout th, .compact-layout td { 
+                    padding: 6px 4px; 
+                    border-bottom: 1px solid rgba(255,255,255,0.05);
+                }
+                .num-col { 
+                    width: 40px; 
+                    text-align: right; 
+                    font-size: 0.85rem;
+                    padding-right: 8px !important;
+                }
+                .name-bar-wrapper { 
+                    display: flex; 
+                    align-items: center; 
+                    gap: 12px; 
+                    justify-content: space-between;
+                }
+                .sub-text-name { 
+                    font-size: 0.75rem; 
+                    font-weight: 500; 
+                    color: #cbd5e1; 
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex-shrink: 0;
+                    width: 140px; /* Fixed width for names to align bars */
+                }
+                .inline-performance-bar {
+                    flex-grow: 1;
+                    height: 10px;
+                    display: flex;
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 4px;
+                    overflow: hidden;
+                    margin-right: 15px;
+                }
+                .bar-segment { height: 100%; transition: width 0.4s ease-in-out; }
+                .res { background: #22c55e; } /* Green */
+                .pen { background: #ef4444; } /* Red */
+                .wip { background: #eab308; } /* Yellow */
+
+                .source-master-header { display: flex; justify-content: space-between; padding: 12px; background: #0f172a; border-radius: 8px 8px 0 0; }
+                .global-stat { font-size: 0.85rem; margin-left: 12px; }
+                .val-green { color: #22c55e; font-weight: bold; }
+                .val-red { color: #ef4444; font-weight: bold; }
+                .val-yellow { color: #eab308; font-weight: bold; }
+/* Container spacing and responsiveness */
+.source-slider-card {
+  padding: 10px;
+  background: #0f172a;
+}
+
+.sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Default 2 columns for MD */
+  gap: 15px;
+}
+
+/* Mobile: Stack the two main sections */
+@media (max-width: 1024px) {
+  .sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compact-layout {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Keeps columns tight */
+}
+
+/* Column Widths - Tightening the gaps */
+.compact-layout th:nth-child(1) { width: 65%; } /* Name + Bar */
+.compact-layout th.num-col { width: 35px; }      /* Tight numbers */
+
+.compact-layout td, .compact-layout th {
+  padding: 8px 2px; /* Reduced horizontal padding */
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.name-bar-wrapper {
+  display: flex;
+  flex-direction: column; /* Better for smaller widths */
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.sub-text-name {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  font-weight: bold;
+  /* Allow wrapping instead of dots if space allows, or use fixed height */
+  white-space: normal; 
+  line-height: 1.1;
+  display: block;
+}
+
+.inline-performance-bar {
+  width: 100%; /* Use full width under the text */
+  height: 6px;
+  display: flex;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* Desktop optimization: Put name and bar side-by-side if screen is wide */
+@media (min-width: 1400px) {
+  .name-bar-wrapper {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sub-text-name {
+    width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .inline-performance-bar {
+    flex-grow: 1;
+    margin-left: 10px;
+  }
+}
+
+.num-col {
+  text-align: center;
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+/* Header responsiveness */
+.source-master-header {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .source-master-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2x2 grid for stats on tiny screens */
+    width: 100%;
+    gap: 5px;
+  }
+  .global-stat {
+    margin: 0;
+    text-align: center;
+  }
+}
+
+/* Container for the sliding effect */
+.view-transition-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* Subtype Name - No more dots, better spacing */
+.sub-text-name {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: 250px; /* Increased to prevent truncation */
+    letter-spacing: 0.05em;
+}
+
+/* Modern Gradient Bars */
+.inline-performance-bar {
+    flex-grow: 1;
+    height: 8px; /* Slimmer is more modern */
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-right: 15px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Glassy Glow Effects for Segments */
+.bar-segment {
+    height: 100%;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.res { 
+    background: linear-gradient(90deg, #22c55e, #4ade80); 
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.3); 
+}
+
+.pen { 
+    background: linear-gradient(90deg, #ef4444, #f87171); 
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); 
+}
+
+.wip { 
+    background: linear-gradient(90deg, #eab308, #fbbf24); 
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.3); 
+}
+
+/* Header styling */
+.source-master-header {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px 12px 0 0;
 }

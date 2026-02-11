@@ -19,6 +19,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "framer-motion": "^12.34.0",
     "mysql2": "^3.16.2",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",
