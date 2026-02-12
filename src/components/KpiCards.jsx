@@ -20,7 +20,7 @@ const KpiCards = ({ stats, assignments, today }) => {
     return (
       <>
         {c.toLocaleString()}
-        <span style={{ fontSize: '0.7rem', opacity: 0.8, marginLeft: '2px', fontWeight: 'normal' }}>
+        <span style={{ fontSize: '1rem', opacity: 0.8, marginLeft: '2px', fontWeight: 'normal' }}>
           ({perc}%)
         </span>
       </>
@@ -65,7 +65,6 @@ const KpiCards = ({ stats, assignments, today }) => {
           </div>
           
           {/* ASG and UN-ASG on one line */}
-          <div style={{ whiteSpace: 'nowrap', display: 'flex', gap: '10px' }}>
             <div>
               <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'bold' }}>ASG: </span>
               <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: '500' }}>
@@ -78,32 +77,30 @@ const KpiCards = ({ stats, assignments, today }) => {
                 {Number(assignments.total_unassigned).toLocaleString()}
               </span>
             </div>
-          </div>
         </div>
 
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px', flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '6px' }}>
             <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--water-blue)' }}>{formatWithPerc(stats.total_registered_water, stats.total_registered)}</span></div>
             <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--sew-purple)' }}>{formatWithPerc(stats.total_registered_sewer, stats.total_registered)}</span></div>
-            <div><span className="split-label">Bill</span><span className="split-item">{stats.total_registered_bill}</span></div>
-            <div><span className="split-label">Bulk</span><span className="split-item">{stats.total_registered_bulk}</span></div>
-            <div><span className="split-label">Conn</span><span className="split-item">{stats.total_registered_new_conn}</span></div>
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '15px' }}>
-            {/* Today Badge moved right/center of the split section */}
-            <div style={{ padding: '3px 10px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '4px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-              <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 'bold' }}>TODAY:</span>
-              <span style={{ fontSize: '1.1rem', color: '#fbbf24', fontWeight: '800' }}>{regToday.toLocaleString()}</span>
-            </div>
-            
             <div style={{ display: 'flex', gap: '10px' }}>
+              <div><span className="split-label">Bill</span><span className="split-item">{stats.total_registered_bill}</span></div>
+              <div><span className="split-label">Bulk</span><span className="split-item">{stats.total_registered_bulk}</span></div>
               <div><span className="split-label">Social</span><span className="split-item">{stats.total_registered_social}</span></div>
               <div><span className="split-label">HYD</span><span className="split-item">{stats.total_registered_hyd}</span></div>
               <div><span className="split-label">Info</span><span className="split-item">{stats.total_registered_req}</span></div>
+              <div><span className="split-label">Conn</span><span className="split-item">{stats.total_registered_new_conn}</span></div>
               <div><span className="split-label">Others</span><span className="split-item">{stats.total_registered_other}</span></div>
             </div>
+            
           </div>
+            <div style={{ padding: '4px 2px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+              <span style={{ fontSize: '1.2rem', color: '#fbbf24',fontWeight: '600' }}>TODAY:</span>
+              <span style={{ fontSize: '1.3rem', color: '#fbbf24', fontWeight: '800' }}>{regToday.toLocaleString()}</span>
+            </div>
         </div>
       </div>
 
@@ -123,17 +120,20 @@ const KpiCards = ({ stats, assignments, today }) => {
               From yesterday: <span className="stat-highlight">{renderTrend(resolvedTrend)}</span>
             </span>
 
-            <div style={{ background: 'rgba(74, 222, 128, 0.2)', padding: '1px 10px', borderRadius: '4px', border: '1px solid rgba(74, 222, 128, 0.3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 'bold' }}>TODAY:</span>
-              <span style={{ fontSize: '1rem', color: 'var(--green-ok)', fontWeight: '500' }}>{Number(resToday || 0).toLocaleString()}</span>
+            <div style={{ padding: '1px 10px', display: 'flex', alignItems: 'center', gap: '4px' , marginTop: '8px'}}>
+              <span style={{ fontSize: '1rem', color: '#0df3c9', fontWeight: 'bold' }}>TODAY:</span>
+              <span style={{ fontSize: '1.1rem', color: '#0df3c9', fontWeight: '500' }}>{Number(resToday || 0).toLocaleString()}</span>
             </div>
           </div>
         </div>
 
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_water, stats.total_resolved)}</span></div>
-            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_sewer, stats.total_resolved)}</span></div>
+            <div><span className="split-label">Water</span>
+            <span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_water, stats.total_resolved)}</span></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
+            <div><span className="split-label">Sewerage</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_sewer, stats.total_resolved)}</span></div>
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2px' }}>
             <span className="split-label" style={{ color: 'yellow' }}>Others </span>
@@ -168,9 +168,6 @@ const KpiCards = ({ stats, assignments, today }) => {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
             <div className="kpi-label" style={{ margin: 0 }}>Pending</div>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-              Yesterday: {renderTrend(pendingTrend, true)}
-            </div>
           </div>
 
           <div className="kpi-val-group">
@@ -191,18 +188,23 @@ const KpiCards = ({ stats, assignments, today }) => {
               {Number(assignments.pending_unassigned).toLocaleString()}
             </span>
           </div>
+          <div style={{ fontSize: '0.8rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+              From Yesterday: {renderTrend(pendingTrend, true)}
+          </div>
         </div>
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
             <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_water, stats.total_pending)}</span></div>
             <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_sewer, stats.total_pending)}</span></div>
-            <div><span className="split-label">Bill</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_bill}</span></div>
-            <div><span className="split-label">Bulk</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_bulk}</span></div>
 
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
+            <div><span className="split-label">Bill</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_bill}</span></div>
+            <div><span className="split-label">Bulk</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_bulk}</span></div>
             <div><span className="split-label">New Conn</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_new_conn}</span></div>
             <div><span className="split-label">HYD</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_hyd}</span></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
             <div><span className="split-label">Info</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_req}</span></div>
             <div><span className="split-label">Social</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_social}</span></div>
             <div><span className="split-label">Others</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{stats.total_pending_other}</span></div>

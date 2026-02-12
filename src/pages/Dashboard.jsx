@@ -1,12 +1,13 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import api from '../utils/api';
 import Header from '../components/Header';
 import KpiCards from '../components/KpiCards';
 import UnderperformingTable from '../components/UnderperformingTable';
 import TopPerformersTable from '../components/TopPerformersTable';
-import TownCharts from '../components/TownCharts';
 import SourceSlider from '../components/SourceSlider';
 import { motion, AnimatePresence } from 'framer-motion';
+import TownTable from '../components/TownTable';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
@@ -15,27 +16,25 @@ const Dashboard = () => {
     const [waterType, setWaterType] = useState([]);
     const [sewerType, setSewerType] = useState([]);
     const [topPerformers, setTopPerformers] = useState({ waterBest: [], sewBest: [] });
-    const [waterChartData, setWaterChartData] = useState([]);
-    const [sewChartData, setSewChartData] = useState([]);
-    const [avgStats, setAvgStats] = useState(null);
     const [sourceSliderData, setSourceSliderData] = useState([]);
     const [showSourceSlider, setShowSourceSlider] = useState(false);
+    const [townWaterStats, setTownWaterStats] = useState([]);
+    const [townSewStats, setTownSewStats] = useState([]);
     
     const viewTimerRef = useRef(null);
 
     const fetchData = useCallback(async () => {
         try {
-            const [kpi, wP, sP, wI, sI, topP, cWater, cSew, aRes, sSlider] = await Promise.all([
+            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew] = await Promise.all([
                 api.get('/kpis/stats'),
                 api.get('/performance/underperforming?typeId=2'),
                 api.get('/performance/underperforming?typeId=1'),
                 api.get('/type?typeId=2&subTypeIds=1,13,16'),
                 api.get('/type?typeId=1&subTypeIds=21,108'),
                 api.get('/performance/top-performers'),
-                api.get('/charts/town-wise?typeId=2'),
-                api.get('/charts/town-wise?typeId=1'),
-                api.get('/charts/avg-resolution'),
-                api.get('/source-slider')
+                api.get('/source-slider'),
+                api.get('/towns/town-stats?typeId=2'), 
+                api.get('/towns/town-stats?typeId=1')
             ]);
 
             setStats(kpi.data);
@@ -44,10 +43,9 @@ const Dashboard = () => {
             setWaterType(wI.data);
             setSewerType(sI.data);
             setTopPerformers(topP.data);
-            setWaterChartData(cWater.data);
-            setSewChartData(cSew.data);
-            setAvgStats(aRes.data);
             setSourceSliderData(sSlider.data);
+            setTownWaterStats(tWater.data);
+            setTownSewStats(tSew.data);
         } catch (err) {
             console.error("Live Update Error:", err);
         }
@@ -136,9 +134,8 @@ const Dashboard = () => {
                     </AnimatePresence>
                 </div>
 
-                <div className="charts-bottom-section">
-                    <TownCharts waterData={waterChartData} sewData={sewChartData} avgStats={avgStats} isFullView={false} />
-                </div>
+                <TownTable waterData={townWaterStats} sewData={townSewStats} />                
+               
             </div>
         </div>
     );

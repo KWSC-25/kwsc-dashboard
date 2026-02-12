@@ -952,7 +952,7 @@ body {
     color: #e2e8f0;
     white-space: nowrap;
     flex-shrink: 0;
-    width: 250px; /* Increased to prevent truncation */
+    width: 150px; /* Increased to prevent truncation */
     letter-spacing: 0.05em;
 }
 
@@ -996,4 +996,153 @@ body {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px 12px 0 0;
+}
+
+
+/* --- TOWN TABLE PANEL CONTAINER --- */
+.town-table-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 15px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    min-height: auto; /* Removed the forced height to eliminate empty space at bottom */
+    overflow: hidden;
+}
+.town-header-compact {
+    margin: 0 0 10px 0 !important;
+    font-size: 1rem !important;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #00ffcc;
+    
+    display: flex;
+    justify-content: center; /* Centers the main title */
+    align-items: center;
+    position: relative;      /* Allows the indicator to float relative to this bar */
+    width: 100%;
+}
+
+.page-indicator {
+    position: absolute;      /* Pulls the indicator out of the center flow */
+    right: 0;                /* Snaps it to the far right */
+    font-size: 0.6rem;
+    background: var(--border-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--yellow-wip);
+}
+
+/* --- TABLE CORE STRUCTURE --- */
+.town-table-wrapper {
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+}
+
+.town-dynamic-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* --- CELL SPACING & FONTS --- */
+.town-dynamic-table th, 
+.town-dynamic-table td {
+    padding: 8px 2px !important; /* Reduced from 14px to 8px to fix your "too much space" issue */
+    font-size: 0.85rem !important;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    vertical-align: middle;
+}
+
+/* Sticky Metric Column (REG, RES, etc.) */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: #1e293b;
+    z-index: 5;
+    text-align: left !important;
+    padding-left: 12px !important;
+    width: 65px;
+    font-weight: bold;
+    color: var(--text-dim);
+    border-right: 2px solid var(--water-blue) !important;
+}
+
+/* --- COLORS & ALERTS --- */
+.town-name {
+    color: #ffffff;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.val-reg, .label-reg { color: var(--water-blue); font-weight: bold; }
+.label-res { color: var(--green-ok); }
+.label-pen { color: var(--red-crit); }
+.label-wip { color: var(--yellow-wip); }
+
+.text-green { color: var(--green-ok);font-weight: bold; }
+.text-red { color: var(--red-crit); font-weight: bold; }
+.text-yellow { color: var(--yellow-wip); font-weight: bold;}
+
+/* --- BLINKING LOGIC FOR TOP 3 --- */
+@keyframes critical-pulse-red {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(248, 113, 113, 0.4); }
+    100% { background-color: transparent; }
+}
+
+.critical-blink {
+    animation: critical-pulse-red 1s infinite ease-in-out;
+    border-radius: 4px;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+}
+
+/* Custom Scrollbar (if wrapper ever overflows) */
+.town-table-wrapper::-webkit-scrollbar { height: 4px; }
+.town-table-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+/* --- Desktop Default (Fixed Layout) --- */
+.town-dynamic-table {
+    table-layout: fixed; /* Keep columns even on desktop */
+}
+
+/* --- Mobile Specific Styles --- */
+@media (max-width: 768px) {
+    .town-table-wrapper {
+        overflow-x: auto !important; /* Enable horizontal scroll */
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory; /* Makes it snap like a slider */
+    }
+
+    .town-dynamic-table {
+        table-layout: auto; /* Allow columns to define width */
+        width: max-content; /* Force table to be wider than the screen */
+    }
+
+    .town-dynamic-table th, 
+    .town-dynamic-table td {
+        /* (Screen width - sticky column width) / 4 towns = approx 22vw per column */
+        min-width: 22vw; 
+        scroll-snap-align: start; /* Snap point */
+    }
+
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background: var(--panel-bg); /* Ensure it's not transparent while scrolling */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.3); /* Visual cue that it's fixed */
+    }
+
+    /* Hide scrollbar for a cleaner "app" look, or keep it if you prefer */
+    .town-table-wrapper::-webkit-scrollbar {
+        height: 3px;
+    }
 }
