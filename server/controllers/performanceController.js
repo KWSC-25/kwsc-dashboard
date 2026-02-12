@@ -58,3 +58,52 @@ export const getTopPerformers = async (req, res) => {
         res.json({ waterBest, sewBest });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
+
+const getEngineerDetailsQuery = `
+SELECT 
+    u.name,
+    c.type_id,
+    t.title as type_title,
+    st.title as subtype_title,
+    COUNT(c.id) as total,
+    SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) as pending,
+    SUM(CASE WHEN c.status = 1 THEN 1 ELSE 0 END) as resolved,
+    SUM(CASE WHEN c.status = 2 THEN 1 ELSE 0 END) as wip
+FROM users u
+JOIN mobile_agent ma ON u.id = ma.user_id
+JOIN complaint_assign_agent caa ON caa.agent_id = ma.id
+JOIN complaint c ON caa.complaint_id = c.id
+JOIN complaint_types t ON c.type_id = t.id
+JOIN sub_types st ON c.subtype_id = st.id
+WHERE u.name = ? 
+  AND c.type_id = ?
+  AND c.created_at >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
+GROUP BY u.name, c.type_id, t.title, st.title;
+`;
+
+
+export const getEngineerDetails = async (req, res) => {
+    try {
+        const { name, typeId } = req.query;
+        const [results] = await db.execute(getEngineerDetailsQuery, [name, typeId]);
+        
+        if (results.length === 0) return res.status(404).json({ message: "No data found" });
+        
+        const details = {
+            name: results[0].name,
+            typeId: parseInt(results[0].type_id),
+            total: results.reduce((acc, row) => acc + parseInt(row.total), 0),
+            pending: results.reduce((acc, row) => acc + parseInt(row.pending), 0),
+            resolved: results.reduce((acc, row) => acc + parseInt(row.resolved), 0),
+            wip: results.reduce((acc, row) => acc + parseInt(row.wip), 0),
+            breakdown: results.map(r => ({
+                subtype: r.subtype_title,
+                total: r.total,
+                pending: r.pending,
+                resolved: r.resolved,
+                wip: r.wip
+            }))
+        };
+        res.json(details);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};

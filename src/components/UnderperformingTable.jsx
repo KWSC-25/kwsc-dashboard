@@ -1,5 +1,5 @@
 
-const UnderperformingTable = ({ data, TypeData, title, typeColor, iconClass }) => {
+const UnderperformingTable = ({ data, TypeData, title, typeColor, iconClass, onEngineerClick}) => {
 const themeClass = typeColor === "#38bdf8" ? "water-theme" : "sewer-theme";
     const isSewer = themeClass === "sewer-theme";const maxPendingRate = data?.length > 0 
     ? Math.max(...data.map(e => parseFloat(e.pending_rate))) 
@@ -47,7 +47,14 @@ const themeClass = typeColor === "#38bdf8" ? "water-theme" : "sewer-theme";
                               return (
                                 <tr key={idx} className={isWorstRate ? "row-alarm" : ""}>
                                   <td style={{ lineHeight: '1.2' }}>
-                                <span style={{ fontWeight: 'bold' }}>{eng.xen_name}</span><br />
+                                    <span 
+                                        style={{ fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }} 
+                                        onClick={() => onEngineerClick(eng.xen_name)}
+                                    >
+                                        {eng.xen_name}
+                                    </span>                                
+                                
+                                <br />
                                 <small style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{eng.town_name}</small>
                             </td>
                             <td style={{ fontWeight: 'bold' , color:  'var(--red-crit)' }}>{eng.pending_count}/{eng.total_count}</td>
