@@ -8,6 +8,7 @@ import typeRoutes from './routes/typeRoutes.js';
 import chartRoutes from './routes/chartRoutes.js';
 import sourceSliderRoutes from './routes/sourceSliderRoutes.js';
 import townRoutes from './routes/TownTableRoutes.js';
+import sourceRoutes from './routes/SourcesDetailsRoutes.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -20,5 +21,9 @@ app.use('/api/type', typeRoutes);
 app.use('/api/charts', chartRoutes);
 app.use('/api', sourceSliderRoutes);
 app.use('/api/towns', townRoutes);
+app.use('/api/source', sourceRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
+
+
+

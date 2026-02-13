@@ -130,10 +130,10 @@ const KpiCards = ({ stats, assignments, today }) => {
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
             <div><span className="split-label">Water</span>
-            <span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_water, stats.total_resolved)}</span></div>
+            <span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_water, stats.total_registered_water)}</span></div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Sewerage</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_sewer, stats.total_resolved)}</span></div>
+            <div><span className="split-label">Sewerage</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_sewer, stats.total_registered_sewer)}</span></div>
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2px' }}>
             <span className="split-label" style={{ color: 'yellow' }}>Others </span>
@@ -153,8 +153,8 @@ const KpiCards = ({ stats, assignments, today }) => {
         </div>
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_water, stats.total_wip)}</span></div>
-            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_sewer, stats.total_wip)}</span></div>
+            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_water, stats.total_registered_water)}</span></div>
+            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_sewer, stats.total_registered_sewer)}</span></div>
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2px' }}>
             <span className="split-label" style={{ color: 'yellow' }}>Others </span>
@@ -194,8 +194,8 @@ const KpiCards = ({ stats, assignments, today }) => {
         </div>
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_water, stats.total_pending)}</span></div>
-            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_sewer, stats.total_pending)}</span></div>
+            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_water, stats.total_registered_water)}</span></div>
+            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_sewer, stats.total_registered_sewer)}</span></div>
 
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>

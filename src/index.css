@@ -260,13 +260,12 @@ min-height: 95px;    height: auto;
     .intel-row {
         /* Force single column like the KPI row */
         grid-template-columns: 1fr !important; 
-        width: 100%;
+        width: 50%;
     }
     
     .intel-card {
         /* Ensure the card doesn't have a fixed height so text can wrap */
         height: auto !important;
-        min-height: 100px;
     }
 
     .log-line {
@@ -1346,4 +1345,244 @@ body {
     .modal-content {
         margin: 0; /* Ensures it centers via flexbox */
     }
+}
+
+/* Source Card Clickable State */
+.source-card-clickable {
+    transition: transform 0.2s ease, border-color 0.2s ease !important;
+}
+.source-card-clickable:hover {
+    transform: translateY(-2px);
+    border-color: #00ffcc !important;
+    box-shadow: 0 4px 12px rgba(0, 255, 204, 0.15);
+}
+
+.source-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.source-stats-grid {
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 4px; 
+    text-align: center;
+}
+
+.stat-label { font-size: 0.75rem; opacity: 0.8; }
+.stat-value { font-size: 1rem; font-weight: bold; }
+
+.stat-label.blue, .stat-value.blue { color: var(--water-blue); }
+.stat-label.red, .stat-value.red { color: var(--red-crit); }
+.stat-label.green, .stat-value.green { color: var(--green-ok); }
+.stat-label.yellow, .stat-value.yellow { color: var(--yellow-wip); }
+
+.source-dots {
+    display: flex; 
+    justify-content: center; 
+    gap: 4px; 
+    margin-top: 8px;
+}
+.dot { width: 5px; height: 5px; borderRadius: 50%; background: #334155; }
+.dot.active { background: #00ffcc; }
+
+/* Source Modal Specifics */
+.source-modal {
+    max-width: 800px !important;
+    width: 95% !important;
+}
+
+.type-section {
+    margin-bottom: 25px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.type-summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(0, 255, 204, 0.05);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border-left: 3px solid #00ffcc;
+}
+
+.type-title {
+    font-weight: bold;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.type-totals {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.text-green { color: var(--green-ok); }
+.text-red { color: var(--red-crit); }
+.text-yellow { color: var(--yellow-wip); }
+
+/* Container to force single-line alignment */
+.modal-source-totals-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top:18px
+}
+
+/* Badge Base Style */
+.source-badge {
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: fit-content;
+}
+
+/* Badge Label (REG, PEN, etc.) */
+.b-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Badge Value (The Number) */
+.b-val {
+  font-family: 'Inter', 'Monospace', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+/* Color Themes matching your dashboard colors */
+.b-blue   { border-color: #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.15); }
+.b-red    { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+.b-green  { border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.15); }
+.b-yellow { border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.15); }
+
+/* Container to hold arrows and dots in one line */
+.source-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Style for the arrows */
+.nav-arrow {
+  font-size: 0.75rem;
+  color: rgba(0, 255, 204, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 5px;
+}
+
+.nav-arrow:hover {
+  color: #00ffcc;
+  transform: scale(1.2);
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+}
+
+/* Ensure dots stay centered */
+.source-dots {
+  display: flex;
+  gap: 4px;
+  margin: 0 !important; /* Remove any old margins */
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background: #00ffcc;
+  box-shadow: 0 0 5px #00ffcc;
+  width: 12px;
+  border-radius: 4px;
+}
+/* --- MOBILE RESPONSIVE STYLES --- */
+@media (max-width: 760px) {
+  
+  /* Stack the 4 main Intel cards vertically */
+  .intel-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .intel-card {
+    width: 100% !important;
+    min-height: 100px;
+  }
+
+  /* Adjust Source Card Stats for Mobile */
+  .source-stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* 2x2 grid on mobile instead of 1 line */
+    gap: 10px;
+  }
+
+  /* MODAL RESPONSIVENESS */
+  .modal-content.source-modal {
+    width: 95% !important;
+    max-height: 90vh;
+    margin: 10px auto;
+    padding: 15px;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    flex-direction: column; /* Stack Title and Badges */
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .modal-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 5px;
+  }
+
+  /* Wrap the badges in the modal header so they don't overflow */
+  .modal-source-totals-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    flex-wrap: wrap; /* Allows badges to go to next line if needed */
+    justify-content: flex-start;
+  }
+
+  .source-badge {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  /* Hide non-essential table columns if screen is very small (< 480px) */
+  @media (max-width: 480px) {
+    .modern-table thead th:nth-child(4), 
+    .modern-table tbody td:nth-child(4),
+    .modern-table thead th:nth-child(5), 
+    .modern-table tbody td:nth-child(5) {
+      display: none; /* Hides WIP/PEN to save space on tiny screens */
+    }
+    
+    .type-summary-bar {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 }
