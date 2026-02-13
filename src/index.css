@@ -1385,7 +1385,7 @@ body {
     gap: 4px; 
     margin-top: 8px;
 }
-.dot { width: 5px; height: 5px; borderRadius: 50%; background: #334155; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: #334155; }
 .dot.active { background: #00ffcc; }
 
 /* Source Modal Specifics */
