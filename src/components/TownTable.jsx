@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
+import api from '../utils/api';
 const TownTable = ({ waterData, sewData }) => {
-    const [page, setPage] = useState(0); // 0,1 = Water | 2,3 = Sewerage
+    const [page, setPage] = useState(0); 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+    // Modal State
+    const [selectedTown, setSelectedTown] = useState(null);
+    const [townDetails, setTownDetails] = useState([]);
+    const [loadingDetail, setLoadingDetail] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -10,14 +16,16 @@ const TownTable = ({ waterData, sewData }) => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Determine current mode and data
     const isWater = page < 2;
     const activeData = isWater ? waterData : sewData;
+    const currentTypeId = isWater ? 2 : 1;
     const displayTitle = isWater ? "TOWN-WISE DISTRIBUTION (WATER)" : "TOWN-WISE DISTRIBUTION (SEWERAGE)";
     
-    // Slice for pagination (Desktop: 14 per page | Mobile: Show all for swiping)
     const itemsPerPage = 14;
-    const currentData = isMobile ? activeData : activeData.slice((page % 2) * itemsPerPage, ((page % 2) + 1) * itemsPerPage);
+    const currentData = useMemo(() => {
+        if (!activeData) return [];
+        return isMobile ? activeData : activeData.slice((page % 2) * itemsPerPage, ((page % 2) + 1) * itemsPerPage);
+    }, [activeData, page, isMobile]);
 
     const top3CriticalTowns = useMemo(() => {
         if (!activeData) return [];
@@ -26,13 +34,29 @@ const TownTable = ({ waterData, sewData }) => {
             .sort((a, b) => b.rate - a.rate).slice(0, 3).map(t => t.id);
     }, [activeData]);
 
+    const handleTownClick = async (town) => {
+        console.log("Fetching details for Town ID:", town.town_id, "Type ID:", currentTypeId);
+        setSelectedTown(town);
+        setLoadingDetail(true);
+        try {
+            const res = await api.get(`/towns/town-details`, {
+                params: { townId: town.town_id, typeId: currentTypeId }
+            });
+            setTownDetails(res.data);
+        } catch (err) {
+            console.error("Error fetching breakdown", err);
+        } finally {
+            setLoadingDetail(false);
+        }
+    };
+
     useEffect(() => {
-        if (isMobile) return;
+        if (isMobile || selectedTown) return; // Freeze auto-slide if popup is open
         const interval = setInterval(() => {
-            setPage((prev) => (prev + 1) % 4); // Cycles 0 -> 1 -> 2 -> 3 -> 0
+            setPage((prev) => (prev + 1) % 4);
         }, 5000);
         return () => clearInterval(interval);
-    }, [isMobile]);
+    }, [isMobile, selectedTown]);
 
     if (!waterData || !sewData) return null;
 
@@ -43,15 +67,17 @@ const TownTable = ({ waterData, sewData }) => {
             <h2 className="town-header-compact">
                 <span style={{ color: isWater ? '#38bdf8' : '#a78bfa' }}>{displayTitle}</span>
                 {!isMobile && <span className="page-indicator">SECTION {page + 1}/4</span>}
-                {isMobile && <span className="page-indicator">SWIPE ↔</span>}
             </h2>
+
             <div className="town-table-wrapper">
                 <table className="town-dynamic-table">
                     <thead>
                         <tr>
                             <th className="sticky-col">METRIC</th>
                             {currentData.map((item, index) => (
-                                <th key={index} className={`town-name ${top3CriticalTowns.includes(item.town_name) ? 'critical-blink' : ''}`}>
+                                <th key={index} 
+                                    className={`town-name clickable-cell ${top3CriticalTowns.includes(item.town_name) ? 'critical-blink' : ''}`}
+                                    onClick={() => handleTownClick(item)}>
                                     {formatName(item.town_name)}
                                 </th>
                             ))}
@@ -77,6 +103,63 @@ const TownTable = ({ waterData, sewData }) => {
                     </tbody>
                 </table>
             </div>
+
+            {/* DETAIL POPUP MODAL */}
+            {/* DETAIL POPUP MODAL */}
+            {selectedTown && (
+                <div className="modal-overlay" onClick={() => setSelectedTown(null)}>
+                    <div className="modal-content animate-pop-in" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div>
+                                <h3 style={{ color: isWater ? '#38bdf8' : '#a78bfa', margin: 0 }}>
+                                    {selectedTown.town_name}
+                                </h3>
+                                <small style={{ color: '#94a3b8' }}>SUB-TYPE BREAKDOWN ({isWater ? 'WATER' : 'SEWERAGE'})</small>
+                            </div>
+                            <button className="close-btn" onClick={() => setSelectedTown(null)}>&times;</button>
+                        </div>
+                        
+                        <div className="modal-body">
+                            {loadingDetail ? (
+                                <div className="loader-text">Loading Details...</div>
+                            ) : (
+                                <table className="popup-detail-table">
+                                    <thead>
+                                        <tr>
+                                            <th style={{ textAlign: 'left' }}>COMPLAINT SUB-TYPE</th>
+                                            <th>REG</th>
+                                            <th>RES</th>
+                                            <th>PEN</th>
+                                            <th>WIP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {townDetails.map((row, i) => (
+                                            <tr key={i}>
+                                                <td style={{ textAlign: 'left', fontWeight: '500' }}>{row.subtype_name}</td>
+                                                <td style={{ color: '#fff' }}>{row.reg}</td>
+                                                <td className="text-green">{row.res}</td>
+                                                <td className="text-red">{row.pen}</td>
+                                                <td className="text-yellow">{row.wip}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    {/* ADDING THE TOTAL FOOTER HERE */}
+                                    <tfoot style={{ borderTop: '2px solid #334155', backgroundColor: 'rgba(30, 41, 59, 0.5)' }}>
+                                        <tr style={{ fontWeight: 'bold' }}>
+                                            <td style={{ textAlign: 'left', color: '#f8fafc' }}>TOTAL</td>
+                                            <td style={{ color: '#38bdf8' }}>{selectedTown.total_registered}</td>
+                                            <td className="text-green">{selectedTown.resolved}</td>
+                                            <td className="text-red">{selectedTown.pending}</td>
+                                            <td className="text-yellow">{selectedTown.wip}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
