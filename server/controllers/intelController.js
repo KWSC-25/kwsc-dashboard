@@ -57,7 +57,7 @@ export const getIntelData = async (req, res) => {
         SUM(status = 0) AS total_pending,
         SUM(status = 2) AS total_wip
       FROM complaint
-      WHERE source IS NOT NULL AND source != ''
+      WHERE source IS NOT NULL AND source != '' AND created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
       GROUP BY source;
 `);
     const waterLogs = logs.filter(l => l.category === 'WATER');

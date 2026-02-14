@@ -6,4 +6,5 @@ const router = express.Router();
 // Route for underperforming engineers
 router.get('/underperforming', performanceController.getUnderperformingEngineers);
 router.get('/top-performers', performanceController.getTopPerformers);
+router.get('/engineer-details', performanceController.getEngineerDetails);
 export default router;

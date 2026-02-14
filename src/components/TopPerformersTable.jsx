@@ -1,5 +1,5 @@
 
-const TopPerformersTable = ({ title, data }) => {
+const TopPerformersTable = ({ title, data,onEngineerClick }) => {
     return (
         <div className="sub-panel">
             <h2 className="top-header-pulse" style={{ color: 'var(--green-ok)', marginBottom: '5px', fontSize: '0.85rem' }}>
@@ -19,7 +19,14 @@ const TopPerformersTable = ({ title, data }) => {
                         data.map((eng, idx) => (
                             <tr key={idx}>
                                 <td style={{ lineHeight: '1.2' }}>
-                                    <span style={{ fontWeight: 'bold' }}>{eng.xen_name}</span><br />
+                                <span 
+                                    style={{ fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }} 
+                                    onClick={() => onEngineerClick(eng.xen_name)}
+                                >
+                                    {eng.xen_name}
+                                </span>                                    
+                                    
+                                    <br />
                                     <small style={{ color: 'var(--text-dim)', fontSize: '0.7rem' }}>{eng.town_name}</small>
                                 </td>
                                 <td style={{ color: 'var(--green-ok)', fontWeight: 'bold' }}>

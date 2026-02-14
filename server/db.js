@@ -19,14 +19,29 @@ const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
-
+export const hmpDb = mysql.createPool({
+  host: process.env.HMP_DB_HOST,
+  user: process.env.HMP_DB_USER,
+  password: process.env.HMP_DB_PASSWORD,
+  database: process.env.HMP_DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+try {
+  const hmpConn = await hmpDb.getConnection();
+  console.log("✅ HMP Database connected successfully!");
+  hmpConn.release();
+} catch (error) {
+  console.error("❌ HMP Database failed:Check your .env values. ", error.message);
+}
 // 3. Immediate Test to verify connection on startup
 try {
   const connection = await db.getConnection();
-  console.log("✅ Database connected successfully from root .env!");
+  console.log("✅ Complaint Database connected successfully");
   connection.release();
 } catch (error) {
-  console.error("❌ Database connection failed. Check your .env values.");
+  console.error("❌ Complaint Database connection failed. Check your .env values.");
   console.error("Error Detail:", error.message);
 }
 
