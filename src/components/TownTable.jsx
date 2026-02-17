@@ -51,10 +51,20 @@ const TownTable = ({ waterData, sewData }) => {
     };
 
     useEffect(() => {
-        if (isMobile || selectedTown) return; // Freeze auto-slide if popup is open
+        if (selectedTown) return; // Freeze auto-slide if popup is open
+
         const interval = setInterval(() => {
-            setPage((prev) => (prev + 1) % 4);
-        }, 5000);
+            setPage((prev) => {
+                if (isMobile) {
+                    // On mobile: Toggle only between Water (0) and Sewerage (2)
+                    return prev < 2 ? 2 : 0;
+                } else {
+                    // On laptop: Cycle through all 4 sections (0, 1, 2, 3)
+                    return (prev + 1) % 4;
+                }
+            });
+        }, 15000);
+
         return () => clearInterval(interval);
     }, [isMobile, selectedTown]);
 
