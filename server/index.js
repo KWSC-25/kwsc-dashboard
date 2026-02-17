@@ -9,7 +9,8 @@ import chartRoutes from './routes/chartRoutes.js';
 import sourceSliderRoutes from './routes/sourceSliderRoutes.js';
 import townRoutes from './routes/TownTableRoutes.js';
 import sourceRoutes from './routes/SourcesDetailsRoutes.js';
-import asaniRoutes from './routes/asaniRoutes.js'; // Added this
+import hmpKpiRoutes from './routes/hmpKpiRoutes.js';
+import hydPerfRoutes from './routes/hydPerfRoutes.js';
 
 const app = express();
 app.use(cors());
@@ -24,7 +25,8 @@ app.use('/api/charts', chartRoutes);
 app.use('/api', sourceSliderRoutes);
 app.use('/api/towns', townRoutes);
 app.use('/api/source', sourceRoutes);
-app.use('/api', asaniRoutes);
+app.use('/api', hmpKpiRoutes);
+app.use('/api', hydPerfRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
 

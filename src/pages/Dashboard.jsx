@@ -9,9 +9,11 @@ import SourceSlider from '../components/SourceSlider';
 import { motion, AnimatePresence } from 'framer-motion';
 import TownTable from '../components/TownTable';
 import HmpHeader from '../components/HmpHeader';
-import HmpView from '../components/HmpView';
+import HmpKpiCards from '../components/HmpKpiCards';
+import HydrantPerformance from '../components/HydrantPerformance';
+
 const Dashboard = () => {
-    const [activeSystem, setActiveSystem] = useState('complaint'); // Switcher state
+    const [activeSystem, setActiveSystem] = useState('complaint'); 
     const [stats, setStats] = useState(null);
     const [waterPerf, setWaterPerf] = useState([]);
     const [sewerPerf, setSewerPerf] = useState([]);
@@ -24,12 +26,12 @@ const Dashboard = () => {
     const [townSewStats, setTownSewStats] = useState([]);
     const [selectedEngineer, setSelectedEngineer] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    
+    const [hmpStats, setHmpStats] = useState(null); 
+    const [hydrantPerfData, setHydrantPerfData] = useState([]);
     const viewTimerRef = useRef(null);
 
     const handleEngineerClick = async (name, typeId) => {
         try {
-            // Pass both name and typeId to the backend
             const resp = await api.get(`/performance/engineer-details?name=${encodeURIComponent(name)}&typeId=${typeId}`);
             setSelectedEngineer(resp.data);
             setShowModal(true);
@@ -41,7 +43,7 @@ const Dashboard = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew] = await Promise.all([
+            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew, hmpKpi, hmpPerf] = await Promise.all([
                 api.get('/kpis/stats'),
                 api.get('/performance/underperforming?typeId=2'),
                 api.get('/performance/underperforming?typeId=1'),
@@ -50,7 +52,9 @@ const Dashboard = () => {
                 api.get('/performance/top-performers'),
                 api.get('/source-slider'),
                 api.get('/towns/town-stats?typeId=2'), 
-                api.get('/towns/town-stats?typeId=1')
+                api.get('/towns/town-stats?typeId=1'),
+                api.get('/hmp-kpi'),
+                api.get('/hmp-performance')
             ]);
 
             setStats(kpi.data);
@@ -62,49 +66,35 @@ const Dashboard = () => {
             setSourceSliderData(sSlider.data);
             setTownWaterStats(tWater.data);
             setTownSewStats(tSew.data);
+            setHmpStats(hmpKpi.data.data);
+            setHydrantPerfData(hmpPerf.data);
         } catch (err) {
             console.error("Live Update Error:", err);
         }
     }, []);
 
-    // Effect 1: FIXED Live Data Refetching (Every 5 Seconds)
     useEffect(() => {
-        // Wrapping in an async function to prevent "synchronous setState" red line
-        const initLoad = async () => {
-            await fetchData();
-        };
-        
+        const initLoad = async () => { await fetchData(); };
         initLoad();
-
-        const interval = setInterval(() => {
-            fetchData();
-        }, 5000); 
-
+        const interval = setInterval(() => { fetchData(); }, 5000); 
         return () => clearInterval(interval);
     }, [fetchData]); 
 
-    // Effect 2: VIEW TOGGLING (60s Main Panel / 30s Slider)
     useEffect(() => {
         const startTimer = (duration) => {
             if (viewTimerRef.current) clearTimeout(viewTimerRef.current);
-
             viewTimerRef.current = setTimeout(() => {
                 setShowSourceSlider(prev => {
                     const nextState = !prev;
-                    // Switching TO Slider: 30s | Switching TO Main: 60s
                     startTimer(nextState ? 30000 : 60000);
                     return nextState;
                 });
             }, duration);
         };
-
-        startTimer(60000); // Initial 1 minute for Main Dashboard
-
-        return () => {
-            if (viewTimerRef.current) clearTimeout(viewTimerRef.current);
-        };
+        startTimer(60000);
+        return () => { if (viewTimerRef.current) clearTimeout(viewTimerRef.current); };
     }, []);
-    // The shared Dropdown UI
+
     const SystemSelector = (
         <select 
             value={activeSystem} 
@@ -125,11 +115,12 @@ const Dashboard = () => {
             <option value="hydrant">HYDRANT SYSTEM</option>
         </select>
     );
+
     if (!stats) return <div className="loading-screen">Loading Live Dashboard...</div>;
 
     return (
         <div className="dashboard-fixed-container">
-            {/* Conditional Header Rendering */}
+            {/* Header Logic: Complaint vs Hydrant */}
             {activeSystem === 'complaint' ? (
                 <Header selector={SystemSelector} /> 
             ) : (
@@ -139,7 +130,12 @@ const Dashboard = () => {
             <div className="content-padding main-scroll-area">
                 {activeSystem === 'complaint' ? (
                     <>
-                        <KpiCards stats={stats.mainKpis} assignments={stats.assignmentStats} today={stats.todaystats} />
+                        {/* RESTORED ORIGINAL KPI CARDS DESIGN */}
+                        <KpiCards 
+                            stats={stats.mainKpis} 
+                            assignments={stats.assignmentStats} 
+                            today={stats.todaystats} 
+                        />
                         
                         <div className="view-transition-container" style={{ minHeight: '480px' }}>
                             <AnimatePresence mode="wait">
@@ -151,7 +147,7 @@ const Dashboard = () => {
                                             <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={sewerPerf} TypeData={sewerType} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
                                             <div className="panel" style={{ padding: '15px' }}>
                                                 <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" data={topPerformers.waterBest} onEngineerClick={(name) => handleEngineerClick(name, 2)}/>
-                                                <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={topPerformers.sewBest}onEngineerClick={(name) => handleEngineerClick(name, 1)} />
+                                                <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={topPerformers.sewBest} onEngineerClick={(name) => handleEngineerClick(name, 1)} />
                                             </div>
                                         </div>
                                     </div>
@@ -167,6 +163,8 @@ const Dashboard = () => {
                         </div>
 
                         <TownTable waterData={townWaterStats} sewData={townSewStats} />                
+                        
+                        {/* Engineer Detail Modal */}
                         {showModal && selectedEngineer && (
                             <div className="modal-overlay" onClick={() => setShowModal(false)}>
                                 <motion.div 
@@ -179,7 +177,6 @@ const Dashboard = () => {
                                         <div className="header-left">
                                             <div className="title-row">
                                                 <h2 className="modal-title">Engr. {selectedEngineer.name}</h2>
-                                                {/* New Department Badge */}
                                                 <span className={`dept-badge ${selectedEngineer.typeId === 1 ? 'sewerage' : 'water'}`}>
                                                     {selectedEngineer.typeId === 1 ? 'SEWERAGE' : 'WATER'}
                                                 </span>
@@ -190,7 +187,6 @@ const Dashboard = () => {
                                     </div>
 
                                     <div className="modal-body">
-                                        {/* Stats Grid - Gradienty Shades */}
                                         <div className="stats-grid">
                                             <div className="stat-card">
                                                 <span className="label">Total</span>
@@ -241,8 +237,12 @@ const Dashboard = () => {
                         )}
                     </>
                 ) : (
-                    <div className="hydrant-content-wrapper">
-                         <HmpView />
+                    /* HYDRANT SYSTEM VIEW */
+                    <div className="hydrant-content-wrapper animate-fade-in">
+                        <HmpKpiCards data={hmpStats} />
+                        <div /*style={{ marginTop: '20px' }}> */>
+                            <HydrantPerformance data={hydrantPerfData} />
+                        </div>
                     </div>
                 )}
             </div>

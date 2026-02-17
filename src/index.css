@@ -1725,3 +1725,390 @@ body {
     color: #38bdf8;
     font-weight: bold;
 }
+
+/* hmp css here... */
+                .hmp-header-main {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 0;
+                }
+                .title-group h1 {
+                    font-size: 1.5rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    background: linear-gradient(to right, #fff, #00f2ff);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                .data-sync-badge {
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                    background: #00ffa3;
+                    color: #000;
+                    padding: 6px 15px;
+                    border-radius: 30px;
+                    box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+                }
+                .data-sync-badge i { margin-right: 5px; }
+/* hmp kpi here.. */
+:root {
+    --hmp-bg-base: #111827;
+    --hmp-cyan: #00f2ff;
+    --hmp-orange: #fbbf24;
+    --hmp-green: #4ade80;
+    --hmp-red: #f87171;
+    --hmp-purple: #a855f7; /* Bluish-Purple for HMP */
+    --hmp-grey: #94a3b8;
+    --hmp-text-dim: #94a3b8;
+    --hmp-today-border: #e5ff00;
+    --hmp-month-border: #38bdf8;
+}
+
+.hmp-dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.hmp-kpi-group-wrapper {
+    position: relative;
+    padding: 20px 15px 12px 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hmp-grp-today { border: 1.5px solid var(--hmp-today-border); }
+.hmp-grp-month { border: 1.5px solid var(--hmp-month-border); }
+
+.hmp-group-label {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: #060b19; 
+    padding: 0 10px;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.hmp-lbl-today { color: var(--hmp-today-border); }
+.hmp-lbl-month { color: var(--hmp-month-border); }
+
+/* Grid Updated to 6 Columns */
+.hmp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
+.hmp-card {
+    padding: 5px 15px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 100px;
+    justify-content: center;
+}
+
+/* Horizontal Gradients */
+.hmp-grad-cyan { background: linear-gradient(90deg, rgba(0, 242, 255, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
+.hmp-grad-orange { background: linear-gradient(90deg, rgba(251, 191, 36, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
+.hmp-grad-green { background: linear-gradient(90deg, rgba(74, 222, 128, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
+.hmp-grad-red { background: linear-gradient(90deg, rgba(248, 113, 113, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
+.hmp-grad-purple { background: linear-gradient(90deg, rgba(168, 85, 247, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
+.hmp-grad-grey { background: linear-gradient(90deg, rgba(148, 163, 184, 0.15) 0%, rgba(13, 18, 34, 0.4) 100%); }
+
+.hmp-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.hmp-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--hmp-text-dim);
+    text-transform: uppercase;
+}
+
+.hmp-total {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: #fff;
+}
+
+.hmp-sub-row {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 6px;
+}
+
+.hmp-sub-stat {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--hmp-text-dim);
+}
+
+/* Distribution Bar Logic */
+.hmp-dist-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin: 8px 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+
+.hmp-bar-ots {
+    height: 100%;
+    background: var(--hmp-cyan);
+    transition: width 0.5s ease;
+}
+
+.hmp-bar-hmp {
+    height: 100%;
+    background: var(--hmp-purple);
+    transition: width 0.5s ease;
+}
+
+.hmp-target-marker {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ff3131; /* Red violation line */
+    z-index: 3;
+    box-shadow: 0 0 5px #ff0000;
+}
+
+/* Color Classes */
+.label-cyan { color: var(--hmp-cyan) !important; }
+.label-orange { color: var(--hmp-orange) !important; }
+.label-green { color: var(--hmp-green) !important; }
+.label-red { color: var(--hmp-red) !important; }
+.label-purple { color: var(--hmp-purple) !important; }
+
+.hmp-loading {
+    color: var(--hmp-cyan);
+    font-weight: bold;
+    padding: 20px;
+    text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+    .hmp-kpi-grid {
+        /* Force 2 cards per row on mobile */
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px;
+    }
+
+    .hmp-card {
+        padding: 8px 10px;
+        min-height: 90px;
+    }
+
+    .hmp-total {
+        font-size: 1.4rem; /* Slightly smaller to prevent text overflow */
+    }
+
+    .hmp-label {
+        font-size: 0.75rem;
+    }
+
+    .hmp-sub-stat {
+        font-size: 0.7rem;
+    }
+
+    .hmp-group-label {
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra small mobile adjustments */
+@media screen and (max-width: 400px) {
+    .hmp-kpi-grid {
+        gap: 8px;
+    }
+    .hmp-card {
+        padding: 6px 8px;
+    }
+}
+
+/* hyd performance here... */
+/* Container to keep table on the left */
+.perf-section-container {
+    width: 50%;
+    display: flex;
+    justify-content: flex-start;
+    padding: 10px 0;
+}
+
+.perf-table-wrapper.mini-table {
+    background: var(--card-gradient);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 15px;
+    width: 50%; /* Smaller footprint to allow other components on the right */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Header Row Styling */
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+/* Title Container */
+.moving-underline-title {
+    position: relative;
+    color: var(--accent-cyan);
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    padding-bottom: 8px;
+    display: inline-block;
+    overflow: hidden; /* Crucial: keeps the line contained */
+}
+
+/* The Line itself */
+.animated-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    /* Gradient with sharp middle and faded edges for the 'glow' look */
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--accent-cyan) 50%, 
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: scrollLine 2s linear infinite;
+}
+
+@keyframes scrollLine {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* HMP Dropdown Styling */
+.hmp-filter-select {
+    background: #1a2a4a;
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    outline: none;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+    text-transform: uppercase;
+}
+
+/* Table Compact Styling */
+.perf-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.perf-table th {
+    font-size: 0.6rem;
+    padding: 10px 5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.perf-table td {
+    padding: 8px 5px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* Hydrant Name in Cyan */
+.hydrant-name-cell {
+    text-align: left !important;
+    color: var(--accent-cyan) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+}
+
+.text-left { text-align: left !important; }
+
+/* Cell Colors based on HMP Design */
+.cell-created { color: var(--hmp-cyan); }
+.cell-dispatched { color: var(--hmp-orange) } /* HMP Orange */
+.cell-completed { color: var(--hmp-green) } /* HMP Green */
+.cell-cancelled { color:var(--hmp-grey) } /* Slate Grey */
+.cell-pending { color: var(--hmp-red)} /* HMP Red */
+
+/* Grand Total Row */
+.row-grand-total {
+    background: rgba(50, 187, 247, 0.20);
+}
+
+.row-grand-total td {
+    border-top: 1px solid var(--accent-cyan);
+    color: #fff;
+    font-size: 0.8rem;
+    padding-top: 10px;
+}
+
+.grand-total-accent {
+    color: var(--accent-cyan) !important;
+}
+
+.no-border { border: none !important; }
+
+
+/* Header Logic from your HTML */
+.section-header {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-header-title {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding-bottom: 6px;
+    color: var(--hmp-cyan);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+/* THE MOVING UNDERLINE (The ::after logic from your file) */
+.section-header-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    animation: line-grow 3s infinite ease-in-out;
+}
+
+@keyframes line-grow {
+    0%, 100% { width: 30px; opacity: 0.5; }
+    50% { width: 100%; opacity: 1; }
+}
+
