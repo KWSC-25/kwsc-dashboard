@@ -23,17 +23,17 @@ const HmpKpiCards = ({ data }) => {
             by_cons: ots.cancelled_ots_consumer_today,
             pending: ots.pending_ots_today,
             gal_total: gallons.total_gallons_today,
-            gal_ots: gallons.total_gallons_ots_today,
-            gal_hmp: gallons.total_gallons_hmp_today
+            gal_gps: gallons.total_gallons_gps_today,
+            gal_comm: gallons.total_gallons_comm_today
         },
         monthly: {
             title: "MONTHLY ORDERS",
             created: Number(ots.total_ots_month || 0) + Number(orders.hmp_created_month || 0),
             ots_c: ots.total_ots_month,
             hmp_c: orders.hmp_created_month,
-            dispatched: orders.total_dispatched_month,
-            ots_d: orders.ots_dispatched_month,
-            hmp_d: orders.hmp_dispatched_month,
+            dispatched: Number(orders.total_dispatched_month) + Number(orders.total_completed_month),
+            ots_d: Number(orders.ots_dispatched_month) + Number(orders.ots_completed_month) ,
+            hmp_d: Number(orders.hmp_dispatched_month) + Number(orders.hmp_completed_month),
             completed: orders.total_completed_month,
             ots_comp: orders.ots_completed_month,
             hmp_comp: orders.hmp_completed_month,
@@ -42,8 +42,8 @@ const HmpKpiCards = ({ data }) => {
             by_cons: ots.cancelled_ots_consumer_month,
             pending: ots.pending_ots_month,
             gal_total: gallons.total_gallons_month,
-            gal_ots: gallons.total_gallons_ots_month,
-            gal_hmp: gallons.total_gallons_hmp_month
+            gal_gps: gallons.total_gallons_gps_month,
+            gal_comm: gallons.total_gallons_comm_month
         }
     };
 
@@ -52,8 +52,8 @@ const HmpKpiCards = ({ data }) => {
         
         // Calculate Percentages for the Balance Bar
         const totalGal = Number(s.gal_total) || 1; 
-        const otsPerc = (Number(s.gal_ots) / totalGal) * 100;
-        const hmpPerc = (Number(s.gal_hmp) / totalGal) * 100;
+        const otsPerc = (Number(s.gal_gps) / totalGal) * 100;
+        const hmpPerc = (Number(s.gal_comm) / totalGal) * 100;
 
         return (
             <div className={`hmp-kpi-group-wrapper ${groupClass}`}>
@@ -102,8 +102,8 @@ const HmpKpiCards = ({ data }) => {
                             <span className="hmp-total">{fmt(s.cancelled)}</span>
                         </div>
                         <div className="hmp-sub-row">
-                            <div className="hmp-sub-stat">CONSUMER: <span>{fmt(s.by_cons)}</span></div>
-                            <div className="hmp-sub-stat">HMP: <span>{fmt(s.by_hmp)}</span></div>
+                            <div className="hmp-sub-stat">BY CONSUMER: <span>{fmt(s.by_cons)}</span></div>
+                            <div className="hmp-sub-stat">BY HMP: <span>{fmt(s.by_hmp)}</span></div>
                         </div>
                     </div>
 
@@ -131,8 +131,8 @@ const HmpKpiCards = ({ data }) => {
                         </div>
 
                         <div className="hmp-sub-row" style={{border: 'none', paddingTop: '4px'}}>
-                            <div className="hmp-sub-stat">OTS: <span className="label-cyan">{fmt(s.gal_ots)}</span></div>
-                            <div className="hmp-sub-stat">HMP: <span className="label-purple">{fmt(s.gal_hmp)}</span></div>
+                            <div className="hmp-sub-stat">GPS/OTHERS: <span className="label-cyan">{fmt(s.gal_gps)}</span></div>
+                            <div className="hmp-sub-stat">COMMERCIAL: <span className="label-purple">{fmt(s.gal_comm)}</span></div>
                         </div>
                     </div>
                 </div>

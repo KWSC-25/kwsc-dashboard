@@ -262,7 +262,7 @@ const Dashboard = () => {
                                 <div className="report-content header-green coming-soon-box">
                                     <div className="section-header">
                                         <div className="section-header-green">
-                                            <i className="fas fa-clock"></i> OPERATIONAL HOURS
+                                            <i className="fas fa-clock"></i> HYDRANTS OPERATIONAL HOURS
                                         </div>
                                     </div>
                                     <div className="placeholder-content">

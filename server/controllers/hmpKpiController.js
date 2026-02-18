@@ -40,16 +40,21 @@ export const getHmpKpis = async (req, res) => {
         const gallonsQuery = `
         SELECT 
             COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() THEN tt.capacity ELSE 0 END), 0) AS total_gallons_today,
-            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() AND o.order_type != 'OTS' THEN tt.capacity ELSE 0 END), 0) AS total_gallons_hmp_today,
-            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() AND o.order_type = 'OTS' THEN tt.capacity ELSE 0 END), 0) AS total_gallons_ots_today,
+            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() AND o.order_type not in ('Commercial','Commercial Offline') 
+                THEN tt.capacity ELSE 0 END), 0) AS total_gallons_gps_today,
+            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() AND o.order_type in ('Commercial','Commercial Offline')
+                THEN tt.capacity ELSE 0 END), 0) AS total_gallons_comm_today,
+                
             COALESCE(SUM(tt.capacity), 0) AS total_gallons_month,
-            COALESCE(SUM(CASE WHEN o.order_type != 'OTS' THEN tt.capacity ELSE 0 END), 0) AS total_gallons_hmp_month,
-            COALESCE(SUM(CASE WHEN o.order_type = 'OTS' THEN tt.capacity ELSE 0 END), 0) AS total_gallons_ots_month
+            COALESCE(SUM(CASE WHEN o.order_type not in ('Commercial','Commercial Offline') 
+                THEN tt.capacity ELSE 0 END), 0) AS total_gallons_gps_month,
+            COALESCE(SUM(CASE WHEN o.order_type in ('Commercial','Commercial Offline') 
+                THEN tt.capacity ELSE 0 END), 0) AS total_gallons_comm_month
         FROM billings b
         INNER JOIN orders o ON o.id = b.order_id
         INNER JOIN truck_types tt ON tt.id = o.truck_type
         WHERE b.status = 1 
-          AND b.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01 00:00:00')`;
+        AND b.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01 00:00:00')`;
 
         const [otsData] = await hmpDb.execute(otsQuery);
         const [orderData] = await hmpDb.execute(ordersQuery);

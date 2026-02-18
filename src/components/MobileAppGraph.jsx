@@ -14,7 +14,7 @@ const MobileAppGraph = ({ data }) => {
             <div className="report-content ">
                 <div className="section-header">
                     <div className="section-header-purple">
-                        <i className="fas fa-mobile-alt"></i> MOBILE APP PERFORMANCE
+                        <i className="fas fa-mobile-alt"></i> OTS ORDERS PERFORMANCE (LAST 7 DAYS)
                     </div>
                 </div>
                 <div className="loading-graph">SYNCHRONIZING DATA...</div>
@@ -58,7 +58,7 @@ const MobileAppGraph = ({ data }) => {
         <div className="report-content header-purple">
             <div className="section-header">
                 <div className="section-header-purple">
-                    <i className="fas fa-mobile-alt"></i> MOBILE APP PERFORMANCE
+                    <i className="fas fa-mobile-alt"></i> OTS ORDERS PERFORMANCE (LAST 7 DAYS)
                 </div>
             </div>
             <div className="chart-container">
