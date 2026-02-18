@@ -1741,6 +1741,8 @@ body {
                     background: linear-gradient(to right, #fff, #00f2ff);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
+                    margin-top: -10px;
+                    margin-bottom: -160px;
                 }
                 .data-sync-badge {
                     font-size: 0.65rem;
@@ -1945,20 +1947,13 @@ body {
 /* hyd performance here... */
 /* Container to keep table on the left */
 .perf-section-container {
-    width: 50%;
+    width: 100%;
     display: flex;
     justify-content: flex-start;
-    padding: 10px 0;
+    padding: 0px 0;
 }
 
-.perf-table-wrapper.mini-table {
-    background: var(--card-gradient);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 15px;
-    width: 50%; /* Smaller footprint to allow other components on the right */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
+
 
 /* Header Row Styling */
 .section-header-row {
@@ -1967,34 +1962,9 @@ body {
     align-items: center;
     margin-bottom: 15px;
 }
-/* Title Container */
-.moving-underline-title {
-    position: relative;
-    color: var(--accent-cyan);
-    font-weight: 800;
-    letter-spacing: 1px;
-    font-size: 0.85rem;
-    padding-bottom: 8px;
-    display: inline-block;
-    overflow: hidden; /* Crucial: keeps the line contained */
-}
 
-/* The Line itself */
-.animated-line {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    /* Gradient with sharp middle and faded edges for the 'glow' look */
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        var(--accent-cyan) 50%, 
-        transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: scrollLine 2s linear infinite;
-}
+
+
 
 @keyframes scrollLine {
     0% { background-position: 200% 0; }
@@ -2019,23 +1989,16 @@ body {
 /* Table Compact Styling */
 .perf-table {
     width: 100%;
-    border-collapse: collapse;
 }
 
 .perf-table th {
     font-size: 0.6rem;
-    padding: 10px 5px;
+    padding: 0px 5px;
     color: var(--text-dim);
     text-transform: uppercase;
     border-bottom: 1px solid var(--glass-border);
 }
 
-.perf-table td {
-    padding: 8px 5px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-align: center;
-}
 
 /* Hydrant Name in Cyan */
 .hydrant-name-cell {
@@ -2093,6 +2056,30 @@ body {
     color: var(--hmp-cyan);
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
+.section-header-purple {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding-bottom: 6px;
+    color: var(--sew-purple);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+.section-header-green {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding-bottom: 6px;
+    color: var(--hmp-green);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
 
 /* THE MOVING UNDERLINE (The ::after logic from your file) */
 .section-header-title::after {
@@ -2106,9 +2093,77 @@ body {
     box-shadow: 0 0 8px currentColor;
     animation: line-grow 3s infinite ease-in-out;
 }
+.section-header-purple::after, .section-header-green::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    animation: line-grow 3s infinite ease-in-out;
+}
+
 
 @keyframes line-grow {
     0%, 100% { width: 30px; opacity: 0.5; }
     50% { width: 100%; opacity: 1; }
 }
 
+/* --- HYDRANT SYSTEM GRID RESET --- */
+.hmp-triple-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr; /* Keeps your desired proportions */
+    gap: 10px;
+    align-items: stretch; /* FORCES SAME HEIGHT */
+    width: 100%;
+}
+
+.hmp-grid-item {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- UNIVERSAL BOX STYLING (Borders & Glow) --- */
+.perf-table-wrapper.mini-table, 
+.report-content {
+    background: var(--card-gradient);
+    border: 1px solid rgba(0, 242, 255, 0.2) !important; /* Light Cyan Border */
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.05), 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 10px;
+    width: 100% !important; /* REMOVES THE 50% BUG */
+    min-height: 350px; /* FILLS THE GRID ITEM */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* --- GRAPH SPECIFIC FIX --- */
+.chart-container {
+    flex: 1; /* Pushes to fill bottom of box */
+    width: 100%;
+    min-height: 250px; /* Prevents graph from collapsing to 0px */
+    position: relative;
+}
+
+
+.perf-table td {
+    padding: 5px 5px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* --- PLACEHOLDER BOX --- */
+.placeholder-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px dashed rgba(0, 242, 255, 0.1);
+}

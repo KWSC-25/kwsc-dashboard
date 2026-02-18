@@ -11,6 +11,7 @@ import TownTable from '../components/TownTable';
 import HmpHeader from '../components/HmpHeader';
 import HmpKpiCards from '../components/HmpKpiCards';
 import HydrantPerformance from '../components/HydrantPerformance';
+import MobileAppGraph from '../components/MobileAppGraph';
 
 const Dashboard = () => {
     const [activeSystem, setActiveSystem] = useState('complaint'); 
@@ -28,6 +29,7 @@ const Dashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [hmpStats, setHmpStats] = useState(null); 
     const [hydrantPerfData, setHydrantPerfData] = useState([]);
+    const [mobileAppTrend, setMobileAppTrend] = useState(null);
     const viewTimerRef = useRef(null);
 
     const handleEngineerClick = async (name, typeId) => {
@@ -43,7 +45,7 @@ const Dashboard = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew, hmpKpi, hmpPerf] = await Promise.all([
+            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew, hmpKpi, hmpPerf, appTrend] = await Promise.all([
                 api.get('/kpis/stats'),
                 api.get('/performance/underperforming?typeId=2'),
                 api.get('/performance/underperforming?typeId=1'),
@@ -54,7 +56,8 @@ const Dashboard = () => {
                 api.get('/towns/town-stats?typeId=2'), 
                 api.get('/towns/town-stats?typeId=1'),
                 api.get('/hmp-kpi'),
-                api.get('/hmp-performance')
+                api.get('/hmp-performance'),
+                api.get('/graph/mobile-app-trend')
             ]);
 
             setStats(kpi.data);
@@ -68,6 +71,7 @@ const Dashboard = () => {
             setTownSewStats(tSew.data);
             setHmpStats(hmpKpi.data.data);
             setHydrantPerfData(hmpPerf.data);
+            setMobileAppTrend(appTrend.data);
         } catch (err) {
             console.error("Live Update Error:", err);
         }
@@ -238,10 +242,34 @@ const Dashboard = () => {
                     </>
                 ) : (
                     /* HYDRANT SYSTEM VIEW */
-                    <div className="hydrant-content-wrapper animate-fade-in">
+                    <div className="hydrant-content-wrapper animate-fade-in" >
                         <HmpKpiCards data={hmpStats} />
-                        <div /*style={{ marginTop: '20px' }}> */>
-                            <HydrantPerformance data={hydrantPerfData} />
+                        {/* THREE COLUMN LAYOUT SECTION */}
+                        <div className="hmp-triple-grid">
+                            
+                            {/* 1. Hydrant Performance (Left Column) */}
+                            <div className="hmp-grid-item">
+                                <HydrantPerformance data={hydrantPerfData} />
+                            </div>
+
+                            {/* 2. Mobile App Graph (Middle Column) */}
+                            <div className="hmp-grid-item">
+                                <MobileAppGraph data={mobileAppTrend} />
+                            </div>
+
+                            {/* 3. Operational Hours (Right Column) */}
+                            <div className="hmp-grid-item">
+                                <div className="report-content header-green coming-soon-box">
+                                    <div className="section-header">
+                                        <div className="section-header-green">
+                                            <i className="fas fa-clock"></i> OPERATIONAL HOURS
+                                        </div>
+                                    </div>
+                                    <div className="placeholder-content">
+                                        <div className="pulsing-text">COMING SOON...</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
