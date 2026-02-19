@@ -2075,9 +2075,32 @@ body {
     color: var(--hmp-green);
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
-
+.section-header-red {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding-bottom: 6px;
+    color: red;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+.section-header-yellow {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding-bottom: 6px;
+    color: var(--hmp-orange);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
 /* THE MOVING UNDERLINE (The ::after logic from your file) */
-.section-header-title::after {
+.section-header-title::after, .section-header-red::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -2088,7 +2111,7 @@ body {
     box-shadow: 0 0 8px currentColor;
     animation: line-grow 3s infinite ease-in-out;
 }
-.section-header-purple::after, .section-header-green::after {
+.section-header-purple::after, .section-header-green::after, .section-header-yellow::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -2188,4 +2211,138 @@ body {
 
 .row-alert-blink .hydrant-name-cell {
     text-shadow: 0 0 5px rgba(255, 49, 49, 0.2);
+}
+
+/* aging dispatch... */
+.aging-row-full {
+    margin-top: 10px;
+    width: 69%; /* Matches the width of the first two columns exactly */
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.aging-analysis-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+    gap: 100px;
+}
+
+
+
+
+.gps-online-header {
+    background: rgba(113, 235, 224, 0.1);
+    color: var(--hmp-cyan);
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.aging-table-section table {
+    width: 120%;
+    border-collapse: collapse;
+}
+
+.aging-table-section th {
+    font-size: 0.7rem;
+    padding: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.hydrant-name-cell {
+    color: #38bdf8;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.val-24 { color: var(--hmp-orange); font-weight: bold; text-align: center; }
+.val-48 { color: var(--hmp-today-border); font-weight: bold; text-align: center; }
+.val-72 { color: red; font-weight: bold; text-align: center; }
+.val-24w { color: var(--hmp-green); font-weight: bold; text-align: center; }
+
+.aging-chart-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-wrapper {
+    position: relative;
+    width: 250px;
+    height: 250px;
+}
+
+.chart-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    
+}
+
+.total-num { display: block; font-size: 2rem; font-weight: 900; color: white; }
+.total-label { font-size: 1rem; color: #94a3b8; }
+
+.chart-legend {
+    font-size: 1rem;
+    color: white;
+    line-height: 1.8;
+    font-weight: bold;
+    
+}
+
+.dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    margin-left: 80px;
+
+}
+.dot.green { background: var(--hmp-green); }
+.dot.yellow { background: var(--hmp-orange); }
+.dot.orange { background:  var(--hmp-today-border);  }
+.dot.red { background: red  ; }
+
+
+.perc-tag-1 {
+    color: var(--hmp-green); 
+    font-size: 1rem;
+    margin-left: 4px;
+    font-weight: normal;
+}
+.perc-tag-2 {
+    color: var(--hmp-orange);
+    font-size: 1rem;
+    margin-left: 4px;
+    font-weight: normal;
+}
+.perc-tag-3 {
+    color: var(--hmp-today-border);
+    font-size: 1rem;
+    margin-left: 4px;
+    font-weight: normal;
+}
+.perc-tag-4{
+    color:red;
+    font-size: 1rem;
+    margin-left: 4px;
+    font-weight: normal;
+}
+.hmp-dual-grid {
+    display: grid;
+    /* 2fr for the table, 1fr for the violations box */
+    grid-template-columns: 2fr 1fr; 
+    gap: 15px;
+    margin-top: 20px;
+    align-items: stretch; /* Ensures both boxes are the same height */
+}
+
+/* Ensure the containers don't overflow */
+.aging-row-left, .violations-section {
+    min-width: 0;
 }

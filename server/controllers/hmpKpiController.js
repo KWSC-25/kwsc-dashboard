@@ -3,16 +3,16 @@ export const getHmpKpis = async (req, res) => {
     try {
         const otsQuery = `
         SELECT 
-            COALESCE(COUNT(CASE WHEN created_at >= CURDATE() THEN 1 END), 0) AS total_ots_today,
+            COALESCE(COUNT(CASE WHEN api_created_at >= CURDATE() THEN 1 END), 0) AS total_ots_today,
             COALESCE(SUM(CASE WHEN updated_at >= CURDATE() AND status IN ('pending_alignment', 'pending') THEN 1 ELSE 0 END), 0) AS pending_ots_today,
             COALESCE(SUM(CASE WHEN updated_at >= CURDATE() AND status = 'failed' THEN 1 ELSE 0 END), 0) AS cancelled_ots_hmp_today,
             COALESCE(SUM(CASE WHEN updated_at >= CURDATE() AND status = 'cancelled' THEN 1 ELSE 0 END), 0) AS cancelled_ots_consumer_today,
-            COALESCE(COUNT(CASE WHEN created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') THEN 1 END), 0) AS total_ots_month,
+            COALESCE(COUNT(CASE WHEN api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') THEN 1 END), 0) AS total_ots_month,
             COALESCE(SUM(CASE WHEN updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND status IN ('pending_alignment', 'pending') THEN 1 ELSE 0 END), 0) AS pending_ots_month,
             COALESCE(SUM(CASE WHEN updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND status = 'failed' THEN 1 ELSE 0 END), 0) AS cancelled_ots_hmp_month,
             COALESCE(SUM(CASE WHEN updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND status = 'cancelled' THEN 1 ELSE 0 END), 0) AS cancelled_ots_consumer_month
         FROM ots_order
-        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') 
+        WHERE api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') 
         OR updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')`;
 
 
@@ -53,7 +53,7 @@ export const getHmpKpis = async (req, res) => {
         FROM billings b
         INNER JOIN orders o ON o.id = b.order_id
         INNER JOIN truck_types tt ON tt.id = o.truck_type
-        WHERE b.status = 1 
+        WHERE b.status = 2
         AND b.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01 00:00:00')`;
 
         const [otsData] = await hmpDb.execute(otsQuery);

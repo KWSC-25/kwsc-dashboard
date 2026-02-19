@@ -23,19 +23,19 @@ export const getHydrantPerformance = async (req, res) => {
             -- Source of truth for OTS Created, Pending, and Cancelled
             SELECT 
                 h_inner.id AS h_id,
-                SUM(CASE WHEN ots.created_at >= CURDATE() THEN 1 ELSE 0 END) AS ots_created_today,
+                SUM(CASE WHEN ots.api_created_at >= CURDATE() THEN 1 ELSE 0 END) AS ots_created_today,
                 0 AS dispatched_today,
                 0 AS completed_today,
                 SUM(CASE WHEN ots.updated_at >= CURDATE() AND ots.status IN ('failed', 'cancelled') THEN 1 ELSE 0 END) AS cancelled_today,
                 SUM(CASE WHEN ots.updated_at >= CURDATE() AND ots.status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS pending_today,
-                SUM(CASE WHEN ots.created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') THEN 1 ELSE 0 END) AS ots_created_month,
+                SUM(CASE WHEN ots.api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') THEN 1 ELSE 0 END) AS ots_created_month,
                 0 AS dispatched_month,
                 0 AS completed_month,
                 SUM(CASE WHEN ots.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND ots.status IN ('failed', 'cancelled') THEN 1 ELSE 0 END) AS cancelled_month,
                 SUM(CASE WHEN ots.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND ots.status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS pending_month
             FROM ots_order ots
             JOIN hydrants h_inner ON ots.hydrant_id = h_inner.ots_hydrant
-            WHERE ots.created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') 
+            WHERE ots.api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') 
             OR ots.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
             GROUP BY h_inner.id
             UNION ALL

@@ -12,6 +12,7 @@ import HmpHeader from '../components/HmpHeader';
 import HmpKpiCards from '../components/HmpKpiCards';
 import HydrantPerformance from '../components/HydrantPerformance';
 import MobileAppGraph from '../components/MobileAppGraph';
+import DispatchAging from '../components/DispatchAging';
 
 const Dashboard = () => {
       
@@ -216,6 +217,30 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         </div>
+                        <div className="hmp-dual-grid">
+                            {/* Left Side: Aging Table */}
+                            <div className="aging-row-left">
+                                <DispatchAging />
+                            </div>
+
+                            {/* Right Side: Violations Section */}
+                            <div className="violations-section">
+                                <div className="report-content header-red coming-soon-box" style={{ height: '100%' }}>
+                                    <div className="section-header">
+                                        <div className="section-header-red" style={{ /* your styles */ }}>
+                                            <i className="fas fa-exclamation-triangle"></i> RED ZONE VIOLATIONS
+                                        </div>
+                                    </div>
+                                    <div className="placeholder-content" style={{ /* your styles */ }}>
+                                        <div className="pulsing-text" style={{ color: '#ef4444', letterSpacing: '2px' }}>
+                                            COMING SOON...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
                     </div>
                 )}
             </div>
