@@ -1,5 +1,30 @@
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
 
-const TopPerformersTable = ({ title, data,onEngineerClick }) => {
+const TopPerformersTable = ({ title, onEngineerClick }) => {
+    const [fetchedData, setFetchedData] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const resp = await api.get('/performance/top-performers');
+                setFetchedData(resp.data);
+            } catch (err) {
+                console.error("Top Performers Fetch Error:", err);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    if (!fetchedData) return <div className="loading-placeholder">Loading...</div>;
+
+    // Filter based on the title prop passed from Dashboard to select the correct array
+    const data = title?.toLowerCase().includes('water') 
+        ? fetchedData.waterBest 
+        : fetchedData.sewBest;
     return (
         <div className="sub-panel">
             <h2 className="top-header-pulse" style={{ color: 'var(--green-ok)', marginBottom: '5px', fontSize: '0.85rem' }}>

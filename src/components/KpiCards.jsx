@@ -1,6 +1,28 @@
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
 
-const KpiCards = ({ stats, assignments, today }) => {
-  if (!stats || !assignments || !today) return null;
+const KpiCards = () => {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const resp = await api.get('/kpis/stats');
+                setData(resp.data);
+            } catch (err) {
+                console.error("KPI Fetch Error:", err);
+            }
+        };
+
+        fetchStats();
+        const interval = setInterval(fetchStats, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    if (!data) return <div className="loading-placeholder">Loading Stats...</div>;
+
+    // Destructure from the internal state
+    const { mainKpis: stats, assignmentStats: assignments, todaystats: today } = data;
 
   const regToday = today?.total_registered_today || 0;
   const resToday = today?.total_resolved_today || 0;

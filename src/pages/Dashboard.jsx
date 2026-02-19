@@ -10,16 +10,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TownTable from '../components/TownTable';
 
 const Dashboard = () => {
-    const [stats, setStats] = useState(null);
-    const [waterPerf, setWaterPerf] = useState([]);
-    const [sewerPerf, setSewerPerf] = useState([]);
-    const [waterType, setWaterType] = useState([]);
-    const [sewerType, setSewerType] = useState([]);
-    const [topPerformers, setTopPerformers] = useState({ waterBest: [], sewBest: [] });
-    const [sourceSliderData, setSourceSliderData] = useState([]);
+
     const [showSourceSlider, setShowSourceSlider] = useState(false);
-    const [townWaterStats, setTownWaterStats] = useState([]);
-    const [townSewStats, setTownSewStats] = useState([]);
     const [selectedEngineer, setSelectedEngineer] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const viewTimerRef = useRef(null);
@@ -35,49 +27,9 @@ const Dashboard = () => {
             alert("Could not fetch engineer details."); 
         }
     };
-    const fetchData = useCallback(async () => {
-        try {
-            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew] = await Promise.all([
-                api.get('/kpis/stats'),
-                api.get('/performance/underperforming?typeId=2'),
-                api.get('/performance/underperforming?typeId=1'),
-                api.get('/type?typeId=2&subTypeIds=1,13,16'),
-                api.get('/type?typeId=1&subTypeIds=21,108'),
-                api.get('/performance/top-performers'),
-                api.get('/source-slider'),
-                api.get('/towns/town-stats?typeId=2'), 
-                api.get('/towns/town-stats?typeId=1')
-            ]);
+ 
 
-            setStats(kpi.data);
-            setWaterPerf(wP.data);
-            setSewerPerf(sP.data);
-            setWaterType(wI.data);
-            setSewerType(sI.data);
-            setTopPerformers(topP.data);
-            setSourceSliderData(sSlider.data);
-            setTownWaterStats(tWater.data);
-            setTownSewStats(tSew.data);
-        } catch (err) {
-            console.error("Live Update Error:", err);
-        }
-    }, []);
-
-    // Effect 1: FIXED Live Data Refetching (Every 5 Seconds)
-    useEffect(() => {
-        // Wrapping in an async function to prevent "synchronous setState" red line
-        const initLoad = async () => {
-            await fetchData();
-        };
-        
-        initLoad();
-
-        const interval = setInterval(() => {
-            fetchData();
-        }, 5000); 
-
-        return () => clearInterval(interval);
-    }, [fetchData]); 
+ 
 
     // Effect 2: VIEW TOGGLING (60s Main Panel / 30s Slider)
     useEffect(() => {
@@ -101,13 +53,12 @@ const Dashboard = () => {
         };
     }, []);
 
-    if (!stats) return <div className="loading-screen">Loading Live Dashboard...</div>;
 
     return (
         <div className="dashboard-fixed-container">
             <Header />
             <div className="content-padding main-scroll-area">
-                <KpiCards stats={stats.mainKpis} assignments={stats.assignmentStats} today={stats.todaystats} />
+                <KpiCards/>
                 
                 <div className="view-transition-container" style={{ minHeight: '480px' }}>
                     <AnimatePresence mode="wait">
@@ -120,11 +71,11 @@ const Dashboard = () => {
                             transition={{ duration: 0.5, ease: "easeInOut" }}>
                         <div className="main-tables-grid animate-fade-in" key="main">
                             <div className="grid-3">
-                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)" data={waterPerf} TypeData={waterType} typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)}/>
-                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={sewerPerf} TypeData={sewerType} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)}/>
+                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)"  typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16"/>
+                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)"  typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108"/>
                                 <div className="panel" style={{ padding: '15px' }}>
-                                    <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" data={topPerformers.waterBest} onEngineerClick={(name) => handleEngineerClick(name, 2)} />
-                                    <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={topPerformers.sewBest}onEngineerClick={(name) => handleEngineerClick(name, 1)} />
+                                    <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
+                                    <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
                                 </div>
                             </div>
                         </div>
@@ -139,14 +90,14 @@ const Dashboard = () => {
                         transition={{ duration: 0.5, ease: "easeInOut" }}
                     >
                         <div className="slider-wrapper animate-fade-in" key="slider">
-                            <SourceSlider data={sourceSliderData} />
+                            <SourceSlider/>
                         </div>
                         </motion.div>
                     )}
                     </AnimatePresence>
                 </div>
 
-                <TownTable waterData={townWaterStats} sewData={townSewStats} />                
+                <TownTable />                
                
             </div>
             {showModal && selectedEngineer && (
