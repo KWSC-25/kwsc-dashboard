@@ -1,14 +1,38 @@
 import React, { useState, useEffect, useMemo } from 'react';
-
 import api from '../utils/api';
-const TownTable = ({ waterData, sewData }) => {
+
+const TownTable = () => {
+    const [townWaterStats, setTownWaterStats] = useState([]);
+    const [townSewStats, setTownSewStats] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
     const [page, setPage] = useState(0); 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     
-    // Modal State
     const [selectedTown, setSelectedTown] = useState(null);
     const [townDetails, setTownDetails] = useState([]);
     const [loadingDetail, setLoadingDetail] = useState(false);
+
+    // 1. Fetching Logic internal to component
+    useEffect(() => {
+        const fetchTownData = async () => {
+            try {
+                const [tWater, tSew] = await Promise.all([
+                    api.get('/towns/town-stats?typeId=2'), 
+                    api.get('/towns/town-stats?typeId=1')
+                ]);
+                setTownWaterStats(tWater.data);
+                setTownSewStats(tSew.data);
+                setLoading(false);
+            } catch (err) {
+                console.error("Town Table Fetch Error:", err);
+            }
+        };
+
+        fetchTownData();
+        const interval = setInterval(fetchTownData, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -17,7 +41,7 @@ const TownTable = ({ waterData, sewData }) => {
     }, []);
 
     const isWater = page < 2;
-    const activeData = isWater ? waterData : sewData;
+    const activeData = isWater ? townWaterStats : townSewStats;
     const currentTypeId = isWater ? 2 : 1;
     const displayTitle = isWater ? "TOWN-WISE DISTRIBUTION (WATER)" : "TOWN-WISE DISTRIBUTION (SEWERAGE)";
     
@@ -35,7 +59,6 @@ const TownTable = ({ waterData, sewData }) => {
     }, [activeData]);
 
     const handleTownClick = async (town) => {
-        console.log("Fetching details for Town ID:", town.town_id, "Type ID:", currentTypeId);
         setSelectedTown(town);
         setLoadingDetail(true);
         try {
@@ -51,24 +74,14 @@ const TownTable = ({ waterData, sewData }) => {
     };
 
     useEffect(() => {
-            if (selectedTown) return; // Freeze auto-slide if popup is open
+        if (selectedTown) return; 
+        const interval = setInterval(() => {
+            setPage((prev) => isMobile ? (prev < 2 ? 2 : 0) : (prev + 1) % 4);
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [isMobile, selectedTown]);
 
-            const interval = setInterval(() => {
-                setPage((prev) => {
-                    if (isMobile) {
-                        // On mobile: Toggle only between Water (0) and Sewerage (2)
-                        return prev < 2 ? 2 : 0;
-                    } else {
-                        // On laptop: Cycle through all 4 sections (0, 1, 2, 3)
-                        return (prev + 1) % 4;
-                    }
-                });
-            }, 15000);
-
-            return () => clearInterval(interval);
-        }, [isMobile, selectedTown]);
-
-    if (!waterData || !sewData) return null;
+    if (loading) return <div className="loading-placeholder">Loading Town Stats...</div>;
 
     const formatName = (name) => name.replace(/town/gi, '').trim();
 

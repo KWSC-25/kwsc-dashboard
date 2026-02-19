@@ -59,7 +59,7 @@ export const getHydrantPerformance = async (req, res) => {
             AND b.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
             GROUP BY o.hydrant_id
         ) AS events ON h.id = events.h_id
-        WHERE h.id IN (1, 2, 3, 4, 5, 6, 7, 13) 
+        WHERE h.id IN (1, 2, 3, 4, 5, 6, 7) 
         GROUP BY h.id, h.name`;
 
 

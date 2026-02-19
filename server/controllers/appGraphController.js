@@ -3,12 +3,12 @@ import { hmpDb } from "../db.js";
 export const getMobileAppTrend = async (req, res) => {
     const query = `
         SELECT 
-            DATE_FORMAT(created_at, '%b %d') AS order_date,
+            DATE_FORMAT(api_created_at, '%b %d') AS order_date,
             COUNT(*) AS total_created_orders
         FROM ots_order
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-        GROUP BY DATE(created_at)
-        ORDER BY DATE(created_at) ASC;
+        WHERE api_created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        GROUP BY DATE(api_created_at)
+        ORDER BY DATE(api_created_at) ASC;
     `;
 
     try {

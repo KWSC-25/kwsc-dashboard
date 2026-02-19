@@ -1,4 +1,24 @@
-const HmpKpiCards = ({ data }) => {
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
+
+const HmpKpiCards = () => {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        const fetchHmpData = async () => {
+            try {
+                const resp = await api.get('/hmp-kpi');
+                setData(resp.data.data);
+            } catch (err) {
+                console.error("HMP KPI Fetch Error:", err);
+            }
+        };
+
+        fetchHmpData();
+        const interval = setInterval(fetchHmpData, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
     if (!data || !data.ots || !data.orders || !data.gallons) {
         return <div className="hmp-loading">Fetching HMP Stats...</div>;
     }

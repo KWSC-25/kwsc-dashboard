@@ -1,6 +1,28 @@
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
 
-const KpiCards = ({ stats, assignments, today }) => {
-  if (!stats || !assignments || !today) return null;
+const KpiCards = () => {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const resp = await api.get('/kpis/stats');
+                setData(resp.data);
+            } catch (err) {
+                console.error("KPI Fetch Error:", err);
+            }
+        };
+
+        fetchStats();
+        const interval = setInterval(fetchStats, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    if (!data) return <div className="loading-placeholder">Loading Stats...</div>;
+
+    // Destructure from the internal state
+    const { mainKpis: stats, assignmentStats: assignments, todaystats: today } = data;
 
   const regToday = today?.total_registered_today || 0;
   const resToday = today?.total_resolved_today || 0;
@@ -130,10 +152,10 @@ const KpiCards = ({ stats, assignments, today }) => {
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
             <div><span className="split-label">Water</span>
-            <span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_water, stats.total_resolved)}</span></div>
+            <span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_water, stats.total_registered_water)}</span></div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Sewerage</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_sewer, stats.total_resolved)}</span></div>
+            <div><span className="split-label">Sewerage</span><span className="split-item" style={{ color: 'var(--green-ok)' }}>{formatWithPerc(stats.total_resolved_sewer, stats.total_registered_sewer)}</span></div>
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2px' }}>
             <span className="split-label" style={{ color: 'yellow' }}>Others </span>
@@ -153,8 +175,8 @@ const KpiCards = ({ stats, assignments, today }) => {
         </div>
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_water, stats.total_wip)}</span></div>
-            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_sewer, stats.total_wip)}</span></div>
+            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_water, stats.total_registered_water)}</span></div>
+            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--yellow-wip)' }}>{formatWithPerc(stats.total_wip_sewer, stats.total_registered_sewer)}</span></div>
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2px' }}>
             <span className="split-label" style={{ color: 'yellow' }}>Others </span>
@@ -194,8 +216,8 @@ const KpiCards = ({ stats, assignments, today }) => {
         </div>
         <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>
-            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_water, stats.total_pending)}</span></div>
-            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_sewer, stats.total_pending)}</span></div>
+            <div><span className="split-label">Water</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_water, stats.total_registered_water)}</span></div>
+            <div><span className="split-label">Sew</span><span className="split-item" style={{ color: 'var(--red-crit)' }}>{formatWithPerc(stats.total_pending_sewer, stats.total_registered_sewer)}</span></div>
 
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '4px' }}>

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS, CategoryScale, LinearScale, PointElement,
@@ -7,8 +8,24 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend);
 
-const MobileAppGraph = ({ data }) => {
-    // If data is missing, we show a loading box that maintains the height
+const MobileAppGraph = () => {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const resp = await api.get('/graph/mobile-app-trend');
+                setData(resp.data);
+            } catch (err) {
+                console.error("Graph Fetch Error:", err);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
     if (!data || !data.labels || data.labels.length === 0) {
         return (
             <div className="report-content ">

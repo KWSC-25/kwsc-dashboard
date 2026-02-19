@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import api from '../utils/api'; // Ensure this path is correct
 
-const SourceSlider = ({ data }) => {
+const SourceSlider = () => {
+    const [data, setData] = useState(null);
     const [typeIndex, setTypeIndex] = useState(0);
     const [subOffset, setSubOffset] = useState(0);
-
     const sourceData = data?.[0] || { sourceName: 'COK', types: [] };
+
     const activeTypes = sourceData.types.filter(t => t.reg > 0);
 
-    const globalTotals = activeTypes.reduce((acc, t) => {
-        acc.reg += t.reg;
-        acc.res += t.res;
-        acc.pen += t.pen;
-        acc.wip += t.wip;
-        return acc;
-    }, { reg: 0, res: 0, pen: 0, wip: 0 });
+    // 1. Fetching Logic moved here
+    useEffect(() => {
+        const fetchSliderData = async () => {
+            try {
+                const resp = await api.get('/source-slider');
+                setData(resp.data);
+            } catch (err) {
+                console.error("Slider Fetch Error:", err);
+            }
+        };
 
+        fetchSliderData();
+        const interval = setInterval(fetchSliderData, 5000);
+        return () => clearInterval(interval);
+    }, []);
+    
     useEffect(() => {
         if (activeTypes.length <= 2) return;
         const mainTimer = setInterval(() => {
@@ -30,6 +40,18 @@ const SourceSlider = ({ data }) => {
         }, 10000);
         return () => clearInterval(subTimer);
     }, [typeIndex]);
+
+    if (!data) return <div className="loading-placeholder">Loading Source Data...</div>;
+
+
+    const globalTotals = activeTypes.reduce((acc, t) => {
+        acc.reg += t.reg;
+        acc.res += t.res;
+        acc.pen += t.pen;
+        acc.wip += t.wip;
+        return acc;
+    }, { reg: 0, res: 0, pen: 0, wip: 0 });
+
 
     const renderTypeSection = (type) => {
         if (!type) return <div className="type-placeholder" />;

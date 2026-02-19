@@ -1,29 +1,50 @@
+import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
 
-const UnderperformingTable = ({ data, TypeData, title, typeColor, iconClass, onEngineerClick}) => {
-const themeClass = typeColor === "#38bdf8" ? "water-theme" : "sewer-theme";
-    const isSewer = themeClass === "sewer-theme";const maxPendingRate = data?.length > 0 
-    ? Math.max(...data.map(e => parseFloat(e.pending_rate))) 
-    : 0;
-// Logic to calculate the Totals for Sewerage
+const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, typeId, subTypeIds }) => {
+    const [state, setState] = useState(null);
+
+    useEffect(() => {
+        const fetchAll = async () => {
+            try {
+                const [perfResp, typeResp] = await Promise.all([
+                    api.get(`/performance/underperforming?typeId=${typeId}`),
+                    api.get(`/type?typeId=${typeId}&subTypeIds=${subTypeIds}`)
+                ]);
+                setState({
+                    performers: perfResp.data,
+                    analytics: typeResp.data
+                });
+            } catch (err) {
+                console.error("Underperforming Fetch Error:", err);
+            }
+        };
+
+        fetchAll();
+        const interval = setInterval(fetchAll, 5000);
+        return () => clearInterval(interval);
+    }, [typeId, subTypeIds]);
+
+    if (!state) return <div className="loading-placeholder">Loading...</div>;
+
+    const { performers: data, analytics: TypeData } = state;
+    const themeClass = typeColor === "#38bdf8" ? "water-theme" : "sewer-theme";
+    const isSewer = themeClass === "sewer-theme";
+
+    const maxPendingRate = data?.length > 0 
+        ? Math.max(...data.map(e => parseFloat(e.pending_rate))) 
+        : 0;
+
     const calculateSewTotals = () => {
         if (!TypeData || TypeData.length === 0) return null;
-        
-        return TypeData.reduce((acc, curr) => {
-            return {
-                subtype_name: "TOTAL",
-                // Use Number() to force addition instead of concatenation
-                total_registered: (Number(acc.total_registered) || 0) + Number(curr.total_registered),
-                total_resolved: (Number(acc.total_resolved) || 0) + Number(curr.total_resolved),
-                total_wip: (Number(acc.total_wip) || 0) + Number(curr.total_wip),
-                total_pending: (Number(acc.total_pending) || 0) + Number(curr.total_pending),
-                isTotalRow: true
-            };
-        }, { 
-            total_registered: 0, 
-            total_resolved: 0, 
-            total_wip: 0, 
-            total_pending: 0 
-        });
+        return TypeData.reduce((acc, curr) => ({
+            subtype_name: "TOTAL",
+            total_registered: (Number(acc.total_registered) || 0) + Number(curr.total_registered),
+            total_resolved: (Number(acc.total_resolved) || 0) + Number(curr.total_resolved),
+            total_wip: (Number(acc.total_wip) || 0) + Number(curr.total_wip),
+            total_pending: (Number(acc.total_pending) || 0) + Number(curr.total_pending),
+            isTotalRow: true
+        }), { total_registered: 0, total_resolved: 0, total_wip: 0, total_pending: 0 });
     };
 
     const sewTotalRow = isSewer ? calculateSewTotals() : null;

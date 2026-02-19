@@ -14,22 +14,11 @@ import HydrantPerformance from '../components/HydrantPerformance';
 import MobileAppGraph from '../components/MobileAppGraph';
 
 const Dashboard = () => {
+      
     const [activeSystem, setActiveSystem] = useState('complaint'); 
-    const [stats, setStats] = useState(null);
-    const [waterPerf, setWaterPerf] = useState([]);
-    const [sewerPerf, setSewerPerf] = useState([]);
-    const [waterType, setWaterType] = useState([]);
-    const [sewerType, setSewerType] = useState([]);
-    const [topPerformers, setTopPerformers] = useState({ waterBest: [], sewBest: [] });
-    const [sourceSliderData, setSourceSliderData] = useState([]);
     const [showSourceSlider, setShowSourceSlider] = useState(false);
-    const [townWaterStats, setTownWaterStats] = useState([]);
-    const [townSewStats, setTownSewStats] = useState([]);
     const [selectedEngineer, setSelectedEngineer] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [hmpStats, setHmpStats] = useState(null); 
-    const [hydrantPerfData, setHydrantPerfData] = useState([]);
-    const [mobileAppTrend, setMobileAppTrend] = useState(null);
     const viewTimerRef = useRef(null);
 
     const handleEngineerClick = async (name, typeId) => {
@@ -43,46 +32,7 @@ const Dashboard = () => {
         }
     };
 
-    const fetchData = useCallback(async () => {
-        try {
-            const [kpi, wP, sP, wI, sI, topP, sSlider, tWater, tSew, hmpKpi, hmpPerf, appTrend] = await Promise.all([
-                api.get('/kpis/stats'),
-                api.get('/performance/underperforming?typeId=2'),
-                api.get('/performance/underperforming?typeId=1'),
-                api.get('/type?typeId=2&subTypeIds=1,13,16'),
-                api.get('/type?typeId=1&subTypeIds=21,108'),
-                api.get('/performance/top-performers'),
-                api.get('/source-slider'),
-                api.get('/towns/town-stats?typeId=2'), 
-                api.get('/towns/town-stats?typeId=1'),
-                api.get('/hmp-kpi'),
-                api.get('/hmp-performance'),
-                api.get('/graph/mobile-app-trend')
-            ]);
 
-            setStats(kpi.data);
-            setWaterPerf(wP.data);
-            setSewerPerf(sP.data);
-            setWaterType(wI.data);
-            setSewerType(sI.data);
-            setTopPerformers(topP.data);
-            setSourceSliderData(sSlider.data);
-            setTownWaterStats(tWater.data);
-            setTownSewStats(tSew.data);
-            setHmpStats(hmpKpi.data.data);
-            setHydrantPerfData(hmpPerf.data);
-            setMobileAppTrend(appTrend.data);
-        } catch (err) {
-            console.error("Live Update Error:", err);
-        }
-    }, []);
-
-    useEffect(() => {
-        const initLoad = async () => { await fetchData(); };
-        initLoad();
-        const interval = setInterval(() => { fetchData(); }, 5000); 
-        return () => clearInterval(interval);
-    }, [fetchData]); 
 
     useEffect(() => {
         const startTimer = (duration) => {
@@ -120,7 +70,6 @@ const Dashboard = () => {
         </select>
     );
 
-    if (!stats) return <div className="loading-screen">Loading Live Dashboard...</div>;
 
     return (
         <div className="dashboard-fixed-container">
@@ -135,11 +84,7 @@ const Dashboard = () => {
                 {activeSystem === 'complaint' ? (
                     <>
                         {/* RESTORED ORIGINAL KPI CARDS DESIGN */}
-                        <KpiCards 
-                            stats={stats.mainKpis} 
-                            assignments={stats.assignmentStats} 
-                            today={stats.todaystats} 
-                        />
+                        <KpiCards />
                         
                         <div className="view-transition-container" style={{ minHeight: '480px' }}>
                             <AnimatePresence mode="wait">
@@ -147,11 +92,11 @@ const Dashboard = () => {
                                 <motion.div key="main" initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
                                     <div className="main-tables-grid animate-fade-in">
                                         <div className="grid-3">
-                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)" data={waterPerf} TypeData={waterType} typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
-                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={sewerPerf} TypeData={sewerType} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
+                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)"  typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16"/>
+                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)"  typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108"/>
                                             <div className="panel" style={{ padding: '15px' }}>
-                                                <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" data={topPerformers.waterBest} onEngineerClick={(name) => handleEngineerClick(name, 2)}/>
-                                                <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" data={topPerformers.sewBest} onEngineerClick={(name) => handleEngineerClick(name, 1)} />
+                                                <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
+                                                <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
                                             </div>
                                         </div>
                                     </div>
@@ -159,14 +104,14 @@ const Dashboard = () => {
                             ) : (
                                 <motion.div key="slider" initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
                                     <div className="slider-wrapper animate-fade-in">
-                                        <SourceSlider data={sourceSliderData} />
+                                        <SourceSlider />
                                     </div>
                                 </motion.div>
                             )}
                             </AnimatePresence>
                         </div>
 
-                        <TownTable waterData={townWaterStats} sewData={townSewStats} />                
+                        <TownTable />                
                         
                         {/* Engineer Detail Modal */}
                         {showModal && selectedEngineer && (
@@ -243,18 +188,18 @@ const Dashboard = () => {
                 ) : (
                     /* HYDRANT SYSTEM VIEW */
                     <div className="hydrant-content-wrapper animate-fade-in" >
-                        <HmpKpiCards data={hmpStats} />
+                        <HmpKpiCards/>
                         {/* THREE COLUMN LAYOUT SECTION */}
                         <div className="hmp-triple-grid">
                             
                             {/* 1. Hydrant Performance (Left Column) */}
                             <div className="hmp-grid-item">
-                                <HydrantPerformance data={hydrantPerfData} />
+                                <HydrantPerformance/>
                             </div>
 
                             {/* 2. Mobile App Graph (Middle Column) */}
                             <div className="hmp-grid-item">
-                                <MobileAppGraph data={mobileAppTrend} />
+                                <MobileAppGraph/>
                             </div>
 
                             {/* 3. Operational Hours (Right Column) */}
