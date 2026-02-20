@@ -13,10 +13,13 @@ import HmpKpiCards from '../components/HmpKpiCards';
 import HydrantPerformance from '../components/HydrantPerformance';
 import MobileAppGraph from '../components/MobileAppGraph';
 import DispatchAging from '../components/DispatchAging';
+import OrderSummary from '../components/orderSummary';
+import GallonSummary from '../components/GallonSummary';
 
 const Dashboard = () => {
       
     const [activeSystem, setActiveSystem] = useState('complaint'); 
+    const [reportView, setReportView] = useState('aging');
     const [showSourceSlider, setShowSourceSlider] = useState(false);
     const [selectedEngineer, setSelectedEngineer] = useState(null);
     const [showModal, setShowModal] = useState(false);
@@ -217,30 +220,49 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="hmp-dual-grid">
-                            {/* Left Side: Aging Table */}
-                            <div className="aging-row-left">
-                                <DispatchAging />
-                            </div>
-
-                            {/* Right Side: Violations Section */}
-                            <div className="violations-section">
-                                <div className="report-content header-red coming-soon-box" style={{ height: '100%' }}>
-                                    <div className="section-header">
-                                        <div className="section-header-red" style={{ /* your styles */ }}>
-                                            <i className="fas fa-exclamation-triangle"></i> RED ZONE VIOLATIONS
-                                        </div>
-                                    </div>
-                                    <div className="placeholder-content" style={{ /* your styles */ }}>
-                                        <div className="pulsing-text" style={{ color: '#ef4444', letterSpacing: '2px' }}>
-                                            COMING SOON...
-                                        </div>
+                        <div className="dashboard-grid">
+                            {/* LEFT SIDE: AGING / SUMMARY REPORTS */}
+                            <div className="report-content header-orange">
+                            <div className='section-header' >
+                                {/* Dynamic Title Class based on View */}
+                                <div className={
+                                    reportView === 'aging' ? 'section-header-aging' : 
+                                    reportView === 'summary' ? 'section-header-orders' : 'section-header-summary'
+                                }>
+                                    <i className={
+                                        reportView === 'aging' ? 'fas fa-hourglass-half' : 
+                                        reportView === 'summary' ? 'fas fa-file-invoice' : 'fas fa-droplet'
+                                    }></i> 
+                                    {reportView === 'aging' ? ' HYDRANTS AGING ANALYSIS' : 
+                                    reportView === 'summary' ? ' HYDRANTS DAILY ORDER SUMMARY' : ' HYDARNTS DAILY GALLONS SUMMARY'}
+                                </div>
+                                    
+                                    {/* Nav Buttons moved inside the header div on the right */}
+                                    <div className="report-nav-bar">
+                                        <button onClick={() => setReportView('aging')} className={`nav-btn-a ${reportView === 'aging' ? 'active' : ''}`}>Aging Analysis</button>
+                                        <button onClick={() => setReportView('summary')} className={`nav-btn-s ${reportView === 'summary' ? 'active' : ''}`}>Order Summary</button>
+                                        <button onClick={() => setReportView('gallons')} className={`nav-btn-o ${reportView === 'gallons' ? 'active' : ''}`}>Gallons Summary</button>
                                     </div>
                                 </div>
+
+                                <div className="table-scroll-container">
+                                    {reportView === 'aging' && <DispatchAging />}
+                                    {reportView === 'summary' && <OrderSummary />}
+                                    {reportView === 'gallons' && <GallonSummary/>}
+                                </div>
+                            </div>
+
+                            {/* RIGHT SIDE: RED ZONE VIOLATIONS (STATIC) */}
+                            <div className="report-content red-zone-header" style={{ border: '1px solid rgba(255, 49, 49, 0.3)' }}>
+                                <div className="section-header">
+                                    <div className="section-header-title" style={{ color: '#ff4c4c' }}>
+                                        <i className="fas fa-shield-virus"></i> RED ZONE VIOLATIONS
+                                    </div>
+                                    
+                                </div>
+                                
                             </div>
                         </div>
-
-
                     </div>
                 )}
             </div>

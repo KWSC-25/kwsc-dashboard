@@ -2001,7 +2001,24 @@ body {
     color: var(--accent-cyan) !important;
     font-size: 0.8rem !important;
     text-transform: uppercase;
+    font-weight: bold;
+
 }
+.hydrant-name {
+    text-align: left !important;
+    color: var(--hmp-cyan) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.total-num {
+    text-align: center !important;
+    color: var(--hmp-cyan) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
 
 .text-left { text-align: left !important; }
 
@@ -2051,6 +2068,29 @@ body {
     color: var(--hmp-cyan);
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
+.section-header-orders {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding-bottom: 6px;
+    color: var(--hmp-cyan);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+.section-header-summary {
+    font-size: 0.9rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+    color: var(--sew-purple);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
 .section-header-purple {
     font-size: 0.9rem;
     font-weight: 900;
@@ -2087,7 +2127,7 @@ body {
     color: red;
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
-.section-header-yellow {
+.section-header-aging {
     font-size: 0.9rem;
     font-weight: 900;
     display: flex;
@@ -2100,7 +2140,7 @@ body {
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
 /* THE MOVING UNDERLINE (The ::after logic from your file) */
-.section-header-title::after, .section-header-red::after {
+.section-header-title::after, .section-header-red::after, .section-header-aging::after, .section-header-summary::after, .section-header-orders::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -2111,7 +2151,9 @@ body {
     box-shadow: 0 0 8px currentColor;
     animation: line-grow 3s infinite ease-in-out;
 }
-.section-header-purple::after, .section-header-green::after, .section-header-yellow::after {
+
+
+.section-header-purple::after, .section-header-green::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -2227,6 +2269,10 @@ body {
     grid-template-columns: 1fr 1fr;
     padding: 10px;
     gap: 100px;
+    border: 1px solid rgba(0, 242, 255, 0.2) !important; /* Light Cyan Border */
+    border-radius: 12px;
+
+
 }
 
 
@@ -2257,10 +2303,10 @@ body {
     text-transform: uppercase;
 }
 
-.val-24 { color: var(--hmp-orange); font-weight: bold; text-align: center; }
-.val-48 { color: var(--hmp-today-border); font-weight: bold; text-align: center; }
-.val-72 { color: red; font-weight: bold; text-align: center; }
-.val-24w { color: var(--hmp-green); font-weight: bold; text-align: center; }
+.val-24 { color: var(--hmp-orange); font-weight: bold; text-align: center; font-size: 0.9rem; }
+.val-48 { color: var(--hmp-today-border); font-weight: bold; text-align: center; font-size: 0.9rem; }
+.val-72 { color: red; font-weight: bold; text-align: center;font-size: 0.9rem; }
+.val-24w { color: var(--hmp-green); font-weight: bold; text-align: center; font-size: 0.9rem; }
 
 .aging-chart-section {
     display: flex;
@@ -2283,7 +2329,7 @@ body {
     
 }
 
-.total-num { display: block; font-size: 2rem; font-weight: 900; color: white; }
+.total-num-aging { display: block; font-size: 2rem; font-weight: 900; color: white; }
 .total-label { font-size: 1rem; color: #94a3b8; }
 
 .chart-legend {
@@ -2294,7 +2340,7 @@ body {
     
 }
 
-.dot {
+.dot-a {
     height: 8px;
     width: 8px;
     border-radius: 50%;
@@ -2303,10 +2349,10 @@ body {
     margin-left: 80px;
 
 }
-.dot.green { background: var(--hmp-green); }
-.dot.yellow { background: var(--hmp-orange); }
-.dot.orange { background:  var(--hmp-today-border);  }
-.dot.red { background: red  ; }
+.dot-a.green { background: var(--hmp-green); }
+.dot-a.yellow { background: var(--hmp-orange); }
+.dot-a.orange { background:  var(--hmp-today-border);  }
+.dot-a.red { background: red  ; }
 
 
 .perc-tag-1 {
@@ -2336,13 +2382,213 @@ body {
 .hmp-dual-grid {
     display: grid;
     /* 2fr for the table, 1fr for the violations box */
-    grid-template-columns: 2fr 1fr; 
+    grid-template-columns: 3fr 1fr; 
     gap: 15px;
-    margin-top: 20px;
+    margin-top:8px;
     align-items: stretch; /* Ensures both boxes are the same height */
 }
 
 /* Ensure the containers don't overflow */
 .aging-row-left, .violations-section {
     min-width: 0;
+}
+
+@keyframes severe-blink {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(141, 34, 34, 0.914); } /* Subtle red tint */
+    100% { background-color: transparent; }
+}
+
+.blink-row {
+    animation: severe-blink 1.5s infinite;
+}
+
+/* Optional: Make the text itself pulse red as well */
+.blink-row .val-72 {
+    color: #ef4444;
+    font-weight: bold;
+}
+/* Table Styles */
+
+
+/* Table Styles - Tightened for Dashboard Fit */
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    /* Reduced from 0.8rem to fit better */
+    font-size: 1rem; 
+    color: #e2e8f0;
+    table-layout: auto;
+}
+
+.summary-table th {
+    background: #0f172a;
+    color: white;
+    /* Tightened padding: 6px vertical, 4px horizontal */
+    padding: 6px 4px; 
+    border: 1px solid #1e293b;
+    font-weight: bold;
+    font-size: 0.8rem; /* Matches your nav buttons */
+    text-align: center;
+    white-space: nowrap; /* Prevents headers from wrapping and adding height */
+}
+
+.summary-table td {
+    /* Reduced from 10px to 4px vertical padding */
+    padding: 8px 6px; 
+    text-align: center;
+    border: 1px solid #1e293b;
+    line-height: 1.2;
+}
+
+.order-summary-container {
+    height: 100%;
+    overflow-y: auto; /* Just in case, prevents breaking the layout */
+}
+
+.hydrant-name {
+    text-align: left !important;
+    padding-left: 8px !important;
+    font-weight: 600;
+}
+
+.footer-total-row td {
+    padding: 6px 4px; /* Slightly more for the footer to stand out */
+    font-weight: 800;
+}
+
+/* Nav Pill Buttons inside the box */
+.report-nav-pill-box {
+    display: flex;
+    gap: 5px;
+    background: #0f172a;
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+}
+
+.report-nav-pill-box button {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: 0.3s;
+}
+
+.report-nav-pill-box button.active {
+    background: #0ea5e9;
+    color: white;
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+}
+/* Dashboard Grid Layout - Keeps Red Zone Static */
+.dashboard-grid { 
+    display: grid; 
+    grid-template-columns: 2.2fr 0.8fr; 
+    gap: 10px; 
+    flex: 1; 
+    min-height: 0;
+    align-items: stretch;
+}
+
+/* Navigation Buttons inside Section Header */
+.report-nav-bar {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn-s {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.nav-btn-s:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn-s.active {
+    background: rgba(0, 242, 255, 0.1);
+    border-color: var(--accent-cyan);
+    color: var(--hmp-cyan);
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+}
+.nav-btn-o {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.nav-btn-o:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn-o.active {
+    background: rgba(0, 242, 255, 0.1);
+    border-color: var(--accent-cyan);
+    color: var(--sew-purple);
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+}
+.nav-btn-a {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.nav-btn-a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn-a.active {
+    background: rgba(0, 242, 255, 0.1);
+    border-color: var(--accent-cyan);
+    color: var(--hmp-orange);
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+}
+
+/* Headers for internal components */
+.inner-report-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.inner-report-header i {
+    font-size: 0.9rem;
+}
+
+.inner-report-header span {
+    font-size: 0.85rem;
+    font-weight: 900;
+    letter-spacing: 1px;
 }

@@ -13,6 +13,7 @@ import hmpKpiRoutes from './routes/hmpKpiRoutes.js';
 import hydPerfRoutes from './routes/hydPerfRoutes.js';
 import appGraphRoutes from './routes/appGraphRoutes.js';
 import agingRoutes from './routes/agingRoutes.js';
+import orderSummaryRoutes from './routes/orderSummaryRoutes.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -30,6 +31,7 @@ app.use('/api', hmpKpiRoutes);
 app.use('/api', hydPerfRoutes);
 app.use('/api/graph', appGraphRoutes);
 app.use('/api/aging', agingRoutes);
+app.use('/api/orders', orderSummaryRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));

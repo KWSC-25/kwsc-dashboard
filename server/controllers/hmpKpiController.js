@@ -39,10 +39,10 @@ export const getHmpKpis = async (req, res) => {
 
         const gallonsQuery = `
         SELECT 
-            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() THEN tt.capacity ELSE 0 END), 0) AS total_gallons_today,
-            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() AND o.order_type not in ('Commercial','Commercial Offline') 
+            COALESCE(SUM(CASE WHEN o.created_at >= CURDATE() THEN tt.capacity ELSE 0 END), 0) AS total_gallons_today,
+            COALESCE(SUM(CASE WHEN o.created_at >= CURDATE() AND o.order_type not in ('Commercial','Commercial Offline') 
                 THEN tt.capacity ELSE 0 END), 0) AS total_gallons_gps_today,
-            COALESCE(SUM(CASE WHEN b.updated_at >= CURDATE() AND o.order_type in ('Commercial','Commercial Offline')
+            COALESCE(SUM(CASE WHEN o.created_at >= CURDATE() AND o.order_type in ('Commercial','Commercial Offline')
                 THEN tt.capacity ELSE 0 END), 0) AS total_gallons_comm_today,
                 
             COALESCE(SUM(tt.capacity), 0) AS total_gallons_month,
@@ -53,7 +53,7 @@ export const getHmpKpis = async (req, res) => {
         FROM billings b
         INNER JOIN orders o ON o.id = b.order_id
         INNER JOIN truck_types tt ON tt.id = o.truck_type
-        WHERE b.status = 2
+        WHERE b.status IN (1,2) 
         AND b.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01 00:00:00')`;
 
         const [otsData] = await hmpDb.execute(otsQuery);

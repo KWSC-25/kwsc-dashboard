@@ -50,9 +50,7 @@ const DispatchAging = () => {
     return (
         <div className="aging-analysis-container">
             <div className="aging-table-section">
-                <div className="section-header-yellow">
-                    <i className="fas fa-hourglass-half"></i> DISPATCHED ORDERS AGING ANALYSIS
-                </div>
+               
                 <table>
                     <thead>
                         <tr>
@@ -68,15 +66,20 @@ const DispatchAging = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.table.map((row, i) => (
-                            <tr key={i}>
-                                <td className="hydrant-name-cell">{row.hydrant_name}</td>
-                                <td className="val-24w">{row.dispatched_less_than_24h}</td>
-                                <td className="val-24">{row.dispatched_24h_to_48h}</td>
-                                <td className="val-48">{row.dispatched_48h_to_72h}</td>
-                                <td className="val-72">{row.dispatched_above_72h}</td>
-                            </tr>
-                        ))}
+                        {data.table.map((row, i) => {
+                            // Check if severe count is greater than 0
+                            const isSevere = row.dispatched_above_72h > 0;
+                            
+                            return (
+                                <tr key={i} className={isSevere ? 'blink-row' : ''}>
+                                    <td className="hydrant-name-cell">{row.hydrant_name}</td>
+                                    <td className="val-24w">{row.dispatched_less_than_24h}</td>
+                                    <td className="val-24">{row.dispatched_24h_to_48h}</td>
+                                    <td className="val-48">{row.dispatched_48h_to_72h}</td>
+                                    <td className="val-72">{row.dispatched_above_72h}</td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
@@ -85,25 +88,25 @@ const DispatchAging = () => {
                 <div className="chart-wrapper">
                     <Doughnut data={chartConfig} options={chartOptions} />
                     <div className="chart-center-text">
-                        <span className="total-num">{data.chart.total_dispatched_ots}</span>
+                        <span className="total-num-aging">{data.chart.total_dispatched_ots}</span>
                         <span className="total-label">TOTAL</span>
                     </div>
                 </div>
                 <div className="chart-legend">
 <div>
-                        <span className="dot green"></span> 
+                        <span className="dot-a green"></span> 
                         &lt; 24 Hrs <span className="perc-tag-1">({getPerc(data.chart.less_24)})</span>
                     </div>
                     <div>
-                        <span className="dot yellow"></span> 
+                        <span className="dot-a yellow"></span> 
                         &gt; 24 Hrs <span className="perc-tag-2">({getPerc(data.chart.d_24_48)})</span>
                     </div>
                     <div>
-                        <span className="dot orange"></span> 
+                        <span className="dot-a orange"></span> 
                         &gt; 48 Hrs <span className="perc-tag-3">({getPerc(data.chart.d_48_72)})</span>
                     </div>
                     <div>
-                        <span className="dot red"></span> 
+                        <span className="dot-a red"></span> 
                         &gt; 72 Hrs <span className="perc-tag-4">({getPerc(data.chart.above_72)})</span>
                     </div>
                 </div>
