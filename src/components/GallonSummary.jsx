@@ -67,7 +67,7 @@ const GallonSummary = () => {
                     ))}
                 </tbody>
                 <tfoot>
-                    <tr className="footer-total-row" style={{ background: 'rgba(210, 98, 220, 0.1)' }}>
+                    <tr className="footer-total-row-o" style={{ background: 'rgba(210, 98, 220, 0.1)' }}>
                         <td style={{ color: 'var(--accent-cyan)' }}>GRAND TOTAL</td>
                         <td>{calculateTotal('commercial_gallons').toLocaleString()}</td>
                         <td>{calculateTotal('gps_online_gallons').toLocaleString()}</td>

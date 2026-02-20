@@ -2455,6 +2455,12 @@ body {
 .footer-total-row td {
     padding: 6px 4px; /* Slightly more for the footer to stand out */
     font-weight: 800;
+    color: var(--hmp-cyan);
+}
+.footer-total-row-o td {
+    padding: 6px 4px; /* Slightly more for the footer to stand out */
+    font-weight: 800;
+    color: var(--sew-purple);
 }
 
 /* Nav Pill Buttons inside the box */
