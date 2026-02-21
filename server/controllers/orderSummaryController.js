@@ -37,7 +37,7 @@ export const getGallonSummaryReport = async (req, res) => {
                 h.name AS hydrant_name,
                 SUM(CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') THEN tt.capacity ELSE 0 END) AS commercial_gallons,
                 SUM(CASE WHEN o.order_type = 'OTS' THEN tt.capacity ELSE 0 END) AS gps_ots_gallons,
-                SUM(CASE WHEN o.order_type = 'Online (GPS)' THEN tt.capacity ELSE 0 END) AS gps_online_gallons,
+                SUM(CASE WHEN o.order_type = 'Online (GPS)' THEN tt.capacity ELSE 0 END) AS gps_online_gallons, 
                 SUM(CASE WHEN o.order_type = 'Dc quota' THEN tt.capacity ELSE 0 END) AS dc_quota_gallons,
                 SUM(CASE WHEN o.order_type = 'Gps(billing)' THEN tt.capacity ELSE 0 END) AS gps_billing_gallons,
                 SUM(CASE WHEN o.order_type = 'Gps(careoff)' THEN tt.capacity ELSE 0 END) AS gps_careoff_gallons,

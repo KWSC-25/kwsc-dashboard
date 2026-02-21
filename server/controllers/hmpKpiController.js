@@ -1,6 +1,6 @@
 import { hmpDb } from "../db.js";
 export const getHmpKpis = async (req, res) => {
-    try {
+    try { 
         const otsQuery = `
         SELECT 
             COALESCE(COUNT(CASE WHEN api_created_at >= CURDATE() THEN 1 END), 0) AS total_ots_today,

@@ -215,7 +215,7 @@ const Dashboard = () => {
                                         </div>
                                     </div>
                                     <div className="placeholder-content">
-                                        <div className="pulsing-text">COMING SOON...</div>
+                                        <div style={{color: 'var(--hmp-green)'}}>COMING SOON...</div>
                                     </div>
                                 </div>
                             </div>
@@ -234,7 +234,7 @@ const Dashboard = () => {
                                         reportView === 'summary' ? 'fas fa-file-invoice' : 'fas fa-droplet'
                                     }></i> 
                                     {reportView === 'aging' ? ' HYDRANTS AGING ANALYSIS' : 
-                                    reportView === 'summary' ? ' HYDRANTS DAILY ORDER SUMMARY' : ' HYDARNTS DAILY GALLONS SUMMARY'}
+                                    reportView === 'summary' ? ' HYDRANTS DAILY ORDER SUMMARY (Created & Dispatched Today)' : ' HYDARNTS DAILY GALLONS SUMMARY (Created, Dispatched & Completed Today)'}
                                 </div>
                                     
                                     {/* Nav Buttons moved inside the header div on the right */}
@@ -253,15 +253,16 @@ const Dashboard = () => {
                             </div>
 
                             {/* RIGHT SIDE: RED ZONE VIOLATIONS (STATIC) */}
-                            <div className="report-content red-zone-header" style={{ border: '1px solid rgba(255, 49, 49, 0.3)' }}>
-                                <div className="section-header">
-                                    <div className="section-header-title" style={{ color: '#ff4c4c' }}>
-                                        <i className="fas fa-shield-virus"></i> RED ZONE VIOLATIONS
+                                <div className="report-content header-green coming-soon-box">
+                                    <div className="section-header">
+                                        <div className="section-header-red">
+                                            <i className="fas fa-shield-virus"></i> RED ZONE VIOLATIONS
+                                        </div>
                                     </div>
-                                    
+                                    <div className="placeholder-content">
+                                        <div style={{color: 'red'}}>COMING SOON...</div>
+                                    </div>
                                 </div>
-                                
-                            </div>
                         </div>
                     </div>
                 )}

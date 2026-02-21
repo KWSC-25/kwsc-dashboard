@@ -205,7 +205,7 @@ const KpiCards = () => {
             </span>
           </div>
           <div>
-            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>UN-ASG::</span>
+            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>UN-ASG:</span>
             <span style={{ fontSize: '0.9rem', color: 'var(--red-crit)', fontWeight: '500' }}>
               {Number(assignments.pending_unassigned).toLocaleString()}
             </span>
