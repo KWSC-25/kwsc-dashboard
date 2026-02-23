@@ -1739,7 +1739,7 @@ body {
                     text-transform: uppercase;
                     letter-spacing: 2px;
                     background: linear-gradient(to right, #fff, #00f2ff);
-                    -webkit-background-clip: text;
+                    background-clip: text;
                     -webkit-text-fill-color: transparent;
                     margin-top: -10px;
                     margin-bottom: -160px;
