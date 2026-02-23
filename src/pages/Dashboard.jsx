@@ -233,7 +233,7 @@ const Dashboard = () => {
                                         reportView === 'aging' ? 'fas fa-hourglass-half' : 
                                         reportView === 'summary' ? 'fas fa-file-invoice' : 'fas fa-droplet'
                                     }></i> 
-                                    {reportView === 'aging' ? ' HYDRANTS AGING ANALYSIS' : 
+                                    {reportView === 'aging' ? ' HYDRANTS AGING ANALYSIS (OTS PENDING ORDERS)' : 
                                     reportView === 'summary' ? ' HYDRANTS DAILY ORDER SUMMARY (Created & Dispatched Today)' : ' HYDARNTS DAILY GALLONS SUMMARY (Created, Dispatched & Completed Today)'}
                                 </div>
                                     
