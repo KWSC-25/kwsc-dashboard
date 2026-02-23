@@ -199,7 +199,7 @@ const KpiCards = () => {
             <div className="kpi-percent2">{calculatePercent(stats.total_pending)}%</div>
           </div>
           <div>
-            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>ASG:: </span>
+            <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'bold', marginRight: '5px' }}>ASG: </span>
             <span style={{ fontSize: '0.9rem', color: 'var(--red-crit)', fontWeight: '500' }}>
               {Number(assignments.pending_assigned).toLocaleString()}
             </span>
