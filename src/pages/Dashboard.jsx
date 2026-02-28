@@ -23,6 +23,7 @@ const Dashboard = () => {
     const [showSourceSlider, setShowSourceSlider] = useState(false);
     const [selectedEngineer, setSelectedEngineer] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const viewTimerRef = useRef(null);
 
     const handleEngineerClick = async (name, typeId) => {
@@ -42,6 +43,12 @@ const Dashboard = () => {
         const startTimer = (duration) => {
             if (viewTimerRef.current) clearTimeout(viewTimerRef.current);
             viewTimerRef.current = setTimeout(() => {
+                // IF POPUP IS OPEN, DO NOT SWITCH SLIDER, JUST RESTART TIMER
+                if (isPopupOpen || showModal) {
+                    startTimer(duration);
+                    return;
+                }
+
                 setShowSourceSlider(prev => {
                     const nextState = !prev;
                     startTimer(nextState ? 15000 : 30000);
@@ -51,7 +58,7 @@ const Dashboard = () => {
         };
         startTimer(60000);
         return () => { if (viewTimerRef.current) clearTimeout(viewTimerRef.current); };
-    }, []);
+    }, [isPopupOpen, showModal]); // Add dependencies here
 
     const SystemSelector = (
         <select 
@@ -96,8 +103,8 @@ const Dashboard = () => {
                                 <motion.div key="main" initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
                                     <div className="main-tables-grid animate-fade-in">
                                         <div className="grid-3">
-                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)"  typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16"/>
-                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)"  typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108"/>
+                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)"  onPopupToggle={setIsPopupOpen} typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16"/>
+                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" onPopupToggle={setIsPopupOpen} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108"/>
                                             <div className="panel" style={{ padding: '15px' }}>
                                                 <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
                                                 <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />

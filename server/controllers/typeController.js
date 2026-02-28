@@ -34,3 +34,32 @@ export const getTypesData = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+
+// Add this to your existing typeController.js
+export const getSubtypeTownBreakdown = async (req, res) => {
+    const { subTypeId } = req.query;
+
+    const query = `
+        SELECT
+            t.town AS town_name_emer,
+            COUNT(c.id) AS total_registered_town,
+            SUM(c.status = 1) AS total_resolved_town,
+            SUM(c.status = 2) AS total_wip_town,
+            SUM(c.status = 0) AS total_pending_town
+        FROM complaint c
+        JOIN towns t ON t.id = c.town_id  
+            AND c.subtype_id = ?
+            AND c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        GROUP BY t.id, t.town
+        ORDER BY t.town ASC;
+    `;
+
+    try {
+        const [results] = await db.execute(query, [subTypeId]);
+        res.json(results);
+    } catch (err) {
+        console.error("Emergency Types Town Breakdown Fetch Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
