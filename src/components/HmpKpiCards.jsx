@@ -44,7 +44,9 @@ const HmpKpiCards = () => {
             pending: ots.pending_ots_today,
             gal_total: gallons.total_gallons_today,
             gal_gps: gallons.total_gallons_gps_today,
-            gal_comm: gallons.total_gallons_comm_today
+            gal_comm: gallons.total_gallons_comm_today,
+            gal_gps_per: Number(gallons.total_gallons_gps_today / gallons.total_gallons_today * 100).toFixed(2),
+            gal_comm_per: Number(gallons.total_gallons_comm_today / gallons.total_gallons_today * 100).toFixed(2)
         },
         monthly: {
             title: "MONTHLY ORDERS",
@@ -63,7 +65,9 @@ const HmpKpiCards = () => {
             pending: ots.pending_ots_month,
             gal_total: gallons.total_gallons_month,
             gal_gps: gallons.total_gallons_gps_month,
-            gal_comm: gallons.total_gallons_comm_month
+            gal_comm: gallons.total_gallons_comm_month,
+            gal_gps_per: Number(gallons.total_gallons_gps_month / gallons.total_gallons_month * 100).toFixed(2),
+            gal_comm_per: Number(gallons.total_gallons_comm_month / gallons.total_gallons_month * 100).toFixed(2)
         }
     };
 
@@ -151,8 +155,8 @@ const HmpKpiCards = () => {
                         </div>
 
                         <div className="hmp-sub-row" style={{border: 'none', paddingTop: '4px'}}>
-                            <div className="hmp-sub-stat">GPS/OTHERS: <span className="label-cyan">{fmt(s.gal_gps)}</span></div>
-                            <div className="hmp-sub-stat">COMMERCIAL: <span className="label-purple">{fmt(s.gal_comm)}</span></div>
+                            <div className="hmp-sub-stat">GPS/OTHERS: <span className="label-cyan">{fmt(s.gal_gps)} <span style={{ fontWeight: 'normal' }}> ({fmt(s.gal_gps_per)}%)</span></span></div>
+                            <div className="hmp-sub-stat">COMMERCIAL: <span className="label-purple">{fmt(s.gal_comm)} <span style={{ fontWeight: 'normal' }}> ({fmt(s.gal_comm_per)}%)</span></span></div>
                         </div>
                     </div>
                 </div>
