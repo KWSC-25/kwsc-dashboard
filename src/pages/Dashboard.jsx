@@ -44,7 +44,7 @@ const Dashboard = () => {
             viewTimerRef.current = setTimeout(() => {
                 setShowSourceSlider(prev => {
                     const nextState = !prev;
-                    startTimer(nextState ? 30000 : 60000);
+                    startTimer(nextState ? 15000 : 30000);
                     return nextState;
                 });
             }, duration);

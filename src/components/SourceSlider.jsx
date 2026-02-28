@@ -37,7 +37,7 @@ const SourceSlider = () => {
     useEffect(() => {
         const subTimer = setInterval(() => {
             setSubOffset(prev => prev + 7);
-        }, 10000);
+        }, 5000);
         return () => clearInterval(subTimer);
     }, [typeIndex]);
 
