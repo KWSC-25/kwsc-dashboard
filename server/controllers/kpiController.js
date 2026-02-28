@@ -84,3 +84,42 @@ FROM (
     res.status(500).json({ error: error.message });
   }
 };
+
+
+export const getKpiTypeBreakdown = async (req, res) => {
+  const { typeId } = req.query;
+  try {
+    // 1. Get subtypes for this specific type to create dynamic columns
+    const [subtypes] = await db.query(
+      "SELECT id, name FROM complaint_subtype WHERE type_id = ?", 
+      [typeId]
+    );
+
+    // 2. Build the dynamic PIVOT SQL
+    const subtypeSql = subtypes.map(s => 
+      `SUM(CASE WHEN c.subtype_id = ${s.id} THEN 1 ELSE 0 END) AS \`${s.name}\``
+    ).join(',\n        ');
+
+    const query = `
+      SELECT 
+        t.name AS town,
+        COUNT(c.id) AS total_pending_town,
+        ${subtypeSql}
+      FROM towns t
+      LEFT JOIN complaint c ON t.id = c.town_id AND c.status = 0 AND c.type_id = ?
+      WHERE c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+      GROUP BY t.id, t.name
+      ORDER BY total_pending_town DESC
+    `;
+
+    const [rows] = await db.query(query, [typeId]);
+    
+    res.json({
+      typeName: subtypes.length > 0 ? 'Loading...' : 'Unknown', // We'll get actual name from frontend map
+      columns: subtypes.map(s => s.name),
+      data: rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
