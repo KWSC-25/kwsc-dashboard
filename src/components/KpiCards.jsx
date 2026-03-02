@@ -95,6 +95,8 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
     );
   };
 
+  const townColWidth = window.innerWidth < 768 ? '110px' : '180px';
+
   return (
     <>
       <div className="kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
@@ -296,8 +298,7 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
 
             {/* Modal Header */}
             <div className="modal-header" style={{ padding: '20px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ color: '#38bdf8', margin: 0, fontSize: '1.5rem', textTransform: 'uppercase' }}>
-                {selectedTypeName} - TOWN DISTRIBUTION
+              <h2 style={{ color: '#ef4444', margin: 0, fontSize: 'clamp(1rem, 4vw, 1.5rem)', textTransform: 'uppercase', fontWeight: '800' }}>                {selectedTypeName} - SUBTYPE BREAKDOWN IN TOWNS
               </h2>
               <button onClick={() => setShowBreakdown(false)}
                 style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '2rem', cursor: 'pointer' }}>&times;</button>
@@ -305,44 +306,152 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
 
             {/* Modal Body */}
             <div className="modal-body" style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-              <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #334155' }}>
+              <div style={{
+                overflow: 'auto', // Changed from overflowX: 'auto' to allow both
+                borderRadius: '8px',
+                border: '1px solid #334155',
+                width: '100%',
+                maxHeight: '70vh', // Sets a limit so the header has something to stick to
+                display: 'block'
+              }}>
                 <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, color: '#f8fafc' }}>
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 20 }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 50 }}>
                     <tr style={{ background: '#0f172a' }}>
-                      <th style={{ padding: '15px', textAlign: 'left', position: 'sticky', left: 0, background: '#0f172a', borderBottom: '2px solid #334155', minWidth: '180px' }}>TOWN</th>
-                      <th style={{ padding: '15px', textAlign: 'center', position: 'sticky', left: '180px', background: '#0f172a', borderBottom: '2px solid #334155', color: '#ef4444', borderRight: '2px solid #334155' }}>TOTAL PENDING</th>
+                      {/* CORNER CELL 1: Sticky Left and Top */}
+                      <th style={{
+                        padding: '12px 8px',
+                        textAlign: 'left',
+                        position: 'sticky',
+                        left: 0,
+                        top: 0, // Pins to top
+                        background: '#0f172a',
+                        borderBottom: '2px solid #334155',
+                        minWidth: townColWidth,
+                        zIndex: 60, // Highest priority
+                        whiteSpace: 'normal',
+                        lineHeight: '1.2'
+                      }}>TOWN</th>
+
+                      {/* CORNER CELL 2: Sticky Left and Top */}
+                      <th style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        position: 'sticky',
+                        left: townColWidth,
+                        top: 0, // Pins to top
+                        background: '#0f172a',
+                        borderBottom: '2px solid #334155',
+                        color: '#ef4444',
+                        borderRight: '2px solid #334155',
+                        zIndex: 60, // Highest priority
+                        whiteSpace: 'normal',
+                        lineHeight: '1.2'
+                      }}>TOTAL PENDING</th>
+
+                      {/* SUBTYPE HEADERS: Sticky Top only */}
                       {breakdownData.columns.map((col, i) => (
-                        <th key={i} style={{ padding: '15px', textAlign: 'center', borderBottom: '2px solid #334155', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                        <th key={i} style={{
+                          padding: '10px',
+                          textAlign: 'center',
+                          position: 'sticky',
+                          top: 0, // Pins to top
+                          background: '#0f172a',
+                          borderBottom: '2px solid #334155',
+                          fontSize: '0.75rem',
+                          whiteSpace: 'normal',
+                          minWidth: '100px',
+                          lineHeight: '1.1',
+                          zIndex: 40 // Lower than corners
+                        }}>
                           {col.toUpperCase()}
                         </th>
                       ))}
                     </tr>
                   </thead>
+                  {/* ... Rest of your <tbody> and <tfoot> remain the same ... */}
                   <tbody>
                     {breakdownData.data.map((row, i) => (
                       <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
-                        <td style={{ padding: '12px 15px', position: 'sticky', left: 0, background: '#1e293b', borderBottom: '1px solid #334155', fontWeight: 'bold' }}>
-                          {row.town}
+                        <td style={{
+                          padding: '10px 8px',
+                          position: 'sticky',
+                          left: 0,
+                          background: '#1e293b', // Solid color hides scrolling numbers
+                          borderBottom: '1px solid #334155',
+                          fontWeight: 'bold',
+                          fontSize: window.innerWidth < 768 ? '0.75rem' : '0.85rem',
+                          whiteSpace: 'normal', // Allow 2 lines
+                          wordBreak: 'break-word',
+                          zIndex: 10
+                        }}>
+                          {row.town.replace(/\s*TOWN\s*$/i, '')}
                         </td>
-                        <td style={{ padding: '12px 15px', textAlign: 'center', position: 'sticky', left: '180px', background: '#1e293b', borderBottom: '1px solid #334155', color: '#f87171', fontWeight: '800', borderRight: '2px solid #334155' }}>
+                        <td style={{
+                          padding: '10px 8px',
+                          textAlign: 'center',
+                          position: 'sticky',
+                          left: townColWidth,
+                          background: '#1e293b', // Solid color hides scrolling numbers
+                          borderBottom: '1px solid #334155',
+                          color: '#f87171',
+                          fontWeight: '800',
+                          borderRight: '2px solid #334155',
+                          zIndex: 10
+                        }}>
                           {row.total_pending_town}
                         </td>
                         {breakdownData.columns.map((col, j) => (
-                          <td key={j} style={{ padding: '12px 15px', textAlign: 'center', borderBottom: '1px solid #334155', opacity: row[col] > 0 ? 1 : 0.2, color: row[col] > 0 ? '#fbbf24' : '#94a3b8' }}>
+                          <td key={j} style={{
+                            padding: window.innerWidth < 768 ? '10px 4px' : '12px 15px',
+                            textAlign: 'center',
+                            borderBottom: '1px solid #334155',
+                            fontSize: window.innerWidth < 768 ? '0.75rem' : '0.85rem',
+                            opacity: row[col] > 0 ? 1 : 0.2,
+                            color: row[col] > 0 ? '#fbbf24' : '#94a3b8',
+                            minWidth: window.innerWidth < 768 ? '50px' : '80px'
+                          }}>
                             {row[col] || 0}
                           </td>
                         ))}
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 20 }}>
+                  <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 30 }}>
                     <tr style={{ background: '#0f172a', fontWeight: 'bold' }}>
-                      <td style={{ padding: '15px', position: 'sticky', left: 0, background: '#0f172a', borderTop: '2px solid #38bdf8' }}>GRAND TOTAL</td>
-                      <td style={{ padding: '15px', textAlign: 'center', position: 'sticky', left: '180px', background: '#0f172a', borderTop: '2px solid #38bdf8', color: '#ef4444', borderRight: '2px solid #334155' }}>
+                      {/* Label Cell */}
+                      <td style={{
+                        padding: '12px 8px',
+                        position: 'sticky',
+                        left: 0,
+                        background: '#0f172a',
+                        borderTop: '2px solid #ef4444',
+                        zIndex: 31
+                      }}>GRAND TOTAL</td>
+
+                      {/* Total Count Cell */}
+                      <td style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        position: 'sticky',
+                        left: townColWidth,
+                        background: '#0f172a',
+                        borderTop: '2px solid #ef4444',
+                        color: '#ef4444',
+                        borderRight: '2px solid #334155',
+                        zIndex: 31
+                      }}>
                         {breakdownData.data.reduce((sum, r) => sum + (Number(r.total_pending_town) || 0), 0)}
                       </td>
+
+                      {/* Subtype Total Cells */}
                       {breakdownData.columns.map((col, i) => (
-                        <td key={i} style={{ padding: '15px', textAlign: 'center', borderTop: '2px solid #38bdf8', color: '#38bdf8' }}>
+                        <td key={i} style={{
+                          padding: '12px 10px',
+                          textAlign: 'center',
+                          background: '#0f172a',
+                          borderTop: '2px solid #38bdf8',
+                          color: '#38bdf8'
+                        }}>
                           {breakdownData.data.reduce((sum, r) => sum + (Number(r[col]) || 0), 0)}
                         </td>
                       ))}

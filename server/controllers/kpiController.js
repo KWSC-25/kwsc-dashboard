@@ -68,7 +68,7 @@ FROM (
 ) AS assignment_status;
   `);
 
-  //today
+    //today
     const [today] = await db.query(`
     SELECT
         SUM(DATE(created_at) = CURDATE()) AS total_registered_today,
@@ -76,9 +76,11 @@ FROM (
 
     FROM complaint
     `);
-    res.json({mainKpis: rows[0],
+    res.json({
+      mainKpis: rows[0],
       assignmentStats: rows2[0],
-      todaystats: today[0]});
+      todaystats: today[0]
+    });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -89,37 +91,46 @@ FROM (
 export const getKpiTypeBreakdown = async (req, res) => {
   const { typeId } = req.query;
   try {
-    // 1. Get subtypes for this specific type to create dynamic columns
+    // 1. Get subtypes
     const [subtypes] = await db.query(
-      "SELECT id, name FROM complaint_subtype WHERE type_id = ?", 
+      "SELECT id, title FROM sub_types WHERE type_id = ?",
       [typeId]
     );
 
-    // 2. Build the dynamic PIVOT SQL
-    const subtypeSql = subtypes.map(s => 
-      `SUM(CASE WHEN c.subtype_id = ${s.id} THEN 1 ELSE 0 END) AS \`${s.name}\``
-    ).join(',\n        ');
+    // 2. Build dynamic columns (handle case where no subtypes exist)
+    let subtypeSql = "";
+    if (subtypes.length > 0) {
+      subtypeSql = subtypes.map(s =>
+        `SUM(CASE WHEN c.subtype_id = ${s.id} THEN 1 ELSE 0 END) AS \`${s.title}\``
+      ).join(',\n        ');
+      subtypeSql = ",\n        " + subtypeSql; // Add leading comma
+    }
 
+    // 3. The Query
+    // IMPORTANT: Date filter must be inside the LEFT JOIN 'ON' condition 
+    // or the 'WHERE' clause will remove towns with 0 complaints.
     const query = `
       SELECT 
-        t.name AS town,
-        COUNT(c.id) AS total_pending_town,
+        t.town AS town,
+        COUNT(c.id) AS total_pending_town
         ${subtypeSql}
       FROM towns t
-      LEFT JOIN complaint c ON t.id = c.town_id AND c.status = 0 AND c.type_id = ?
+      LEFT JOIN complaint c ON t.id = c.town_id 
+        AND c.status = 0 
+        AND c.type_id = ?
       WHERE c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-      GROUP BY t.id, t.name
+      GROUP BY t.id, t.town
       ORDER BY total_pending_town DESC
     `;
 
     const [rows] = await db.query(query, [typeId]);
-    
+
     res.json({
-      typeName: subtypes.length > 0 ? 'Loading...' : 'Unknown', // We'll get actual name from frontend map
-      columns: subtypes.map(s => s.name),
+      columns: subtypes.map(s => s.title),
       data: rows
     });
   } catch (error) {
+    console.error("SQL Error:", error); // This prints the real error to your terminal
     res.status(500).json({ error: error.message });
   }
 };

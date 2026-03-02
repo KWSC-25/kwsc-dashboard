@@ -4,6 +4,6 @@ import { getKpiStats, getKpiTypeBreakdown } from '../controllers/kpiController.j
 const router = express.Router();
 
 router.get('/stats', getKpiStats);
-router.get('/pending-breakdown', getKpiTypeBreakdown);
+router.get('/type-breakdown', getKpiTypeBreakdown);
 
 export default router;
