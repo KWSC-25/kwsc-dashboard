@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, AlertCircle, Clock } from 'lucide-react';
 
 const Login = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -26,7 +26,7 @@ const Login = () => {
     }, [countdown, attemptsLeft]);
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // This stops the page from reloading
+        e.preventDefault();
         if (countdown > 0) return;
 
         setLoading(true);
@@ -41,12 +41,8 @@ const Login = () => {
                 navigate('/dashboard');
             }
         } catch (err) {
-            // 1. Log the error to see exactly what the server sends
-            console.error("Login Error:", err.response?.data);
-
             const isRateLimited = err.response?.status === 429;
             
-            // Calculate new attempts carefully
             setAttemptsLeft((prev) => {
                 const nextValue = prev - 1;
                 
@@ -55,8 +51,8 @@ const Login = () => {
                     setError('Security Lock: Too many failed attempts.');
                     return 0;
                 } else {
-                    // Set the error message based on server response or default
-                    setError(err.response?.data?.message || 'Invalid email or password');
+                    // Added dynamic attempt counting to the error message
+                    setError(`${err.response?.data?.message || 'Invalid credentials'}. Attempts remaining: ${nextValue}`);
                     return nextValue;
                 }
             });
@@ -76,6 +72,27 @@ const Login = () => {
                 </div>
 
                 <div className="login-body">
+                    {/* RED TIMER BANNER - Only shows when locked */}
+                    {countdown > 0 && (
+                        <div style={{
+                            background: '#fee2e2',
+                            border: '1px solid #ef4444',
+                            color: '#b91c1c',
+                            padding: '10px',
+                            borderRadius: '8px',
+                            marginBottom: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            fontWeight: 'bold',
+                            animation: 'pulse 2s infinite'
+                        }}>
+                            <Clock size={18} />
+                            SYSTEM LOCKED: TRY AGAIN IN {countdown}s
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="login-form">
                         <div className="input-group">
                             <label className="input-label">Email</label>
@@ -122,8 +139,12 @@ const Login = () => {
                             type="submit"
                             disabled={loading || countdown > 0}
                             className="login-submit-btn"
+                            style={{
+                                opacity: countdown > 0 ? 0.6 : 1,
+                                cursor: countdown > 0 ? 'not-allowed' : 'pointer'
+                            }}
                         >
-                            {loading ? 'Checking...' : countdown > 0 ? `Locked (${countdown}s)` : 'Sign In'}
+                            {loading ? 'Checking...' : countdown > 0 ? 'Wait for Unlock' : 'Sign In'}
                         </button>
                     </form>
 
