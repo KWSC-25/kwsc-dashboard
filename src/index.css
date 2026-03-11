@@ -2814,44 +2814,139 @@ body {
 .login-footer { margin-top: 40px; text-align: center; }
 .login-footer p { color: #94a3b8; font-size: 0.7rem; font-weight: 500; }
 
-.selector-card {
-    background: #ffffff !important; /* Force white background */
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    width: 300px;
-    border: 2px solid #e2e8f0;
+.selector-container {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+    background: #f8fafc;
+    padding: 40px 20px;
+}
+
+.selector-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.welcome-text {
+    color: #1e293b;
+    font-size: 2rem;
+    margin: 10px 0 5px 0;
+    font-weight: 300;
+}
+
+.welcome-text span {
+    font-weight: 700;
+    color: #1a335d;
+}
+
+.welcome-subtext {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+/* Grid Layout for 6 boxes */
+.selector-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    max-width: 1100px;
+    width: 100%;
+}
+
+.selector-card {
+    background: #ffffff;
+    padding: 30px 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .selector-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     border-color: #2563eb;
-    box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Force the text to be visible */
+.disabled-card {
+    cursor: not-allowed;
+    opacity: 0.7;
+    background: #f1f5f9;
+}
+
+.disabled-card:hover {
+    transform: none;
+    border-color: #e2e8f0;
+}
+
+.coming-soon-tag {
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    background: #94a3b8;
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 35px;
+    transform: rotate(45deg);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.icon-wrapper {
+    margin-bottom: 15px;
+}
+
 .selector-card h3 {
-    margin-top: 20px !important;
-    margin-bottom: 10px !important;
-    color: #1e293b !important; /* Dark Blue/Slate */
-    font-size: 1.25rem !important;
+    margin: 10px 0 !important;
+    color: #1e293b !important;
+    font-size: 1.1rem !important;
     font-weight: 700 !important;
 }
 
 .selector-card p {
-    color: #64748b !important; /* Slate Gray */
-    font-size: 0.95rem !important;
-    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.85rem !important;
     line-height: 1.4 !important;
 }
 
-/* Fix the logout button appearance */
+/* RESPONSIVE DESIGN */
+
+/* Tablets: 2 columns */
+@media (max-width: 1024px) {
+    .selector-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 700px;
+    }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 768px) {
+    .selector-container {
+        padding-top: 20px;
+    }
+    
+    .welcome-text {
+        font-size: 1.5rem;
+    }
+
+    .selector-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .selector-card {
+        padding: 25px 15px;
+    }
+}
+
 .selector-logout {
     margin-top: 40px;
     padding: 10px 20px;
@@ -2866,50 +2961,4 @@ body {
 
 .selector-logout:hover {
     background: #fecaca;
-}
-
-/* Mobile and Tablet Adjustments */
-@media (max-width: 768px) {
-    .selector-container {
-        padding: 20px;
-        height: auto !important; /* Allow scrolling on small screens */
-        min-height: 100vh;
-        justify-content: flex-start !important; /* Start from top so logo isn't cut off */
-        padding-top: 50px;
-    }
-
-    /* Stack the cards vertically */
-    .selector-container > div[style*="display: flex"] {
-        flex-direction: column !important;
-        gap: 20px !important;
-        width: 100%;
-        align-items: center;
-    }
-
-    .selector-card {
-        width: 90% !important; /* Take up most of the screen width */
-        max-width: 320px;
-        padding: 30px 20px !important;
-    }
-
-    .selector-card h3 {
-        font-size: 1.1rem !important;
-    }
-
-    .selector-logout {
-        margin-top: 30px;
-        margin-bottom: 30px;
-    }
-}
-
-/* Extra small screens (Phones) */
-@media (max-width: 480px) {
-    .selector-container h2 {
-        font-size: 1.4rem !important;
-        text-align: center;
-    }
-    
-    .selector-card {
-        padding: 20px !important;
-    }
 }
