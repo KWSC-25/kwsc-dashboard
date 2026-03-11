@@ -1727,23 +1727,50 @@ body {
 }
 
 /* hmp css here... */
-                .hmp-header-main {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 10px 0;
-                }
-                .title-group h1 {
-                    font-size: 1.5rem;
-                    font-weight: 900;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    background: linear-gradient(to right, #fff, #00f2ff);
-                    background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    margin-top: -10px;
-                    margin-bottom: -160px;
-                }
+    .hmp-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    width: 100%;
+}
+
+.title-group h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(to right, #fff, #00f2ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0; /* REMOVED negative margins that caused overlap */
+}
+
+/* Mobile Responsive Header */
+@media screen and (max-width: 768px) {
+    .hmp-header-main {
+        flex-direction: column; /* Stack Title and Buttons */
+        gap: 15px;
+        text-align: left;
+        margin-left: 0.5rem;
+    }
+
+    .header-right-actions {
+        width: 100%;
+        justify-content: center;
+        gap: 5px !important;
+    }
+
+    .title-group h1 {
+        font-size: 1.2rem;
+    }
+    
+    .title-group h1 small {
+        display: block; /* Put the sub-heading on a new line on mobile */
+        font-size: 0.9rem !important;
+    }
+}
                 .data-sync-badge {
                     font-size: 0.65rem;
                     font-weight: 700;
@@ -1754,6 +1781,8 @@ body {
                     box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
                 }
                 .data-sync-badge i { margin-right: 5px; }
+
+                
 /* hmp kpi here.. */
 :root {
     --hmp-bg-base: #111827;
@@ -1912,6 +1941,14 @@ body {
         gap: 10px;
     }
 
+    .hmp-main-row {
+        flex-direction: column !important; /* Stack Label and Total */
+        align-items: center !important;
+        text-align: center;
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+
     .hmp-card {
         padding: 8px 10px;
         min-height: 90px;
@@ -1935,12 +1972,13 @@ body {
 }
 
 /* Extra small mobile adjustments */
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 320px) {
     .hmp-kpi-grid {
-        gap: 8px;
+        grid-template-columns: 1fr !important; /* 1 card per row on small phones */
     }
-    .hmp-card {
-        padding: 6px 8px;
+    
+    .hmp-group-label {
+        font-size: 0.85rem !important;
     }
 }
 
@@ -2608,7 +2646,7 @@ body {
     }
     
     .hydrant-content-wrapper {
-        padding-top: 100px; /* More space for the stacked mobile header */
+        padding-top: 20px; /* More space for the stacked mobile header */
     }
 
     .hmp-header-main h1 {
@@ -2775,3 +2813,103 @@ body {
 
 .login-footer { margin-top: 40px; text-align: center; }
 .login-footer p { color: #94a3b8; font-size: 0.7rem; font-weight: 500; }
+
+.selector-card {
+    background: #ffffff !important; /* Force white background */
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 300px;
+    border: 2px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.selector-card:hover {
+    transform: translateY(-8px);
+    border-color: #2563eb;
+    box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+}
+
+/* Force the text to be visible */
+.selector-card h3 {
+    margin-top: 20px !important;
+    margin-bottom: 10px !important;
+    color: #1e293b !important; /* Dark Blue/Slate */
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+}
+
+.selector-card p {
+    color: #64748b !important; /* Slate Gray */
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+}
+
+/* Fix the logout button appearance */
+.selector-logout {
+    margin-top: 40px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #fee2e2;
+    background: #fff1f1;
+    color: #dc2626;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.selector-logout:hover {
+    background: #fecaca;
+}
+
+/* Mobile and Tablet Adjustments */
+@media (max-width: 768px) {
+    .selector-container {
+        padding: 20px;
+        height: auto !important; /* Allow scrolling on small screens */
+        min-height: 100vh;
+        justify-content: flex-start !important; /* Start from top so logo isn't cut off */
+        padding-top: 50px;
+    }
+
+    /* Stack the cards vertically */
+    .selector-container > div[style*="display: flex"] {
+        flex-direction: column !important;
+        gap: 20px !important;
+        width: 100%;
+        align-items: center;
+    }
+
+    .selector-card {
+        width: 90% !important; /* Take up most of the screen width */
+        max-width: 320px;
+        padding: 30px 20px !important;
+    }
+
+    .selector-card h3 {
+        font-size: 1.1rem !important;
+    }
+
+    .selector-logout {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+}
+
+/* Extra small screens (Phones) */
+@media (max-width: 480px) {
+    .selector-container h2 {
+        font-size: 1.4rem !important;
+        text-align: center;
+    }
+    
+    .selector-card {
+        padding: 20px !important;
+    }
+}

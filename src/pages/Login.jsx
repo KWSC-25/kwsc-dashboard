@@ -38,7 +38,7 @@ const Login = () => {
             if (res.data.success) {
                 sessionStorage.setItem('token', res.data.token);
                 setAttemptsLeft(3);
-                navigate('/dashboard');
+                navigate('/select');
             }
         } catch (err) {
             const isRateLimited = err.response?.status === 429;

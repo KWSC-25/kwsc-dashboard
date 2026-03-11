@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import Header from '../components/Header';
 import KpiCards from '../components/KpiCards';
@@ -17,8 +18,9 @@ import OrderSummary from '../components/orderSummary';
 import GallonSummary from '../components/GallonSummary';
 
 const Dashboard = () => {
-      
-    const [activeSystem, setActiveSystem] = useState('complaint'); 
+    const location = useLocation();
+    // It checks if 'location.state.initialTab' exists; otherwise, it defaults to 'complaint'
+    const [activeSystem, setActiveSystem] = useState(location.state?.initialTab || 'complaint');
     const [reportView, setReportView] = useState('aging');
     const [showSourceSlider, setShowSourceSlider] = useState(false);
     const [selectedEngineer, setSelectedEngineer] = useState(null);
@@ -51,12 +53,12 @@ const Dashboard = () => {
 
                 setShowSourceSlider(prev => {
                     const nextState = !prev;
-                    startTimer(nextState ? 15000 : 30000);
+                    startTimer(nextState ? 15000 : 120000);
                     return nextState;
                 });
             }, duration);
         };
-        startTimer(60000);
+        startTimer(120000);
         return () => { if (viewTimerRef.current) clearTimeout(viewTimerRef.current); };
     }, [isPopupOpen, showModal]); // Add dependencies here
 

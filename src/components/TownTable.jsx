@@ -77,7 +77,7 @@ const TownTable = () => {
         if (selectedTown) return; 
         const interval = setInterval(() => {
             setPage((prev) => isMobile ? (prev < 2 ? 2 : 0) : (prev + 1) % 4);
-        }, 15000);
+        }, 30000);
         return () => clearInterval(interval);
     }, [isMobile, selectedTown]);
 
