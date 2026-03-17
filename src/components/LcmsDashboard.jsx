@@ -98,7 +98,7 @@ const LcmsDashboard = () => {
     return (
         <div className="lcms-one-view-wrapper">
             <div className="lcms-ceo-header">
-                <span className="tag">LITIGATION DASHBOARD</span>
+                <span className="tag">LITIGATION CEO DASHBOARD</span>
             </div>
 
             <div className="lcms-kpi-row">
