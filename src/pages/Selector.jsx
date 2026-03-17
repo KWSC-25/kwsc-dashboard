@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Droplets, LogOut, Construction, ShieldAlert, BarChart3, Users } from 'lucide-react';
+import { LayoutDashboard, Droplets, LogOut, Construction, ShieldAlert, BarChart3, Users , Scale} from 'lucide-react';
 
 const Selector = () => {
     const navigate = useNavigate();
@@ -28,19 +28,22 @@ const Selector = () => {
             path: '/dashboard'
         },
         {
+            id: 'lcms',
+            title: 'LCMS Dashboard',
+            desc: 'Legal Case Management System',
+            icon: <Scale size={40} color="#5fb11c" />,
+            active: true,
+            path: '/dashboard'
+
+        },
+        {
             id: 'inventory',
             title: 'Manhole Inventory System',
             desc: 'Manhole and asset tracking utility',
             icon: <Construction size={40} color="#64748b" />,
             active: false
         },
-        {
-            id: 'security',
-            title: 'New Dashboard',
-            desc: '',
-            icon: <ShieldAlert size={40} color="#64748b" />,
-            active: false
-        },
+
         {
             id: 'analytics',
             title: 'New Dashboard',

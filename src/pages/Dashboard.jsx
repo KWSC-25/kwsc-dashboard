@@ -16,6 +16,8 @@ import MobileAppGraph from '../components/MobileAppGraph';
 import DispatchAging from '../components/DispatchAging';
 import OrderSummary from '../components/orderSummary';
 import GallonSummary from '../components/GallonSummary';
+import LcmsHeader from '../components/LcmsHeader';
+import LcmsDashboard from '../components/LcmsDashboard';
 
 const Dashboard = () => {
     const location = useLocation();
@@ -80,21 +82,24 @@ const Dashboard = () => {
         >
             <option value="complaint">COMPLAINT SYSTEM</option>
             <option value="hydrant">HYDRANT SYSTEM</option>
+            <option value="lcms">LCMS DASHBOARD</option>
         </select>
     );
 
 
     return (
         <div className="dashboard-fixed-container">
-            {/* Header Logic: Complaint vs Hydrant */}
+            {/* Header Logic */}
             {activeSystem === 'complaint' ? (
                 <Header selector={SystemSelector} /> 
-            ) : (
+            ) : activeSystem === 'hydrant' ? (
                 <HmpHeader>{SystemSelector}</HmpHeader>
+            ) : (
+                <LcmsHeader>{SystemSelector}</LcmsHeader> 
             )}
             
             <div className="content-padding main-scroll-area">
-                {activeSystem === 'complaint' ? (
+                {activeSystem === 'complaint' && (
                     <>
                         {/* RESTORED ORIGINAL KPI CARDS DESIGN */}
                         <KpiCards />
@@ -198,7 +203,8 @@ const Dashboard = () => {
                             </div>
                         )}
                     </>
-                ) : (
+                )}
+                {activeSystem === 'hydrant' && (
                     /* HYDRANT SYSTEM VIEW */
                     <div className="hydrant-content-wrapper animate-fade-in" >
                         <HmpKpiCards/>
@@ -274,6 +280,9 @@ const Dashboard = () => {
                                 </div>
                         </div>
                     </div>
+                )}
+                {activeSystem === 'lcms' && (
+                <LcmsDashboard /> // We will create this
                 )}
             </div>
         </div>

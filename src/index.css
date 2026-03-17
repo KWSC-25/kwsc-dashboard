@@ -9,6 +9,10 @@
   --yellow-wip: #fbbf24;
   --green-ok: #4ade80;
   --border-color: #334155;
+ --lcms-gold: #d4af37;
+    --lcms-navy: #0f172a;
+    --lcms-card-bg: #1e293b;
+    --lcms-blue: #38bdf8;
 }
 
 body {
@@ -2961,4 +2965,243 @@ body {
 
 .selector-logout:hover {
     background: #fecaca;
+}
+/* 
+lcms styling  */
+.lcms-one-view-wrapper {
+    background: #0f172a;
+    padding: 20px 25px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.lcms-ceo-header { margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+.lcms-ceo-header .tag { color: #d4af37; font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; }
+
+/* KPI CARDS - COMPLAINT SYSTEM STYLE */
+.lcms-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.kpi-card-simple {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.border-red { border-left: 5px solid #ef4444; }
+.border-blue { border-left: 5px solid #3b82f6; }
+.border-purple { border-left: 5px solid #a78bfa; }
+.border-green { border-left: 5px solid #10b981; }
+.border-yellow { border-left: 5px solid #97b910; }
+
+
+.kpi-card-simple label { display: block; color: #94a3b8; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+.kpi-card-simple .val { font-size: 2.5rem; font-weight: 900; color: #ffffff; line-height: 1; }
+.kpi-card-simple .sub { font-size: 0.8rem; color: #97ca2f; margin-top: 8px; font-weight: 700; }
+.kpi-card-simple .sub1 { font-size: 0.8rem; color: #ca7f2f; margin-top: 8px; font-weight: 700; }
+
+.color-red { color: #ef4444 !important; }
+.color-yellow { color: #97b910 !important; }
+.color-green { color: #4ade80 !important; }
+.icon-red { position: absolute; right: 20px; top: 20px; color: #ef4444; opacity: 0.6; }
+.icon-yellow { position: absolute; right: 20px; top: 20px; color: #97b910; opacity: 0.6; }
+
+/* SIDE-BY-SIDE TABLES */
+.lcms-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.lcms-half-panel {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    max-height: fit-content; /* Closes the table area after content */
+}
+
+.panel-header-inline { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+.badge-lit { background: #d4af37; color: #000; font-size: 0.65rem; font-weight: 900; padding: 3px 10px; border-radius: 4px; }
+.panel-header-inline h3 { color: #ffffff; font-size: 1rem; font-weight: 900; margin: 0; }
+
+.table-container-fixed {
+    overflow: hidden;
+}
+
+.lcms-one-pager-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.lcms-one-pager-table th { text-align: left; color: #94a3b8; font-size: 0.75rem; padding: 10px; border-bottom: 2px solid #334155; }
+.lcms-one-pager-table td { 
+    padding: 12px 10px; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    vertical-align: top;
+    color: #ffffff !important; /* Force all text to white */
+    font-weight: 700; /* Make all text bold */
+    font-size: 0.85rem; /* Make text a little bigger */
+}
+
+.cell-main { color: #d4af37; font-weight: 900; font-size: 0.9rem; margin-bottom: 3px; }
+.cell-sub { color: #ffffff; line-height: 1.3; font-weight: 600; opacity: 0.9; }
+
+.date-box { 
+    background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 5px 8px; 
+    border-radius: 4px; font-weight: 900; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;
+    width: fit-content;
+}
+.name-box { 
+     color: #71f8cb; padding: 5px 8px; 
+    border-radius: 4px; font-weight: 900; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;
+    width: fit-content;
+}
+
+.matter-text { color: #38bdf8; font-weight: 800; margin-bottom: 8px; font-size: 0.85rem; }
+.dept-action-btn {
+    background: #0f172a; border: 1px solid #475569; color: #ffffff; padding: 8px 10px; 
+    border-radius: 6px; cursor: pointer; width: 100%; text-align: left; font-size: 0.75rem;
+    font-weight: 800; display: flex; justify-content: space-between; align-items: center;
+}
+
+/* DARKER VISIBLE BLINKING */
+.row-passed { opacity: 0.5; filter: grayscale(0.5); }
+.row-next-glow { 
+    background: rgba(212, 175, 55, 0.15); 
+    animation: alertBlink 1.5s infinite; 
+    border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+@keyframes alertBlink { 
+    0%, 100% { background: rgba(212, 175, 55, 0.1); } 
+    50% { background: rgba(212, 175, 55, 0.4); } 
+}
+
+/* MODAL */
+.lcms-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
+.lcms-modal { background: #1e293b; width: 500px; padding: 30px; border-radius: 16px; border: 2px solid #d4af37; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+.modal-head { color: #ffffff; font-weight: 900; font-size: 1.1rem; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.modal-body { color: #ffffff; font-size: 1rem; line-height: 1.6; font-weight: 600; }
+.modal-close { width: 100%; margin-top: 25px; padding: 12px; background: #d4af37; border: none; font-weight: 900; border-radius: 8px; cursor: pointer; color: #000; }
+
+/* MOBILE STYLING */
+@media screen and (max-width: 768px) {
+    /* 1. Reset wrapper for mobile */
+    .lcms-one-view-wrapper {
+        height: auto;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    /* 2. KPI Horizontal Scroll */
+    .lcms-kpi-row {
+        display: flex;
+        overflow-x: auto;
+        gap: 12px;
+        padding-bottom: 15px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .kpi-card-simple {
+        min-width: 240px; 
+        flex-shrink: 0;
+    }
+
+    /* 3. Stack Tables */
+    .lcms-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* 4. THE FIX: Force Table Scroll */
+    .table-container-fixed {
+        overflow-x: auto !important; /* Enable horizontal scroll */
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -5px; /* Slight breathing room */
+    }
+
+    .lcms-one-pager-table {
+        width: 700px !important; /* Force the table to be wide */
+        table-layout: auto !important; /* Allow columns to grow */
+    }
+
+    .lcms-one-pager-table th, 
+    .lcms-one-pager-table td {
+        white-space: normal; /* Allow text wrapping within the wide table */
+        min-width: 150px;
+    }
+
+    /* 5. Swipe Hint Styling */
+    .mobile-swipe-hint {
+        display: block;
+        font-size: 10px;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 5px;
+        animation: hintPulse 2s infinite;
+    }
+
+    @keyframes hintPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; color: #d4af37; }
+    }
+}
+
+/* Hide hint on desktop */
+@media screen and (min-width: 769px) {
+    .mobile-swipe-hint { display: none; }
+}
+@media screen and (max-width: 768px) {
+    /* 1. Ensure the parent doesn't squash children */
+    .lcms-half-panel {
+        display: block !important; 
+        width: 100% !important;
+        overflow: hidden; /* Contains the scroll area */
+    }
+
+    /* 2. THE FIX: Force the container to allow scrolling */
+    .table-container-fixed {
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+
+    /* 3. Force the table to be HUGE */
+    .lcms-one-pager-table {
+        display: table !important; /* Reset display */
+        width: 800px !important; /* Fixed pixel width is mandatory here */
+        min-width: 800px !important;
+        table-layout: fixed !important; /* Keep columns predictable */
+    }
+
+    /* 4. Define specific column widths so they don't collapse */
+    .lcms-one-pager-table th:nth-child(1), 
+    .lcms-one-pager-table td:nth-child(1) { width: 250px; } /* Court/Case */
+    
+    .lcms-one-pager-table th:nth-child(2), 
+    .lcms-one-pager-table td:nth-child(2) { width: 180px; } /* Date/Advocate */
+    
+    .lcms-one-pager-table th:nth-child(3), 
+    .lcms-one-pager-table td:nth-child(3) { width: 370px; } /* Matter/Dept */
+
+    /* 5. Style the scrollbar to make it visible (optional but helpful) */
+    .table-container-fixed::-webkit-scrollbar {
+        height: 6px;
+    }
+    .table-container-fixed::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 10px;
+    }
 }
