@@ -111,13 +111,15 @@ const LcmsDashboard = () => {
                     <label>High Court / Supreme Court</label>
                     <span className="val">359</span>
                     <div className="sub">High Court: 346</div>
-                    <div className="sub">HSupreme Court: 13</div>
+                    <div className="sub">Supreme Court: 13</div>
 
                 </div>
                 <div className="kpi-card-simple border-purple">
                     <label>District / Tribunals</label>
                     <span className="val">265</span>
-                    <div className="sub">Dist: 265 | Trib: NIL</div>
+                    <div className="sub">Dist: 265</div>
+                    <div className="sub">Trib: NIL</div>
+
                 </div>
                 <div className="kpi-card-simple border-green">
                     <label>Decided in Feb </label>
