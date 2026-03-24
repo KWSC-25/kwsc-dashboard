@@ -30,7 +30,7 @@ const TownTable = () => {
         };
 
         fetchTownData();
-        const interval = setInterval(fetchTownData, 5000);
+        const interval = setInterval(fetchTownData, 30000);
         return () => clearInterval(interval);
     }, []);
 

@@ -12,7 +12,7 @@ const GallonSummary = () => {
             } catch (err) { console.error(err); }
         };
         fetchData();
-        const int = setInterval(fetchData, 5000);
+        const int = setInterval(fetchData, 30000);
         return () => clearInterval(int);
     }, []);
 

@@ -21,7 +21,7 @@ const SourceSlider = () => {
         };
 
         fetchSliderData();
-        const interval = setInterval(fetchSliderData, 5000);
+        const interval = setInterval(fetchSliderData, 30000);
         return () => clearInterval(interval);
     }, []);
     

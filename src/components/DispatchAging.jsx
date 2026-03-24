@@ -18,7 +18,7 @@ const DispatchAging = () => {
             }
         };
         fetchAging();
-        const interval = setInterval(fetchAging, 5000);
+        const interval = setInterval(fetchAging, 30000);
         return () => clearInterval(interval);
     }, []);
 

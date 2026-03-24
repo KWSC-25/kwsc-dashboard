@@ -15,7 +15,7 @@ const HmpKpiCards = () => {
         };
 
         fetchHmpData();
-        const interval = setInterval(fetchHmpData, 5000);
+        const interval = setInterval(fetchHmpData, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -75,9 +75,9 @@ const HmpKpiCards = () => {
         const s = stats[key];
         
         // Calculate Percentages for the Balance Bar
-        const totalGal = Number(s.gal_total) || 1; 
-        const otsPerc = (Number(s.gal_gps) / totalGal) * 100;
-        const hmpPerc = (Number(s.gal_comm) / totalGal) * 100;
+        const totalGal = Number(s.gal_total) || 0; 
+        const otsPerc = totalGal > 0 ? (Number(s.gal_gps) / totalGal) * 100 : 0;
+        const hmpPerc = totalGal > 0 ? (Number(s.gal_comm) / totalGal) * 100 : 0;
 
         return (
             <div className={`hmp-kpi-group-wrapper ${groupClass}`}>
