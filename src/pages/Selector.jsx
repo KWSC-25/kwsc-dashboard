@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Droplets, LogOut, Construction, ShieldAlert, BarChart3, Users , Scale} from 'lucide-react';
+import { LayoutDashboard, Droplets, LogOut, Construction, BarChart3, Users , Scale} from 'lucide-react';
 
 const Selector = () => {
     const navigate = useNavigate();

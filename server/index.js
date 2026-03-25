@@ -20,6 +20,7 @@ import { getKpiTypeBreakdown } from './controllers/kpiController.js';
 import { protect } from './middleware/authMiddleware.js';
 import { login } from './controllers/authController.js';
 import rateLimit from 'express-rate-limit';
+import userRoutes from './routes/userRoutes.js';
 
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 15 minutes
@@ -44,11 +45,12 @@ app.use('/api/towns',protect, townRoutes);
 app.use('/api/source',protect, sourceRoutes);
 app.use('/api/type/breakdown', protect,getSubtypeTownBreakdown);
 app.use('/api/pending-breakdown', protect,getKpiTypeBreakdown);
-app.use('/api', protect, hmpKpiRoutes);
-app.use('/api', protect, hydPerfRoutes);
+app.use('/api/hmpkpis', protect, hmpKpiRoutes);
+app.use('/api/hyd-perf', protect, hydPerfRoutes);
 app.use('/api/graph', protect, appGraphRoutes);
 app.use('/api/aging',protect, agingRoutes);
 app.use('/api/orders',protect, orderSummaryRoutes);
+app.use('/api/admin/users',protect, userRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));

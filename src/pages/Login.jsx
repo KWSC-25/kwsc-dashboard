@@ -36,9 +36,15 @@ const Login = () => {
             const res = await api.post('/login', credentials);
             
             if (res.data.success) {
+                const userRole = res.data.role; // Make sure your backend returns the 'role'
                 sessionStorage.setItem('token', res.data.token);
-                setAttemptsLeft(3);
-                navigate('/select');
+                sessionStorage.setItem('role', userRole);
+
+                if (userRole === 'admin') {
+                    navigate('/admin'); // Admins go to the new control center
+                } else {
+                    navigate('/select'); // Viewers go straight to dashboard selection
+                }
             }
         } catch (err) {
             const isRateLimited = err.response?.status === 429;

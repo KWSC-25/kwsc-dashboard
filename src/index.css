@@ -1,3 +1,5 @@
+
+@import "tailwindcss";
 :root {
   --bg-dark: #0f172a;
   --panel-bg: #1e293b;
@@ -3205,3 +3207,4 @@ lcms styling  */
         border-radius: 10px;
     }
 }
+

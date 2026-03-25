@@ -7,7 +7,7 @@ const HmpKpiCards = () => {
     useEffect(() => {
         const fetchHmpData = async () => {
             try {
-                const resp = await api.get('/hmp-kpi');
+                const resp = await api.get('hmpkpis/hmp-kpi');
                 setData(resp.data.data);
             } catch (err) {
                 console.error("HMP KPI Fetch Error:", err);

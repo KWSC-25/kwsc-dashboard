@@ -8,7 +8,7 @@ const HydrantPerformance = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const resp = await api.get('/hmp-performance');
+                const resp = await api.get('hyd-perf/hmp-performance');
                 setData(resp.data);
             } catch (err) {
                 console.error("Hydrant Performance Fetch Error:", err);

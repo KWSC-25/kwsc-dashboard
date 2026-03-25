@@ -1,6 +1,8 @@
 /* global process */
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import pkg from 'pg';
+const { Pool } = pkg;
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,6 +30,19 @@ export const hmpDb = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+export const authDb = new Pool({
+  host: process.env.AUTH_DB_HOST,
+  user: process.env.AUTH_DB_USER,
+  password: process.env.AUTH_DB_PASSWORD,
+  database: process.env.AUTH_DB_NAME,
+  port: process.env.AUTH_DB_PORT || 5432, // Default Postgres port
+  max: 5, // Equivalent to connectionLimit
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+
 try {
   const hmpConn = await hmpDb.getConnection();
   console.log("✅ HMP Database connected successfully!");
@@ -35,7 +50,7 @@ try {
 } catch (error) {
   console.error("❌ HMP Database failed:Check your .env values. ", error.message);
 }
-// 3. Immediate Test to verify connection on startup
+
 try {
   const connection = await db.getConnection();
   console.log("✅ Complaint Database connected successfully");
@@ -43,6 +58,14 @@ try {
 } catch (error) {
   console.error("❌ Complaint Database connection failed. Check your .env values.");
   console.error("Error Detail:", error.message);
+}
+
+try {
+  const authConn = await authDb.connect();
+  console.log("✅ Auth Database connected successfully!");
+  authConn.release();
+} catch (error) {
+  console.error("❌ Auth Database failed: Check AUTH_DB env values.", error.message);
 }
 
 export default db;
