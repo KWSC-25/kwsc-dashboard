@@ -2309,7 +2309,7 @@ body {
 .aging-analysis-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    padding: 10px;
+    padding: 5px;
     gap: 100px;
     border: 1px solid rgba(0, 242, 255, 0.2) !important; /* Light Cyan Border */
     border-radius: 12px;
@@ -3205,3 +3205,79 @@ lcms styling  */
         border-radius: 10px;
     }
 }
+
+/* red zone */
+/* Red Zone Violation Specifics */
+/* */
+
+.violation-summary-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    margin-bottom: 5px;
+    border-bottom: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.v-inline-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.v-inline-stat .v-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+.v-inline-stat .v-value {
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.v-divider {
+    color: var(--border-color);
+    font-weight: 300;
+    opacity: 0.5;
+}
+
+/* Ensure the text-red utility exists and is vibrant */
+.text-red {
+    color: #f87171 !important;
+}
+
+
+
+.violation-table th {
+    font-size: 0.8rem !important;
+    background: #2d3748 !important;
+    text-align: center;
+
+}
+
+.violation-table td {
+    font-size: 0.85rem !important;
+    text-align: center;
+}
+
+.truck-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.t-num {
+    font-weight: bold;
+    color: var(--water-blue);
+}
+
+.t-owner {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.text-red { color: #f87171 !important; }
