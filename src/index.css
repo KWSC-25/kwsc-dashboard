@@ -3250,7 +3250,46 @@ lcms styling  */
     color: #f87171 !important;
 }
 
+/* Container for scrolling */
+.table-scroll-container {
+    width: 100%;
+    overflow-x: auto; /* Enables horizontal scroll */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 
+/* Scrollbar Styling for a cleaner look */
+.table-scroll-container::-webkit-scrollbar {
+    height: 4px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+
+/* Mobile Specific Fixes */
+@media (max-width: 768px) {
+    /* Override any global styles that might be hiding columns */
+    .violation-table th, 
+    .violation-table td {
+        display: table-cell !important; 
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .t-owner {
+        font-size: 0.7rem;
+        display: block;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .v-inline-stat .v-value {
+        font-size: 0.9rem;
+    }
+}
 
 .violation-table th {
     font-size: 0.8rem !important;
@@ -3281,3 +3320,149 @@ lcms styling  */
 }
 
 .text-red { color: #f87171 !important; }
+
+/* Container & Alignment */
+.hmp-status-container {
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.hmp-status-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px 6px 5px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 4px;
+}
+
+.hmp-status-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.hmp-status-time {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--green-ok);
+    background: rgba(74, 222, 128, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+
+/* Rows - Extremely tight to match graph section height */
+.hmp-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0; 
+}
+
+.hmp-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 8px; /* Further reduced from 6px */
+    border-radius: 4px;
+}
+
+.name-stack {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4; /* Keeps the two lines very close together */
+}
+
+.hmp-name-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* Status Sub-texts */
+.filling-time-text, .cctv-off-since-text, .no-entry-alert {
+    font-size: 0.62rem; /* Slightly smaller for compactness */
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.filling-time-text { color: var(--green-ok); }
+.cctv-off-since-text { color: #f5c800; }
+.no-entry-alert { color: var(--red-crit); }
+
+/* No Entries Stylized & Centered */
+.hmp-no-entries-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 250px;
+}
+
+.hmp-no-entries-content {
+    text-align: center;
+    padding: 20px;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hmp-no-entries-icon {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.hmp-no-entries-content p {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    margin: 0;
+}
+
+/* Badges */
+.compact-badge {
+    font-size: 0.6rem;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 4px;
+    min-width: 72px;
+    text-align: center;
+}
+
+.compact-badge.CCTV_OFF { 
+    background: #3b381e; 
+    color: #f5c800; 
+    border: 1px solid #444121; 
+}
+
+
+/* Update this part in your existing CSS */
+.compact-badge.FILLING_START, 
+.compact-badge.ACTIVE { 
+    background: rgba(74, 222, 128, 0.15); 
+    color: #4ade80; 
+    border: 1px solid rgba(74, 222, 128, 0.3); 
+}
+
+.compact-badge.FILLING_STOP { 
+    background: rgba(248, 113, 113, 0.15); 
+    color: #f87171; 
+    border: 1px solid rgba(248, 113, 113, 0.3); 
+}
+
+.filling-time-text {
+    font-size: 0.65rem;
+    color: var(--green-ok);
+    font-weight: 700;
+    margin-top: -2px;
+    text-transform: uppercase;
+}
+
+/* Ensure UNKNOWN badge uses the existing dim style */
+.compact-badge.UNKNOWN {
+    background: #334155;
+    color: #94a3b8;
+}
