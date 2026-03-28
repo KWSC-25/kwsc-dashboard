@@ -25,16 +25,11 @@ const HydrantOperationalHours = () => {
         return () => clearInterval(interval);
     }, []);
 
-    if (!hasEntries) {
-        return (
-            <div className="hmp-no-entries-wrapper">
-                <div className="hmp-no-entries-content">
-                    <span className="hmp-no-entries-icon">⚠️</span>
-                    <p>NO ENTRIES FOR TODAY</p>
-                </div>
-            </div>
-        );
-    }
+    if (!hasEntries) return (
+        <div className="hmp-no-entries-wrapper">
+            <div className="hmp-no-entries-content"><p>NO ENTRIES FOR TODAY</p></div>
+        </div>
+    );
 
     return (
         <div className="hmp-status-container">
@@ -43,14 +38,16 @@ const HydrantOperationalHours = () => {
                 <span className="hmp-status-time">Current Time Slot: {currentTime}</span>
             </div>
 
-            <div className="hmp-status-list">
+            {/* Grid container for 2 columns */}
+            <div className="hmp-status-grid">
                 {hydrants.map(h => (
                     <div key={h.id} className="hmp-status-row">
                         <div className="hmp-name-box">
                             <div className="name-stack">
-                                <span className="hmp-name-text">{h.name}</span>
+                                {/* Hydrant Name in All Caps */}
+                                <span className="hmp-name-text">{h.name.toUpperCase()}</span>
                                 {h.currentStatus === 'FILLING_START' && h.displayStartTime && (
-                                    <span className="filling-time-text">FILLING STARTED AT {h.displayStartTime}</span>
+                                    <span className="filling-time-text">STARTED AT {h.displayStartTime}</span>
                                 )}
                                 {h.currentStatus === 'CCTV_OFF' && h.displayCctvOffSince && (
                                     <span className="cctv-off-since-text">OFF SINCE {h.displayCctvOffSince}</span>

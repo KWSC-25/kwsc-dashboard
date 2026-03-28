@@ -14,14 +14,14 @@ export const getHydrantOperationalStatus = async (req, res) => {
         const query = `
             SELECT h.id, h.name, h.color, l.slots
             FROM hydrants h
-            LEFT JOIN hydrant_status_logs l ON h.id = l.hydrant_id AND l.entry_date = '2026-03-26'
+            LEFT JOIN hydrant_status_logs l ON h.id = l.hydrant_id AND l.entry_date = CURDATE()
             WHERE h.id IN (1, 2, 3, 4, 5, 6, 7)
             ORDER BY h.id ASC`;
 
         const [rows] = await hmpDb.execute(query);
         const hasEntriesToday = rows.some(r => r.slots !== null);
 
-        const now = new Date('2026-03-26T10:00:00');
+        const now = new Date();
         const currentHrs = now.getHours();
         const currentMins = now.getMinutes();
         const currentTimeSlot24 = `${String(currentHrs).padStart(2, '0')}:${currentMins < 30 ? '00' : '30'}`;

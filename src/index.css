@@ -2092,7 +2092,7 @@ body {
 
 /* Header Logic from your HTML */
 .section-header {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2216,9 +2216,10 @@ body {
 /* --- HYDRANT SYSTEM GRID RESET --- */
 .hmp-triple-grid {
     display: grid;
-    grid-template-columns: 1.1fr 1fr 1fr; /* Keeps your desired proportions */
-    gap: 10px;
-    align-items: stretch; /* FORCES SAME HEIGHT */
+    /* Ratio: Left remains, Middle (Graph) shrinks, Right (Operational) expands */
+    grid-template-columns: 1.1fr 0.8fr 1.1fr !important; 
+    gap: 12px;
+    align-items: stretch;
     width: 100%;
 }
 
@@ -2657,12 +2658,6 @@ body {
         font-size: 1.2rem;
     }
 }
-/* The 3-column section at the top */
-.hmp-triple-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
 
 /* The 2-column section at the bottom */
 .dashboard-grid {
@@ -2682,7 +2677,6 @@ body {
         gap: 15px;
     }
 
-    .hmp-grid-item, 
     .report-content {
         width: 100%;
         min-width: unset;
@@ -3323,7 +3317,7 @@ lcms styling  */
 
 /* Container & Alignment */
 .hmp-status-container {
-    padding: 8px 10px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
 }
@@ -3332,65 +3326,106 @@ lcms styling  */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 5px 6px 5px;
+    padding: 0 5px 1px 5px;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .hmp-status-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-dim);
     letter-spacing: 1px;
 }
 
 .hmp-status-time {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 800;
     color: var(--green-ok);
     background: rgba(74, 222, 128, 0.1);
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 12px;
 }
 
-
-/* Rows - Extremely tight to match graph section height */
-.hmp-status-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0; 
+/* 2-Column Grid Implementation */
+.hmp-status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Creates the two columns */
+    column-gap: 20px;               /* Space between columns */
+    row-gap: 12px;                  /* Increased space between rows */
 }
 
 .hmp-status-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 3px 8px; /* Further reduced from 6px */
-    border-radius: 4px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.03); /* Subtle row background */
+    border-radius: 6px;
+}
+
+.hmp-status-row:hover {
+    background: rgba(211, 204, 204, 0.219); /* Subtle row background */
 }
 
 .name-stack {
     display: flex;
     flex-direction: column;
-    line-height: 1.4; /* Keeps the two lines very close together */
+    line-height: 1.2;
 }
 
 .hmp-name-text {
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.9rem; /* Increased font size */
+    font-weight: 700;
     color: var(--text-main);
+    letter-spacing: 0.3px;
 }
 
-/* Status Sub-texts */
+/* Status Sub-texts (STARTED AT / OFF SINCE) */
 .filling-time-text, .cctv-off-since-text, .no-entry-alert {
-    font-size: 0.62rem; /* Slightly smaller for compactness */
+    font-size: 0.68rem; /* Slightly larger for readability */
     font-weight: 700;
     text-transform: uppercase;
+    margin-top: 2px;
 }
 
 .filling-time-text { color: var(--green-ok); }
 .cctv-off-since-text { color: #f5c800; }
 .no-entry-alert { color: var(--red-crit); }
+
+/* Badges */
+.compact-badge {
+    font-size: 0.65rem; /* Balanced with larger name */
+    font-weight: 900;
+    padding: 4px 8px;
+    border-radius: 4px;
+    min-width: 75px;
+    text-align: center;
+}
+
+.compact-badge.CCTV_OFF { 
+    background: #3b381e; 
+    color: #f5c800; 
+    border: 1px solid #444121; 
+}
+
+.compact-badge.FILLING_START, 
+.compact-badge.ACTIVE { 
+    background: rgba(74, 222, 128, 0.15); 
+    color: #4ade80; 
+    border: 1px solid rgba(74, 222, 128, 0.3); 
+}
+
+.compact-badge.FILLING_STOP { 
+    background: rgba(248, 113, 113, 0.15); 
+    color: #f87171; 
+    border: 1px solid rgba(248, 113, 113, 0.3); 
+}
+
+.compact-badge.UNKNOWN {
+    background: #334155;
+    color: #94a3b8;
+}
 
 /* No Entries Stylized & Centered */
 .hmp-no-entries-wrapper {
@@ -3420,49 +3455,4 @@ lcms styling  */
     font-weight: 800;
     color: var(--text-dim);
     margin: 0;
-}
-
-/* Badges */
-.compact-badge {
-    font-size: 0.6rem;
-    font-weight: 900;
-    padding: 2px 8px;
-    border-radius: 4px;
-    min-width: 72px;
-    text-align: center;
-}
-
-.compact-badge.CCTV_OFF { 
-    background: #3b381e; 
-    color: #f5c800; 
-    border: 1px solid #444121; 
-}
-
-
-/* Update this part in your existing CSS */
-.compact-badge.FILLING_START, 
-.compact-badge.ACTIVE { 
-    background: rgba(74, 222, 128, 0.15); 
-    color: #4ade80; 
-    border: 1px solid rgba(74, 222, 128, 0.3); 
-}
-
-.compact-badge.FILLING_STOP { 
-    background: rgba(248, 113, 113, 0.15); 
-    color: #f87171; 
-    border: 1px solid rgba(248, 113, 113, 0.3); 
-}
-
-.filling-time-text {
-    font-size: 0.65rem;
-    color: var(--green-ok);
-    font-weight: 700;
-    margin-top: -2px;
-    text-transform: uppercase;
-}
-
-/* Ensure UNKNOWN badge uses the existing dim style */
-.compact-badge.UNKNOWN {
-    background: #334155;
-    color: #94a3b8;
 }
