@@ -23,6 +23,8 @@ import rateLimit from 'express-rate-limit';
 import userRoutes from './routes/userRoutes.js';
 import redZoneRoutes from './routes/redZoneRoutes.js';
 import operationalHoursRoutes from './routes/operationalHoursRoutes.js';
+import lcmsRoutes from './routes/lcmsRoutes.js';
+import LcmsDashboardRoutes from './routes/lcmsDashboardRoutes.js';
 
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 15 minutes
@@ -55,6 +57,9 @@ app.use('/api/orders',protect, orderSummaryRoutes);
 app.use('/api/admin/users',protect, userRoutes);
 app.use('/api/redzone', protect, redZoneRoutes);
 app.use('/api/hydrants', protect, operationalHoursRoutes);
+app.use('/api/admin/lcms',protect, lcmsRoutes);
+app.use('/api/lcmsDashboard',protect, LcmsDashboardRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
 

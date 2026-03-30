@@ -3470,3 +3470,122 @@ lcms styling  */
     color: var(--text-dim);
     margin: 0;
 }
+/* LCMS Admin Table Overrides - Stops global index.css from breaking the layout */
+.lcms-admin-container td {
+    padding: 1rem !important; /* Forces 20px padding (p-5) */
+    font-size: 0.8rem !important; /* Slightly larger than your global 0.8rem */
+    background-color: transparent !important;
+    color: #000000 !important; /* Forces black text */
+    border-bottom: 1px solid #f1f5f9 !important; /* Light slate border */
+}
+
+.lcms-admin-container th {
+    color: #ffffff !important; /* Ensures headers stay white */
+    padding: 1rem !important;
+}
+
+.lcms-admin-container .bg-white {
+    background-color: #ffffff !important; /* Forces the table card to stay white */
+}
+
+/* DASHBOARD SCREEN OPTIMIZATION */
+.lcms-one-view-wrapper {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* TABLE CORE */
+.lcms-one-pager-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+}
+
+.lcms-one-pager-table th {
+    text-align: left;
+    font-size: 11px;
+    color: #475569;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.lcms-one-pager-table td {
+    padding: 12px 16px !important;
+    background: rgba(30, 41, 59, 0.6);
+    vertical-align: middle;
+}
+
+/* TEXT TYPOGRAPHY (LARGE) */
+.cell-main { 
+    font-weight: 700; 
+    font-size: 11px; 
+    color: #94a3b8; 
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.cell-case-title { 
+    font-size: 14px; /* Increased */
+    color: #fbbf24; /* VIBRANT YELLOW */
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.date-alert-box { 
+    color: #ef4444; /* VIBRANT RED */
+    font-weight: 900; 
+    font-size: 18px; /* Increased */
+    letter-spacing: -0.5px;
+}
+
+.advocate-highlight { 
+    font-size: 12px; /* Increased */
+    color: #22d3ee; /* CYAN */
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.matter-text { 
+    font-size: 13px; /* Increased */
+    color: #f1f5f9; 
+    font-weight: 500;
+    max-width: 250px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+/* DEPT BUTTON */
+.dept-action-btn {
+    background: rgba(15, 23, 42, 0.8);
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* KPI CARDS */
+
+/* ALERT GLOW FOR TOP ROW */
+.row-next-glow td {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-top: 1px solid rgba(239, 68, 68, 0.4);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.4);
+    animation: alertPulse 2s infinite;
+}
+
+@keyframes alertPulse {
+    0% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+    50% { box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.2); }
+    100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+}

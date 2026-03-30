@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, LayoutDashboard, Settings, ShieldCheck, LogOut } from 'lucide-react';
+import { Users, LayoutDashboard, Scale, ShieldCheck, LogOut } from 'lucide-react';
 
 const AdminPanel = () => {
     const navigate = useNavigate();
@@ -18,6 +18,14 @@ const AdminPanel = () => {
             icon: <LayoutDashboard size={32} />, 
             path: "/select",
             color: "bg-emerald-600"
+        },
+
+        { 
+        title: "LCMS Management", 
+        desc: "Import Excel & update court cases", 
+        icon: <Scale size={32} />, 
+        path: "/admin/lcms", 
+        color: "bg-purple-600"
         },
       
     ];

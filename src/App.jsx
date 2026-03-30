@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Selector from './pages/Selector';
 import ManageUsers from './components/ManageUsers';
 import AdminPanel from './pages/AdminPanel';
+import LcmsAdmin from './pages/LcmsAdmin';
+
 
 const getRole = () => {
     const token = sessionStorage.getItem('token');
@@ -43,6 +45,11 @@ function App() {
                         <AdminPanel />
                     </PrivateRoute>
                 }/>
+                <Route path="/admin/lcms" element={
+                    <PrivateRoute adminOnly={true}>
+                        <LcmsAdmin />
+                    </PrivateRoute>
+                } />
 
                 <Route path="/select" element={
                     <PrivateRoute>
@@ -61,6 +68,7 @@ function App() {
                         <Dashboard />
                     </PrivateRoute>
                 } />
+
 
                 {/* 2. Catch-all MUST be at the very bottom */}
                 <Route path="*" element={<Navigate to="/" />} />
