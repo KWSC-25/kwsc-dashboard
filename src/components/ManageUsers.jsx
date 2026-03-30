@@ -139,7 +139,7 @@ const ManageUsers = () => {
                                             {user.role}
                                         </span>
                                     </td>
-                                    <td className="p-5 text-xs font-black ">
+                                    <td className="registrationDate">
                                         {new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </td>
                                     <td className="p-5">

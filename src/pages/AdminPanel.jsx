@@ -7,7 +7,7 @@ const AdminPanel = () => {
     const menuItems = [
         { 
             title: "User Management", 
-            desc: "Add, edit, or remove portal users", 
+            desc: "Add, edit, or remove dashboard users", 
             icon: <Users size={32} />, 
             path: "/manage-users",
             color: "bg-blue-600"

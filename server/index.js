@@ -21,6 +21,8 @@ import { protect } from './middleware/authMiddleware.js';
 import { login } from './controllers/authController.js';
 import rateLimit from 'express-rate-limit';
 import userRoutes from './routes/userRoutes.js';
+import redZoneRoutes from './routes/redZoneRoutes.js';
+import operationalHoursRoutes from './routes/operationalHoursRoutes.js';
 
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 15 minutes
@@ -51,7 +53,8 @@ app.use('/api/graph', protect, appGraphRoutes);
 app.use('/api/aging',protect, agingRoutes);
 app.use('/api/orders',protect, orderSummaryRoutes);
 app.use('/api/admin/users',protect, userRoutes);
-
+app.use('/api/redzone', protect, redZoneRoutes);
+app.use('/api/hydrants', protect, operationalHoursRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
 

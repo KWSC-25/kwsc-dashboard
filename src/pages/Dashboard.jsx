@@ -18,6 +18,8 @@ import OrderSummary from '../components/orderSummary';
 import GallonSummary from '../components/GallonSummary';
 import LcmsHeader from '../components/LcmsHeader';
 import LcmsDashboard from '../components/LcmsDashboard';
+import RedZoneViolations from '../components/RedZoneViolations';
+import HydrantOperationalHours from '../components/HydrantOperationalHours';
 
 const Dashboard = () => {
     const location = useLocation();
@@ -229,8 +231,8 @@ const Dashboard = () => {
                                             <i className="fas fa-clock"></i> HYDRANTS OPERATIONAL HOURS
                                         </div>
                                     </div>
-                                    <div className="placeholder-content">
-                                        <div style={{color: 'var(--hmp-green)'}}>COMING SOON...</div>
+                                    <div className="table-scroll-container" style={{ maxHeight: '450px' }}>
+                                        <HydrantOperationalHours />
                                     </div>
                                 </div>
                             </div>
@@ -268,16 +270,9 @@ const Dashboard = () => {
                             </div>
 
                             {/* RIGHT SIDE: RED ZONE VIOLATIONS (STATIC) */}
-                                <div className="report-content header-green coming-soon-box">
-                                    <div className="section-header">
-                                        <div className="section-header-red">
-                                            <i className="fas fa-shield-virus"></i> RED ZONE VIOLATIONS
-                                        </div>
-                                    </div>
-                                    <div className="placeholder-content">
-                                        <div style={{color: 'red'}}>COMING SOON...</div>
-                                    </div>
-                                </div>
+                            <div className="report-content header-red">
+                                <RedZoneViolations />
+                            </div>
                         </div>
                     </div>
                 )}
