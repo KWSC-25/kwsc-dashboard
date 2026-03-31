@@ -57,7 +57,7 @@ function App() {
                     </PrivateRoute>
                 } />
 
-                <Route path="/manage-users" element={
+                <Route path="/admin/users" element={
                     <PrivateRoute adminOnly={true}>
                         <ManageUsers />
                     </PrivateRoute>

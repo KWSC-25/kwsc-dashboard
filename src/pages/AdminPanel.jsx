@@ -9,7 +9,7 @@ const AdminPanel = () => {
             title: "User Management", 
             desc: "Add, edit, or remove dashboard users", 
             icon: <Users size={32} />, 
-            path: "/manage-users",
+            path: "/admin/users",
             color: "bg-blue-600"
         },
         { 

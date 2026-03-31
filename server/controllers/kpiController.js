@@ -46,7 +46,7 @@ export const getKpiStats = async (req, res) => {
         SUM(status = 0 AND DATE(created_at) <= DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AS total_pending_yesterday
 
     FROM complaint
-    WHERE created_at BETWEEN '2024-10-23' AND CURDATE() + 1
+    WHERE created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
     `);
     const [rows2] = await db.query(`
 
