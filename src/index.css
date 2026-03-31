@@ -2972,7 +2972,6 @@ body {
 lcms styling  */
 .lcms-one-view-wrapper {
     background: #0f172a;
-    padding: 20px 25px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -2985,13 +2984,12 @@ lcms styling  */
 .lcms-kpi-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 10px;
 }
 
 .kpi-card-simple {
     background: #1e293b;
-    padding: 20px;
+    padding: 10px;
     border-radius: 12px;
     position: relative;
     border: 1px solid #334155;
@@ -3020,20 +3018,11 @@ lcms styling  */
 .lcms-main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 10px;
     flex-grow: 1;
     min-height: 0;
 }
 
-.lcms-half-panel {
-    background: #1e293b;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #334155;
-    display: flex;
-    flex-direction: column;
-    max-height: fit-content; /* Closes the table area after content */
-}
 
 .panel-header-inline { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
 .badge-lit { background: #d4af37; color: #000; font-size: 0.65rem; font-weight: 900; padding: 3px 10px; border-radius: 4px; }
@@ -3043,16 +3032,7 @@ lcms styling  */
     overflow: hidden;
 }
 
-.lcms-one-pager-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.lcms-one-pager-table th { text-align: left; color: #94a3b8; font-size: 0.75rem; padding: 10px; border-bottom: 2px solid #334155; }
-.lcms-one-pager-table td { 
-    padding: 12px 10px; 
-    border-bottom: 1px solid rgba(255,255,255,0.05); 
-    vertical-align: top;
-    color: #ffffff !important; /* Force all text to white */
-    font-weight: 700; /* Make all text bold */
-    font-size: 0.85rem; /* Make text a little bigger */
-}
+
 
 .cell-main { color: #d4af37; font-weight: 900; font-size: 0.9rem; margin-bottom: 3px; }
 .cell-sub { color: #ffffff; line-height: 1.3; font-weight: 600; opacity: 0.9; }
@@ -3113,7 +3093,7 @@ lcms styling  */
         -webkit-overflow-scrolling: touch;
     }
     .kpi-card-simple {
-        min-width: 240px; 
+        min-width: 200px; 
         flex-shrink: 0;
     }
 
@@ -3164,12 +3144,7 @@ lcms styling  */
 }
 @media screen and (max-width: 768px) {
     /* 1. Ensure the parent doesn't squash children */
-    .lcms-half-panel {
-        display: block !important; 
-        width: 100% !important;
-        overflow: hidden; /* Contains the scroll area */
-    }
-
+  
     /* 2. THE FIX: Force the container to allow scrolling */
     .table-container-fixed {
         display: block !important;
@@ -3180,23 +3155,7 @@ lcms styling  */
         position: relative;
     }
 
-    /* 3. Force the table to be HUGE */
-    .lcms-one-pager-table {
-        display: table !important; /* Reset display */
-        width: 800px !important; /* Fixed pixel width is mandatory here */
-        min-width: 800px !important;
-        table-layout: fixed !important; /* Keep columns predictable */
-    }
-
-    /* 4. Define specific column widths so they don't collapse */
-    .lcms-one-pager-table th:nth-child(1), 
-    .lcms-one-pager-table td:nth-child(1) { width: 250px; } /* Court/Case */
-    
-    .lcms-one-pager-table th:nth-child(2), 
-    .lcms-one-pager-table td:nth-child(2) { width: 180px; } /* Date/Advocate */
-    
-    .lcms-one-pager-table th:nth-child(3), 
-    .lcms-one-pager-table td:nth-child(3) { width: 370px; } /* Matter/Dept */
+   
 
     /* 5. Style the scrollbar to make it visible (optional but helpful) */
     .table-container-fixed::-webkit-scrollbar {
@@ -3509,12 +3468,10 @@ lcms styling  */
     font-size: 11px;
     color: #475569;
     text-transform: uppercase;
-    padding-bottom: 8px;
     letter-spacing: 1px;
 }
 
 .lcms-one-pager-table td {
-    padding: 12px 16px !important;
     background: rgba(30, 41, 59, 0.6);
     vertical-align: middle;
 }

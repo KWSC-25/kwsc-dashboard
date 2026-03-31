@@ -8,10 +8,10 @@ const TableSection = ({ data, setSelectedStatus, today }) => (
         <table className="lcms-one-pager-table w-full">
             <thead>
                 <tr>
-                    {/* Fixed header visibility with explicit inline styles */}
-                    <th style={{ width: '45%', color: '#f8fafc', fontWeight: '900', fontSize: '12px' }}>COURT / CASE</th>
-                    <th style={{ width: '25%', color: '#f8fafc', fontWeight: '900', fontSize: '12px' }}>DATE & ADVOCATE</th>
-                    <th style={{ width: '30%', color: '#f8fafc', fontWeight: '900', fontSize: '12px' }}>MATTER / DEPT</th>
+                    {/* High-contrast headers */}
+                    <th style={{ width: '45%', color: '#ffffff', fontWeight: '900', fontSize: '13px', letterSpacing: '0.05em' }}>COURT / CASE</th>
+                    <th style={{ width: '25%', color: '#ffffff', fontWeight: '900', fontSize: '13px', letterSpacing: '0.05em' }}>DATE & ADVOCATE</th>
+                    <th style={{ width: '30%', color: '#ffffff', fontWeight: '900', fontSize: '13px', letterSpacing: '0.05em' }}>MATTER / DEPT</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,7 +22,16 @@ const TableSection = ({ data, setSelectedStatus, today }) => (
                     const isNext = !isPast && idx === 0;
 
                     return (
-                        <tr key={item.id} className={isNext ? 'row-next-glow' : ''}>
+                        <tr 
+                            key={item.id} 
+                            className={isNext ? 'row-next-glow' : ''}
+                            style={{ 
+                                // Apply dimming and slight grayscale for past dates
+                                opacity: isPast ? 0.45 : 1, 
+                                filter: isPast ? 'grayscale(0.4)' : 'none',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
                             <td>
                                 <div className="cell-main">{item.court_name}</div>
                                 <div className="cell-case-title">{item.case_title}</div>
@@ -35,7 +44,11 @@ const TableSection = ({ data, setSelectedStatus, today }) => (
                             </td>
                             <td>
                                 <div className="matter-text">{item.matter_pertains}</div>
-                                <button className="dept-action-btn" onClick={() => setSelectedStatus(item)}>
+                                <button 
+                                    className="dept-action-btn" 
+                                    onClick={() => setSelectedStatus(item)}
+                                    style={{ pointerEvents: 'auto' }} // Ensure button works even when dimmed
+                                >
                                     {item.responsible_dept} <ChevronRight size={12} />
                                 </button>
                             </td>
@@ -87,9 +100,9 @@ const LcmsDashboard = () => {
     const rightCol = currentSet.slice(5, 10);
 
     return (
-        <div className="lcms-one-view-wrapper h-screen w-screen bg-[#0a0f18] text-white p-6 overflow-hidden flex flex-col">
+        <div className="lcms-one-view-wrapper h-screen w-screen bg-[#0a0f18] text-white py-6 pr-6 pl-0 overflow-hidden flex flex-col">
             
-            {/* KPI Row */}
+            {/* KPI Row - shrink-0 prevents it from pushing content down */}
             <div className="grid grid-cols-5 gap-4 mb-6 shrink-0">
                 <div className="kpi-card-simple border-red">
                     <label>Total Pending</label>
@@ -118,13 +131,13 @@ const LcmsDashboard = () => {
                 </div>
             </div>
 
-            {/* Unified Header */}
+            {/* Title Section */}
             <div className="flex items-center gap-3 mb-4 shrink-0">
                 <span className="bg-yellow-500 text-black px-2 py-0.5 rounded text-[10px] font-black">SCHEDULE</span>
                 <h2 className="text-xl font-black uppercase tracking-tight">Upcoming Hearings</h2>
             </div>
 
-            {/* Main Content Area - Growing to fill space */}
+            {/* Sliding Table Section - min-h-0 allows flex child to shrink properly */}
             <div className="flex-grow min-h-0">
                 <AnimatePresence mode="wait">
                     <motion.div 
@@ -145,7 +158,12 @@ const LcmsDashboard = () => {
             <AnimatePresence>
                 {selectedStatus && (
                     <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] flex items-center justify-center p-8" onClick={() => setSelectedStatus(null)}>
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111827] border-2 border-yellow-500/30 p-12 rounded-3xl max-w-4xl w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            className="bg-[#111827] border-2 border-yellow-500/30 p-12 rounded-3xl max-w-4xl w-full shadow-2xl" 
+                            onClick={e => e.stopPropagation()}
+                        >
                             <div className="flex items-center gap-4 text-yellow-500 font-black text-2xl mb-8 uppercase tracking-tighter">
                                 <AlertTriangle size={40} /> Direction & Status
                             </div>

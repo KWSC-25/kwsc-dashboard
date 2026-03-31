@@ -14,7 +14,6 @@ const LcmsHeader = ({ children }) => {
         <header className="hmp-header-main" >
             <div className="title-group">
                 <h1 style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <Gavel color="var(--yellow-wip)" size={28} />
                     LCMS <span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '1.3rem'}}>LEGAL CASE MANAGEMENT SYSTEM</small></span>
                 </h1>
             </div>
