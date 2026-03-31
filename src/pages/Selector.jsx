@@ -61,7 +61,8 @@ const Selector = () => {
 
     return (
         <div className="selector-container">
-            <div className="selector-header">
+            {/* Added display: flex and align-items: center to ensure the logo and text are centered */}
+            <div className="selector-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <img src="/kwsc-logo.png" alt="Logo" style={{ width: '80px', marginBottom: '10px' }} />
                 <h2 className="login-title-thin">Karachi Water & Sewerage Corporation</h2>
                 <h1 className="welcome-text"><span>Welcome to KW&SC Dashboard Portal</span></h1>
@@ -83,7 +84,12 @@ const Selector = () => {
                 ))}
             </div>
 
-            <button onClick={handleLogout} className="selector-logout">
+            {/* Added display: flex, align-items: center, and gap to keep icon and text on one line */}
+            <button 
+                onClick={handleLogout} 
+                className="selector-logout" 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
                 <LogOut size={18} /> Logout
             </button>
         </div>
