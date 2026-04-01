@@ -37,9 +37,9 @@ const Dashboard = () => {
             const resp = await api.get(`/performance/engineer-details?name=${encodeURIComponent(name)}&typeId=${typeId}`);
             setSelectedEngineer(resp.data);
             setShowModal(true);
-        } catch (err) { 
+        } catch (err) {
             console.error("Fetch Error:", err);
-            alert("Could not fetch engineer details."); 
+            alert("Could not fetch engineer details.");
         }
     };
 
@@ -67,8 +67,8 @@ const Dashboard = () => {
     }, [isPopupOpen, showModal]); // Add dependencies here
 
     const SystemSelector = (
-        <select 
-            value={activeSystem} 
+        <select
+            value={activeSystem}
             onChange={(e) => setActiveSystem(e.target.value)}
             style={{
                 background: '#1e293b',
@@ -93,53 +93,53 @@ const Dashboard = () => {
         <div className="dashboard-fixed-container">
             {/* Header Logic */}
             {activeSystem === 'complaint' ? (
-                <Header selector={SystemSelector} /> 
+                <Header selector={SystemSelector} />
             ) : activeSystem === 'hydrant' ? (
                 <HmpHeader>{SystemSelector}</HmpHeader>
             ) : (
-                <LcmsHeader>{SystemSelector}</LcmsHeader> 
+                <LcmsHeader>{SystemSelector}</LcmsHeader>
             )}
-            
+
             <div className="content-padding main-scroll-area">
                 {activeSystem === 'complaint' && (
                     <>
                         {/* RESTORED ORIGINAL KPI CARDS DESIGN */}
                         <KpiCards />
-                        
+
                         <div className="view-transition-container" style={{ minHeight: '480px' }}>
                             <AnimatePresence mode="wait">
-                            {!showSourceSlider ? (
-                                <motion.div key="main" initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
-                                    <div className="main-tables-grid animate-fade-in">
-                                        <div className="grid-3">
-                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)"  onPopupToggle={setIsPopupOpen} typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16"/>
-                                            <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" onPopupToggle={setIsPopupOpen} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108"/>
-                                            <div className="panel" style={{ padding: '15px' }}>
-                                                <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
-                                                <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
+                                {!showSourceSlider ? (
+                                    <motion.div key="main" initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
+                                        <div className="main-tables-grid animate-fade-in">
+                                            <div className="grid-3">
+                                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)" onPopupToggle={setIsPopupOpen} typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16" />
+                                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" onPopupToggle={setIsPopupOpen} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108" />
+                                                <div className="panel" style={{ padding: '15px' }}>
+                                                    <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
+                                                    <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </motion.div>
-                            ) : (
-                                <motion.div key="slider" initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
-                                    <div className="slider-wrapper animate-fade-in">
-                                        <SourceSlider />
-                                    </div>
-                                </motion.div>
-                            )}
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key="slider" initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
+                                        <div className="slider-wrapper animate-fade-in">
+                                            <SourceSlider />
+                                        </div>
+                                    </motion.div>
+                                )}
                             </AnimatePresence>
                         </div>
 
-                        <TownTable />                
-                        
+                        <TownTable />
+
                         {/* Engineer Detail Modal */}
                         {showModal && selectedEngineer && (
                             <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    className="modal-content modern-modal" 
+                                    className="modal-content modern-modal"
                                     onClick={e => e.stopPropagation()}
                                 >
                                     <div className="modal-header">
@@ -209,18 +209,18 @@ const Dashboard = () => {
                 {activeSystem === 'hydrant' && (
                     /* HYDRANT SYSTEM VIEW */
                     <div className="hydrant-content-wrapper animate-fade-in" >
-                        <HmpKpiCards/>
+                        <HmpKpiCards />
                         {/* THREE COLUMN LAYOUT SECTION */}
                         <div className="hmp-triple-grid">
-                            
+
                             {/* 1. Hydrant Performance (Left Column) */}
                             <div className="hmp-grid-item">
-                                <HydrantPerformance/>
+                                <HydrantPerformance />
                             </div>
 
                             {/* 2. Mobile App Graph (Middle Column) */}
                             <div className="hmp-grid-item">
-                                <MobileAppGraph/>
+                                <MobileAppGraph />
                             </div>
 
                             {/* 3. Operational Hours (Right Column) */}
@@ -240,20 +240,20 @@ const Dashboard = () => {
                         <div className="dashboard-grid">
                             {/* LEFT SIDE: AGING / SUMMARY REPORTS */}
                             <div className="report-content header-orange">
-                            <div className='section-header' >
-                                {/* Dynamic Title Class based on View */}
-                                <div className={
-                                    reportView === 'aging' ? 'section-header-aging' : 
-                                    reportView === 'summary' ? 'section-header-orders' : 'section-header-summary'
-                                }>
-                                    <i className={
-                                        reportView === 'aging' ? 'fas fa-hourglass-half' : 
-                                        reportView === 'summary' ? 'fas fa-file-invoice' : 'fas fa-droplet'
-                                    }></i> 
-                                    {reportView === 'aging' ? ' HYDRANTS AGING ANALYSIS (OTS PENDING ORDERS)' : 
-                                    reportView === 'summary' ? ' HYDRANTS DAILY ORDER SUMMARY (Created & Dispatched Today)' : ' HYDARNTS DAILY GALLONS SUMMARY (Created, Dispatched & Completed Today)'}
-                                </div>
-                                    
+                                <div className='section-header' >
+                                    {/* Dynamic Title Class based on View */}
+                                    <div className={
+                                        reportView === 'aging' ? 'section-header-aging' :
+                                            reportView === 'summary' ? 'section-header-orders' : 'section-header-summary'
+                                    }>
+                                        <i className={
+                                            reportView === 'aging' ? 'fas fa-hourglass-half' :
+                                                reportView === 'summary' ? 'fas fa-file-invoice' : 'fas fa-droplet'
+                                        }></i>
+                                        {reportView === 'aging' ? ' HYDRANTS AGING ANALYSIS (OTS PENDING ORDERS)' :
+                                            reportView === 'summary' ? ' HYDRANTS DAILY ORDER SUMMARY (Created & Dispatched Today)' : ' HYDARNTS DAILY GALLONS SUMMARY (Created, Dispatched & Completed Today)'}
+                                    </div>
+
                                     {/* Nav Buttons moved inside the header div on the right */}
                                     <div className="report-nav-bar">
                                         <button onClick={() => setReportView('aging')} className={`nav-btn-a ${reportView === 'aging' ? 'active' : ''}`}>Aging Analysis</button>
@@ -265,11 +265,11 @@ const Dashboard = () => {
                                 <div className="table-scroll-container">
                                     {reportView === 'aging' && <DispatchAging />}
                                     {reportView === 'summary' && <OrderSummary />}
-                                    {reportView === 'gallons' && <GallonSummary/>}
+                                    {reportView === 'gallons' && <GallonSummary />}
                                 </div>
                             </div>
 
-                            {/* RIGHT SIDE: RED ZONE VIOLATIONS (STATIC) */}
+                            {/* RIGHT SIDE: RED ZONE VIOLATIONS */}
                             <div className="report-content header-red">
                                 <RedZoneViolations />
                             </div>
@@ -277,7 +277,7 @@ const Dashboard = () => {
                     </div>
                 )}
                 {activeSystem === 'lcms' && (
-                <LcmsDashboard /> // We will create this
+                    <LcmsDashboard /> // We will create this
                 )}
             </div>
         </div>

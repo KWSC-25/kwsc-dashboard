@@ -2094,7 +2094,7 @@ body {
 
 /* Header Logic from your HTML */
 .section-header {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2218,9 +2218,10 @@ body {
 /* --- HYDRANT SYSTEM GRID RESET --- */
 .hmp-triple-grid {
     display: grid;
-    grid-template-columns: 1.1fr 1fr 1fr; /* Keeps your desired proportions */
-    gap: 10px;
-    align-items: stretch; /* FORCES SAME HEIGHT */
+    /* Ratio: Left remains, Middle (Graph) shrinks, Right (Operational) expands */
+    grid-template-columns: 1.1fr 0.8fr 1.1fr !important; 
+    gap: 12px;
+    align-items: stretch;
     width: 100%;
 }
 
@@ -2311,7 +2312,7 @@ body {
 .aging-analysis-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    padding: 10px;
+    padding: 5px;
     gap: 100px;
     border: 1px solid rgba(0, 242, 255, 0.2) !important; /* Light Cyan Border */
     border-radius: 12px;
@@ -2659,12 +2660,6 @@ body {
         font-size: 1.2rem;
     }
 }
-/* The 3-column section at the top */
-.hmp-triple-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
 
 /* The 2-column section at the bottom */
 .dashboard-grid {
@@ -2684,7 +2679,6 @@ body {
         gap: 15px;
     }
 
-    .hmp-grid-item, 
     .report-content {
         width: 100%;
         min-width: unset;

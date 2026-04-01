@@ -15,7 +15,7 @@ const Header = ({ selector }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '-15px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div>
-                    <h1 style={{ margin: 0, letterSpacing: '-1px', color: '#fff' }}>
+                    <h1 style={{ margin: 0, letterSpacing: '-1px', color: '#fff', fontSize:"1.8rem" , fontWeight:"bold"}}>
                         KW&SC <span style={{ color: 'var(--water-blue)' }}>CEO DASHBOARD</span>
                     </h1>
                     <p style={{ margin: 0, color: 'var(--text-dim)', fontWeight: 500 }}>Real-Time Complaint Monitoring System</p>
