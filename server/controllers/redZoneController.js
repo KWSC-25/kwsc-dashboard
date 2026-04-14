@@ -1,5 +1,3 @@
-import { hmpDb } from "../db.js";
-
 export const getRedZoneViolations = async (req, res) => {
     try {
         const countQuery = `
@@ -27,8 +25,8 @@ export const getRedZoneViolations = async (req, res) => {
             LIMIT 5
         `;
 
-        const [[counts]] = await hmpDb.execute(countQuery);
-        const [violations] = await hmpDb.execute(listQuery);
+        const [[counts]] = await req.db.execute(countQuery);
+        const [violations] = await req.db.execute(listQuery);
 
         res.status(200).json({
             summary: counts,

@@ -1,4 +1,3 @@
-import { authDb } from "../db.js";
 export const getDashboardCases = async (req, res) => {
     try {
         // Query to get cases ordered by next_date (upcoming first)
@@ -10,7 +9,7 @@ export const getDashboardCases = async (req, res) => {
                 next_date ASC,
                 id DESC
         `;
-        const result = await authDb.query(query);
+        const result = await req.db.query(query);
         res.json(result.rows);
     } catch (err) {
         console.error("Dashboard Fetch Error:", err);

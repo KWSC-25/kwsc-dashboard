@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Gavel } from 'lucide-react';
+import { LogOut, Gavel, ArrowLeft } from 'lucide-react';
 
 const LcmsHeader = ({ children }) => {
     const navigate = useNavigate();
@@ -18,10 +18,20 @@ const LcmsHeader = ({ children }) => {
                 </h1>
             </div>
             
-            <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div className="system-switcher-container">
-                    {children}
-                </div>
+            <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginRight: '10px' }}>
+                <button 
+                    onClick={() => navigate('/select')}
+                    className="logout-btn-styled" // Use your existing styles or the inline one from HmpHeader
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent',
+                        color: 'white', border: '1px solid grey', padding: '6px 12px',
+                        borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem'
+                    }}
+                >
+                    <ArrowLeft size={16} />
+                    Back
+                </button>
+                
                 <button 
                     onClick={handleLogout}
                     className="logout-btn-styled" // Use your existing styles or the inline one from HmpHeader

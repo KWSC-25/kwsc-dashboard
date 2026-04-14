@@ -1,5 +1,3 @@
-import { hmpDb } from "../db.js";
-
 export const getOrderSummary = async (req, res) => {
     try {
         const query = `
@@ -22,7 +20,7 @@ export const getOrderSummary = async (req, res) => {
             GROUP BY h.id, h.name
             ORDER BY h.name ASC
         `;
-        const [rows] = await hmpDb.execute(query);
+        const [rows] = await req.db.execute(query);
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -52,7 +50,7 @@ export const getGallonSummaryReport = async (req, res) => {
             GROUP BY h.id, h.name
             ORDER BY h.name ASC;
         `;
-        const [rows] = await hmpDb.execute(query);
+        const [rows] = await req.db.execute(query);
         res.json(rows);
     } catch (err) {
         console.error(err);

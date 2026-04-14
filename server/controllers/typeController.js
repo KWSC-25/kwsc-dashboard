@@ -1,5 +1,3 @@
-import db from '../db.js';
-
 export const getTypesData = async (req, res) => { 
     const {  subTypeIds } = req.query; 
     
@@ -27,7 +25,7 @@ export const getTypesData = async (req, res) => {
 
     try {
         // We pass the IDs twice: once for the IN clause, once for the FIELD order
-        const [results] = await db.execute(query, [...ids, ...ids]);
+        const [results] = await req.db.execute(query, [...ids, ...ids]);
         res.json(results);
     } catch (err) {
         console.error("Type Fetch Error:", err);
@@ -56,7 +54,7 @@ export const getSubtypeTownBreakdown = async (req, res) => {
     `;
 
     try {
-        const [results] = await db.execute(query, [subTypeId]);
+        const [results] = await req.db.execute(query, [subTypeId]);
         res.json(results);
     } catch (err) {
         console.error("Emergency Types Town Breakdown Fetch Error:", err);

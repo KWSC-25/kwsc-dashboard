@@ -1,4 +1,3 @@
-import { hmpDb } from "../db.js";
 export const getHydrantPerformance = async (req, res) => {
     try {
         const query = `
@@ -65,7 +64,7 @@ export const getHydrantPerformance = async (req, res) => {
 
 
 
-        const [rows] = await hmpDb.execute(query);
+        const [rows] = await req.db.execute(query);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });

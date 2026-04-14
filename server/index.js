@@ -1,6 +1,8 @@
 /* global process */
+console.time('🚀 Total_Server_Startup');
 import express from 'express';
 import cors from 'cors';
+import { dbSelector } from './middleware/dbSelector.js';
 import kpiRoutes from './routes/kpiRoutes.js';
 import intelRoutes from './routes/intelRoutes.js'
 import performanceRoutes from './routes/performanceRoutes.js';
@@ -39,29 +41,32 @@ app.use(cors());
 app.use(express.json());
 app.post('/api/login', loginLimiter, login);
 // Specific Route for KPI section
-app.use('/api/kpis',protect, kpiRoutes);
-app.use('/api/intel',protect, intelRoutes);
-app.use('/api/performance',protect, performanceRoutes);
-app.use('/api/type',protect, typeRoutes);
-app.use('/api/charts',protect, chartRoutes);
-app.use('/api',protect, sourceSliderRoutes);
-app.use('/api/towns',protect, townRoutes);
-app.use('/api/source',protect, sourceRoutes);
-app.use('/api/type/breakdown', protect,getSubtypeTownBreakdown);
-app.use('/api/pending-breakdown', protect,getKpiTypeBreakdown);
-app.use('/api/hmpkpis', protect, hmpKpiRoutes);
-app.use('/api/hyd-perf', protect, hydPerfRoutes);
-app.use('/api/graph', protect, appGraphRoutes);
-app.use('/api/aging',protect, agingRoutes);
-app.use('/api/orders',protect, orderSummaryRoutes);
-app.use('/api/admin/users',protect, userRoutes);
-app.use('/api/redzone', protect, redZoneRoutes);
-app.use('/api/hydrants', protect, operationalHoursRoutes);
-app.use('/api/admin/lcms',protect, lcmsRoutes);
-app.use('/api/lcmsDashboard',protect, LcmsDashboardRoutes);
+app.use('/api/kpis',protect, dbSelector, kpiRoutes);
+app.use('/api/intel',protect, dbSelector, intelRoutes);
+app.use('/api/performance',protect, dbSelector, performanceRoutes);
+app.use('/api/type',protect, dbSelector, typeRoutes);
+app.use('/api/charts',protect, dbSelector, chartRoutes);
+app.use('/api',protect, dbSelector, sourceSliderRoutes);
+app.use('/api/towns',protect, dbSelector, townRoutes);
+app.use('/api/source',protect, dbSelector, sourceRoutes);
+app.use('/api/type/breakdown', protect, dbSelector,getSubtypeTownBreakdown);
+app.use('/api/pending-breakdown', protect, dbSelector,getKpiTypeBreakdown);
+app.use('/api/hmpkpis', protect, dbSelector, hmpKpiRoutes);
+app.use('/api/hyd-perf', protect, dbSelector, hydPerfRoutes);
+app.use('/api/graph', protect, dbSelector, appGraphRoutes);
+app.use('/api/aging',protect, dbSelector, agingRoutes);
+app.use('/api/orders',protect, dbSelector, orderSummaryRoutes);
+app.use('/api/admin/users',protect, dbSelector, userRoutes);
+app.use('/api/redzone', protect, dbSelector, redZoneRoutes);
+app.use('/api/hydrants', protect, dbSelector, operationalHoursRoutes);
+app.use('/api/admin/lcms',protect, dbSelector, lcmsRoutes);
+app.use('/api/lcmsDashboard',protect, dbSelector, LcmsDashboardRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Server on ${PORT}`)
+    console.timeEnd('🚀 Total_Server_Startup');
+});
 
 
 

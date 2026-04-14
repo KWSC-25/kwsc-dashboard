@@ -1,8 +1,6 @@
-import db from '../db.js';
-
 export const getSourceSliderData = async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const [rows] = await req.db.query(`
       SELECT
         c.source,
         ct.title AS complaint_type,

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Droplets, LogOut, Construction, BarChart3, Users , Scale} from 'lucide-react';
+import { LayoutDashboard, Droplets, LogOut, Construction, BarChart3, Users, Scale } from 'lucide-react';
 
 const Selector = () => {
     const navigate = useNavigate();
@@ -71,10 +71,18 @@ const Selector = () => {
 
             <div className="selector-grid">
                 {dashboardOptions.map((opt) => (
-                    <div 
+                    <div
                         key={opt.id}
                         className={`selector-card ${!opt.active ? 'disabled-card' : ''}`}
-                        onClick={() => opt.active && navigate(opt.path, { state: { initialTab: opt.id } })}
+                        onClick={() => {
+                            if (opt.active) {
+                                // 1. Save the ID (e.g., 'hydrant' or 'complaint') to storage
+                                sessionStorage.setItem('activeDashboard', opt.id);
+
+                                // 2. Navigate as usual
+                                navigate(opt.path, { state: { initialTab: opt.id } });
+                            }
+                        }}
                     >
                         {!opt.active && <span className="coming-soon-tag">Coming Soon</span>}
                         <div className="icon-wrapper">{opt.icon}</div>
@@ -85,9 +93,9 @@ const Selector = () => {
             </div>
 
             {/* Added display: flex, align-items: center, and gap to keep icon and text on one line */}
-            <button 
-                onClick={handleLogout} 
-                className="selector-logout" 
+            <button
+                onClick={handleLogout}
+                className="selector-logout"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
                 <LogOut size={18} /> Logout

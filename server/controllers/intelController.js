@@ -1,9 +1,7 @@
-import db from '../db.js';
-
 export const getIntelData = async (req, res) => {
   try {
     // 1. Trending Query (Last 7 Days)
-    const [trending] = await db.query(`
+    const [trending] = await req.db.query(`
       SELECT 
         st.title AS subtype_name,
         COUNT(c.id) AS total_count
@@ -16,7 +14,7 @@ export const getIntelData = async (req, res) => {
     `);
 
     // 2. Real-Time Logs Query
-    const [logs] = await db.query(`
+    const [logs] = await req.db.query(`
       (
         SELECT 'WATER' AS category, 'REGISTERED' AS action, t.town, c.created_at AS ts
         FROM complaint c 
@@ -49,7 +47,7 @@ export const getIntelData = async (req, res) => {
         ORDER BY c.updated_at DESC LIMIT 1
       );
     `);
-    const [sourceData] = await db.query(`
+    const [sourceData] = await req.db.query(`
       SELECT 
         source,
         COUNT(id) AS total_registered,

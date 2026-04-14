@@ -1,5 +1,3 @@
-import { hmpDb } from "../db.js";
-
 const formatTo12Hr = (time24) => {
     if (!time24) return null;
     const [hrs, mins] = time24.split(':');
@@ -18,7 +16,7 @@ export const getHydrantOperationalStatus = async (req, res) => {
             WHERE h.id IN (1, 2, 3, 4, 5, 6, 7)
             ORDER BY h.id ASC`;
 
-        const [rows] = await hmpDb.execute(query);
+        const [rows] = await req.db.execute(query);
         const hasEntriesToday = rows.some(r => r.slots !== null);
 
         const now = new Date();

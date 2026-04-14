@@ -1,5 +1,3 @@
-import { hmpDb } from "../db.js";
-
 export const getDispatchAging = async (req, res) => {
     try {
         const tableQuery = `
@@ -61,8 +59,8 @@ export const getDispatchAging = async (req, res) => {
                 OR ots.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01'));
         `;
 
-        const [tableData] = await hmpDb.execute(tableQuery);
-        const [chartData] = await hmpDb.execute(chartQuery);
+        const [tableData] = await req.db.execute(tableQuery);
+        const [chartData] = await req.db.execute(chartQuery);
 
         res.json({
             table: tableData,

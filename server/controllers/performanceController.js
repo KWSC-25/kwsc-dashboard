@@ -1,5 +1,3 @@
-import db from '../db.js';
-
 const getPerformanceQuery = (typeId, limit, order) => `
 SELECT 
     xen_name, town_name, total_count, pending_count, resolved_count, 
@@ -46,15 +44,15 @@ LIMIT ${limit};`;
 
 export const getUnderperformingEngineers = async (req, res) => {
     try {
-        const [results] = await db.execute(getPerformanceQuery(req.query.typeId, 5, 'ASC'), [req.query.typeId]);
+        const [results] = await req.db.execute(getPerformanceQuery(req.query.typeId, 5, 'ASC'), [req.query.typeId]);
         res.json(results);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getTopPerformers = async (req, res) => {
     try {
-        const [waterBest] = await db.execute(getPerformanceQuery(2, 3, 'DESC'), [2]);
-        const [sewBest] = await db.execute(getPerformanceQuery(1, 3, 'DESC'), [1]);
+        const [waterBest] = await req.db.execute(getPerformanceQuery(2, 3, 'DESC'), [2]);
+        const [sewBest] = await req.db.execute(getPerformanceQuery(1, 3, 'DESC'), [1]);
         res.json({ waterBest, sewBest });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
@@ -85,7 +83,7 @@ GROUP BY u.name, c.type_id, t.title, st.title;
 export const getEngineerDetails = async (req, res) => {
     try {
         const { name, typeId } = req.query;
-        const [results] = await db.execute(getEngineerDetailsQuery, [name, typeId]);
+        const [results] = await req.db.execute(getEngineerDetailsQuery, [name, typeId]);
         
         if (results.length === 0) return res.status(404).json({ message: "No data found" });
         

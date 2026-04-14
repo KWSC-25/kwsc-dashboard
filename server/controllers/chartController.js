@@ -1,5 +1,3 @@
-import db from '../db.js';
-
 export const getTownWiseStats = async (req, res) => {
     // typeId: 2 for Water, 1 for Sewerage
     const { typeId } = req.query;
@@ -19,7 +17,7 @@ export const getTownWiseStats = async (req, res) => {
     `;
 
     try {
-        const [results] = await db.execute(query, [typeId]);
+        const [results] = await req.db.execute(query, [typeId]);
         res.json(results);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -55,7 +53,7 @@ FROM (
     `;
 
     try {
-        const [results] = await db.execute(query);
+        const [results] = await req.db.execute(query);
         res.json(results[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });

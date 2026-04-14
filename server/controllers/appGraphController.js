@@ -1,5 +1,3 @@
-import { hmpDb } from "../db.js";
-
 export const getMobileAppTrend = async (req, res) => {
     const query = `
         SELECT 
@@ -12,7 +10,7 @@ export const getMobileAppTrend = async (req, res) => {
     `;
 
     try {
-        const [rows] = await hmpDb.execute(query);
+        const [rows] = await req.db.execute(query);
         res.status(200).json({
             labels: rows.map(row => row.order_date),
             data: rows.map(row => row.total_created_orders)

@@ -1,5 +1,3 @@
-import { hmpDb } from "../db.js";
-
 export const getHmpKpis = async (req, res) => {
     try { 
         // 1. Pre-calculate dates in Node.js to make queries "SARGable"
@@ -65,9 +63,9 @@ export const getHmpKpis = async (req, res) => {
         const gallonParams = [today, today, today, startOfMonthDateTime];
 
         // Execute sequentially to avoid overloading DB connections
-        const [otsData] = await hmpDb.execute(otsQuery, otsParams);
-        const [orderData] = await hmpDb.execute(ordersQuery, orderParams);
-        const [gallonData] = await hmpDb.execute(gallonsQuery, gallonParams);
+        const [otsData] = await req.db.execute(otsQuery, otsParams);
+        const [orderData] = await req.db.execute(ordersQuery, orderParams);
+        const [gallonData] = await req.db.execute(gallonsQuery, gallonParams);
 
         res.json({
             success: true,

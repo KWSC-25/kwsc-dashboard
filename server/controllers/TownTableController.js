@@ -1,4 +1,3 @@
-import db from '../db.js';
 export const getTownStats = async (req, res) => {
     const { typeId } = req.query; 
     const query = `
@@ -16,7 +15,7 @@ export const getTownStats = async (req, res) => {
         GROUP BY t.id, t.town
         ORDER BY total_registered DESC;`;
     try {
-        const [rows] = await db.execute(query, [typeId]);
+        const [rows] = await req.db.execute(query, [typeId]);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -49,7 +48,7 @@ export const getTownDetails = async (req, res) => {
             return res.status(400).json({ error: "townId is required" });
         }
 
-        const [rows] = await db.execute(query, [townId, typeId]);
+        const [rows] = await req.db.execute(query, [townId, typeId]);
         res.json(rows);
     } catch (err) {
         console.error("SQL Error:", err.message);

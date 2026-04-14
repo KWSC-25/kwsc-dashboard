@@ -9,6 +9,14 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // --- NEW LOGIC: Attach Database Context ---
+  const activeDashboard = sessionStorage.getItem('activeDashboard');
+  if (activeDashboard) {
+    config.headers['x-dashboard-context'] = activeDashboard;
+  }
+  // ------------------------------------------
+
   return config;
 }, (error) => {
   return Promise.reject(error);
@@ -19,6 +27,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && !window.location.pathname.includes('/')) {
       sessionStorage.removeItem('token');
+      // Clean up dashboard context on logout too
+      sessionStorage.removeItem('activeDashboard'); 
       window.location.href = '/'; 
     }
     return Promise.reject(error);

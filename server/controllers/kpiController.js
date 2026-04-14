@@ -1,8 +1,6 @@
-import db from '../db.js';
-
 export const getKpiStats = async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const [rows] = await req.db.query(`
     SELECT
         /* 1. TOTAL REGISTERED CARD */
         COUNT(*) AS total_registered,
@@ -48,7 +46,7 @@ export const getKpiStats = async (req, res) => {
     FROM complaint
     WHERE created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
     `);
-    const [rows2] = await db.query(`
+    const [rows2] = await req.db.query(`
 
     SELECT
     SUM(is_assigned = 1) AS total_assigned,
@@ -69,7 +67,7 @@ FROM (
   `);
 
     //today
-    const [today] = await db.query(`
+    const [today] = await req.db.query(`
     SELECT
         SUM(DATE(created_at) = CURDATE()) AS total_registered_today,
         SUM(status = 1 AND DATE(updated_at) = CURDATE()) AS total_resolved_today
@@ -92,7 +90,7 @@ export const getKpiTypeBreakdown = async (req, res) => {
   const { typeId } = req.query;
   try {
     // 1. Get subtypes
-    const [subtypes] = await db.query(
+    const [subtypes] = await req.db.query(
       "SELECT id, title FROM sub_types WHERE type_id = ?",
       [typeId]
     );
@@ -123,7 +121,7 @@ export const getKpiTypeBreakdown = async (req, res) => {
       ORDER BY total_pending_town DESC
     `;
 
-    const [rows] = await db.query(query, [typeId]);
+    const [rows] = await req.db.query(query, [typeId]);
 
     res.json({
       columns: subtypes.map(s => s.title),

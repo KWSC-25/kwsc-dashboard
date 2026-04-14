@@ -1,5 +1,3 @@
-import db from '../db.js';
-
 export const getSourceDetails = async (req, res) => {
     try {
         const { source } = req.query;
@@ -23,7 +21,7 @@ export const getSourceDetails = async (req, res) => {
             ORDER BY ct.title ASC, total_reg DESC;
         `;
 
-        const [rows] = await db.execute(query, [source]);
+        const [rows] = await req.db.execute(query, [source]);
 
         // 1. Calculate Grand Totals for this specific source
         let grandTotals = { reg: 0, res: 0, pen: 0, wip: 0 };
