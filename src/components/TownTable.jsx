@@ -5,20 +5,21 @@ const TownTable = () => {
     const [townWaterStats, setTownWaterStats] = useState([]);
     const [townSewStats, setTownSewStats] = useState([]);
     const [loading, setLoading] = useState(true);
-    
-    const [page, setPage] = useState(0); 
+
+    const [page, setPage] = useState(0);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    
+
     const [selectedTown, setSelectedTown] = useState(null);
     const [townDetails, setTownDetails] = useState([]);
     const [loadingDetail, setLoadingDetail] = useState(false);
+    const [assignmentData, setAssignmentData] = useState([]);
 
     // 1. Fetching Logic internal to component
     useEffect(() => {
         const fetchTownData = async () => {
             try {
                 const [tWater, tSew] = await Promise.all([
-                    api.get('/towns/town-stats?typeId=2'), 
+                    api.get('/towns/town-stats?typeId=2'),
                     api.get('/towns/town-stats?typeId=1')
                 ]);
                 setTownWaterStats(tWater.data);
@@ -44,7 +45,7 @@ const TownTable = () => {
     const activeData = isWater ? townWaterStats : townSewStats;
     const currentTypeId = isWater ? 2 : 1;
     const displayTitle = isWater ? "TOWN-WISE DISTRIBUTION (WATER)" : "TOWN-WISE DISTRIBUTION (SEWERAGE)";
-    
+
     const itemsPerPage = 14;
     const currentData = useMemo(() => {
         if (!activeData) return [];
@@ -62,10 +63,18 @@ const TownTable = () => {
         setSelectedTown(town);
         setLoadingDetail(true);
         try {
-            const res = await api.get(`/towns/town-details`, {
-                params: { townId: town.town_id, typeId: currentTypeId }
-            });
-            setTownDetails(res.data);
+            // Fetch both datasets simultaneously
+            const [detailRes, assignmentRes] = await Promise.all([
+                api.get(`/towns/town-details`, {
+                    params: { townId: town.town_id, typeId: currentTypeId }
+                }),
+                api.get(`/type/assignment-breakdown`, { // Ensure path matches your route prefix
+                    params: { townId: town.town_id, typeId: currentTypeId }
+                })
+            ]);
+
+            setTownDetails(detailRes.data);
+            setAssignmentData(assignmentRes.data);
         } catch (err) {
             console.error("Error fetching breakdown", err);
         } finally {
@@ -74,7 +83,7 @@ const TownTable = () => {
     };
 
     useEffect(() => {
-        if (selectedTown) return; 
+        if (selectedTown) return;
         const interval = setInterval(() => {
             setPage((prev) => isMobile ? (prev < 2 ? 2 : 0) : (prev + 1) % 4);
         }, 30000);
@@ -98,7 +107,7 @@ const TownTable = () => {
                         <tr>
                             <th className="sticky-col">METRIC</th>
                             {currentData.map((item, index) => (
-                                <th key={index} 
+                                <th key={index}
                                     className={`town-name clickable-cell ${top3CriticalTowns.includes(item.town_name) ? 'critical-blink' : ''}`}
                                     onClick={() => handleTownClick(item)}>
                                     {formatName(item.town_name)}
@@ -128,20 +137,42 @@ const TownTable = () => {
             </div>
 
             {/* DETAIL POPUP MODAL */}
-            {/* DETAIL POPUP MODAL */}
             {selectedTown && (
                 <div className="modal-overlay" onClick={() => setSelectedTown(null)}>
                     <div className="modal-content animate-pop-in" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <div>
-                                <h3 style={{ color: isWater ? '#38bdf8' : '#a78bfa', margin: 0 }}>
-                                    {selectedTown.town_name}
-                                </h3>
-                                <small style={{ color: '#94a3b8' }}>SUB-TYPE BREAKDOWN ({isWater ? 'WATER' : 'SEWERAGE'})</small>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'flex-start' }}>
+                                <div>
+                                    <h3 style={{ color: isWater ? '#38bdf8' : '#a78bfa', margin: 0 }}>
+                                        {selectedTown.town_name}
+                                    </h3>
+                                    <small style={{ color: '#94a3b8' }}>SUB-TYPE BREAKDOWN ({isWater ? 'WATER' : 'SEWERAGE'})</small>
+                                </div>
+
+                                {/* NEW ASSIGNMENT BREAKDOWN SECTION */}
+                                {!loadingDetail && assignmentData.length > 0 && (
+                                    <div className="assignment-mini-panel" style={{
+                                        background: 'rgba(15, 23, 42, 0.6)',
+                                        padding: '8px 12px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #334155',
+                                        marginRight: '20px'
+                                    }}>
+                                        <div style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' }}>PENDING ASSIGNED TO:</div>
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            {assignmentData.map((item, idx) => (
+                                                <div key={idx} style={{ textAlign: 'center' }}>
+                                                    <div style={{ fontSize: '12px', color: '#f8fafc' }}>{item.assigned_to}</div>
+                                                    <div style={{ fontSize: '14px', color: '#ef4444', fontWeight: 'bold' }}>{item.complaint_count}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <button className="close-btn" onClick={() => setSelectedTown(null)}>&times;</button>
                         </div>
-                        
+
                         <div className="modal-body">
                             {loadingDetail ? (
                                 <div className="loader-text">Loading Details...</div>

@@ -61,3 +61,34 @@ export const getSubtypeTownBreakdown = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+
+export const getAssignmentBreakdown = async (req, res) => {
+    const { townId, typeId } = req.query;
+
+    const query = `
+        SELECT 
+            COALESCE(u_assigned_agent.name, u_dept.name, 'Unassigned') AS assigned_to,
+            COUNT(c.id) AS complaint_count
+        FROM complaint c
+        LEFT JOIN complaint_assign_agent caa ON c.id = caa.complaint_id
+        LEFT JOIN mobile_agent ma ON caa.agent_id = ma.id
+        LEFT JOIN users u_assigned_agent ON ma.user_id = u_assigned_agent.id
+        LEFT JOIN complaint_assign_department cad ON c.id = cad.complaint_id
+        LEFT JOIN users u_dept ON cad.user_id = u_dept.id
+        WHERE c.type_id = ?
+          AND c.status = 0
+          AND c.town_id = ?
+          AND c.created_at >= '2024-10-23'
+        GROUP BY assigned_to
+        ORDER BY complaint_count DESC;
+    `;
+
+    try {
+        const [results] = await req.db.execute(query, [typeId, townId]);
+        res.json(results);
+    } catch (err) {
+        console.error("Assignment Breakdown Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+};

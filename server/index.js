@@ -18,6 +18,7 @@ import appGraphRoutes from './routes/appGraphRoutes.js';
 import agingRoutes from './routes/agingRoutes.js';
 import orderSummaryRoutes from './routes/orderSummaryRoutes.js';
 import { getKpiTypeBreakdown } from './controllers/kpiController.js';
+import { getAssignmentBreakdown } from './controllers/typeController.js'; // Import it at the top
 
 import { protect } from './middleware/authMiddleware.js';
 import { login } from './controllers/authController.js';
@@ -50,6 +51,7 @@ app.use('/api',protect, dbSelector, sourceSliderRoutes);
 app.use('/api/towns',protect, dbSelector, townRoutes);
 app.use('/api/source',protect, dbSelector, sourceRoutes);
 app.use('/api/type/breakdown', protect, dbSelector,getSubtypeTownBreakdown);
+app.use('/api/type/assignment-breakdown', protect, dbSelector, getAssignmentBreakdown);
 app.use('/api/pending-breakdown', protect, dbSelector,getKpiTypeBreakdown);
 app.use('/api/hmpkpis', protect, dbSelector, hmpKpiRoutes);
 app.use('/api/hyd-perf', protect, dbSelector, hydPerfRoutes);
