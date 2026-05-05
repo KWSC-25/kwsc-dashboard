@@ -94,11 +94,38 @@ const TownTable = () => {
 
     const formatName = (name) => name.replace(/town/gi, '').trim();
 
+    const handlePrevPage = () => {
+        setPage((prev) => (prev === 0 ? 3 : prev - 1));
+    };
+
+    const handleNextPage = () => {
+        setPage((prev) => (prev === 3 ? 0 : prev + 1));
+    };
+
+
     return (
         <div className={`town-table-panel ${isMobile ? 'mobile-mode' : ''}`}>
-            <h2 className="town-header-compact">
-                <span style={{ color: isWater ? '#38bdf8' : '#a78bfa' }}>{displayTitle}</span>
-                {!isMobile && <span className="page-indicator">SECTION {page + 1}/4</span>}
+            <h2 className="town-header-compact" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+                {/* Left Arrow */}
+                <button 
+                    onClick={handlePrevPage} 
+                    style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '20px' }}
+                >
+                    &#10094;
+                </button>
+
+                <div style={{ textAlign: 'center' }}>
+                    <span style={{ color: isWater ? '#38bdf8' : '#a78bfa' }}>{displayTitle}</span>
+                    {!isMobile && <span className="page-indicator" style={{ marginLeft: '10px' }}>SECTION {page + 1}/4</span>}
+                </div>
+
+                {/* Right Arrow */}
+                <button 
+                    onClick={handleNextPage} 
+                    style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '20px' }}
+                >
+                    &#10095;
+                </button>
             </h2>
 
             <div className="town-table-wrapper">
