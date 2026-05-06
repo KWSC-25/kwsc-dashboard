@@ -65,7 +65,7 @@ body {
 
 .split-label { font-size: 0.65rem; text-transform: uppercase; font-weight: bold; color: var(--text-dim); }
 
-.panel h2 { margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; color: var(--text-main); margin-right: 5px; }
+.panel h2 { margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; color: var(--text-main); margin-right: 5px; font-weight: bold; }
 
 @keyframes border-bottom-pulse {
     0%, 100% { border-bottom: 2px solid rgba(74, 222, 128, 0.2); }
@@ -99,7 +99,7 @@ th { text-align: left; font-size: 0.65rem; color: var(--text-dim); text-transfor
 td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
 
 .top-performers-split { display: grid; grid-template-rows: 1fr 1fr; gap: 10px; height: 100%; }
-.sub-panel { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+.sub-panel { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 30px; }
 
 .grid-3 { 
     display: grid; 
@@ -125,7 +125,16 @@ td { padding: 8px; font-size: 0.8rem; border-bottom: 1px solid var(--border-colo
     margin-bottom: -10px;
     margin-top: -5px;
 }
-
+/* Update this to be a "wrapper" style instead of an "item" style */
+.merged-section-padding {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 0px; /* This ensures no gap between the two internal tables */
+}
 @media (max-width: 1024px) {
     .grid-3 {
         grid-template-columns: 1fr 1fr;

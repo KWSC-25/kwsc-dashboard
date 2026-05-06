@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 
-const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, typeId, subTypeIds, onPopupToggle }) => {
+const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, typeId, subTypeIds, onPopupToggle, hideAnalytics = false , isMerged = false}) => {
     const [state, setState] = useState(null);
     // New state for the town-wise breakdown popup
     const [breakdown, setBreakdown] = useState({ visible: false, data: [], name: '' });
@@ -12,7 +12,7 @@ const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, ty
                 const [perfResp, typeResp] = await Promise.all([
                     api.get(`/performance/underperforming?typeId=${typeId}`),
                     api.get(`/type?typeId=${typeId}&subTypeIds=${subTypeIds}`)
-                ]);
+                ]); 
                 setState({
                     performers: perfResp.data,
                     analytics: typeResp.data
@@ -66,8 +66,8 @@ const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, ty
 
     const sewTotalRow = isSewer ? calculateSewTotals() : null;
 
-    return (
-        <div className="panel">
+        const content = (
+        <>
             <h2 style={{ color: typeColor }}>
                 <i className={iconClass}></i> {title}
             </h2>
@@ -107,7 +107,7 @@ const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, ty
                     })}
                 </tbody>
             </table>
-
+            {!hideAnalytics && (
             <div className={`type-card ${themeClass}`}>
                 <div className="type-header">
                     <i className="fas fa-chart-line"></i> Emergency Types Analytics (Overall)
@@ -152,6 +152,7 @@ const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, ty
                     </div>
                 )}
             </div>
+            )}
 
             {/* Town-wise Distribution Popup */}
             {breakdown.visible && (
@@ -203,6 +204,16 @@ const UnderperformingTable = ({ title, typeColor, iconClass, onEngineerClick, ty
                     </div>
                 </div>
             )}
+
+    </>
+    );   
+    return isMerged ? (
+        <div style={{ width: '100%' }}>
+            {content}
+        </div>
+    ) : (
+        <div className="panel">
+            {content}
         </div>
     );
 };

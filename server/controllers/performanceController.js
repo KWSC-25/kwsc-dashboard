@@ -12,7 +12,7 @@ SELECT
     performance_score
 FROM (
     SELECT 
-        u.name AS xen_name, t.town AS town_name,
+        u.name AS xen_name, t.town AS town_name, 
         COUNT(c.id) AS total_count,
         SUM(c.status = 0) AS pending_count,
         SUM(c.status = 1) AS resolved_count,
@@ -44,7 +44,7 @@ LIMIT ${limit};`;
 
 export const getUnderperformingEngineers = async (req, res) => {
     try {
-        const [results] = await req.db.execute(getPerformanceQuery(req.query.typeId, 5, 'ASC'), [req.query.typeId]);
+        const [results] = await req.db.execute(getPerformanceQuery(req.query.typeId, 2, 'ASC'), [req.query.typeId]);
         res.json(results);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };

@@ -112,12 +112,56 @@ const Dashboard = () => {
                                     <motion.div key="main" initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
                                         <div className="main-tables-grid animate-fade-in">
                                             <div className="grid-3">
-                                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)" onPopupToggle={setIsPopupOpen} typeColor="#38bdf8" iconClass="fas fa-tint" onEngineerClick={(name) => handleEngineerClick(name, 2)} typeId={2} subTypeIds="1,13,16" />
-                                                <UnderperformingTable title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" onPopupToggle={setIsPopupOpen} typeColor="#a78bfa" iconClass="fas fa-biohazard" onEngineerClick={(name) => handleEngineerClick(name, 1)} typeId={1} subTypeIds="21,108" />
+                                                {/* LEFT COLUMN */}
+                                                <div className="panel-container">
+                                                    {/* Apply the panel class here ONCE to wrap both */}
+                                                    <div className="panel" style={{ padding: '15px' }}> 
+                                                        
+                                                        {/* WATER TABLE */}
+                                                        <UnderperformingTable 
+                                                            title="UNDERPERFORMING ENGINEERS WATER (LAST 3 MONTHS)" 
+                                                            onPopupToggle={setIsPopupOpen} 
+                                                            typeColor="#38bdf8" 
+                                                            iconClass="fas fa-tint" 
+                                                            onEngineerClick={(name) => handleEngineerClick(name, 2)} 
+                                                            typeId={2} 
+                                                            subTypeIds="1,13,16"
+                                                            hideAnalytics={true}
+                                                            isMerged={true} 
+                                                        />
+
+                                                        {/* Small spacer or thin line - use minimal margin to keep them tight */}
+                                                        <div style={{ 
+                                                            height: '1px', 
+                                                            background: '#334155', 
+                                                            margin: '10px 0', 
+                                                            opacity: 0.3 
+                                                        }}></div>
+
+                                                        {/* SEWERAGE TABLE */}
+                                                        <UnderperformingTable 
+                                                            title="UNDERPERFORMING ENGINEERS SEWERAGE (LAST 3 MONTHS)" 
+                                                            onPopupToggle={setIsPopupOpen} 
+                                                            typeColor="#a78bfa" 
+                                                            iconClass="fas fa-biohazard" 
+                                                            onEngineerClick={(name) => handleEngineerClick(name, 1)} 
+                                                            typeId={1} 
+                                                            subTypeIds="21,108"
+                                                            hideAnalytics={false}
+                                                            isMerged={true} 
+                                                        />
+                                                        
+                                                    </div>
+                                                </div>
+
+                                                {/* RIGHT COLUMN: Top Performers */}
                                                 <div className="panel" style={{ padding: '15px' }}>
                                                     <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
                                                     <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
                                                 </div>
+                                                {/* MIDDLE COLUMN: Empty */}
+                                                <div className="empty-section"></div>
+
                                             </div>
                                         </div>
                                     </motion.div>
