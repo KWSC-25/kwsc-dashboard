@@ -45,6 +45,8 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
   const { mainKpis: stats, assignmentStats: assignments, todaystats: today } = data;
 
   const regToday = today?.total_registered_today || 0;
+  const regtf_h = today?.reg_24h_rolling || 0;
+
   const resToday = today?.total_resolved_today || 0;
   const resTodayReg = today?.resolved_of_today_registered || 0;
 
@@ -148,6 +150,8 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
             <div style={{ padding: '4px 2px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
               <span style={{ fontSize: '1.2rem', color: '#fbbf24', fontWeight: '600' }}>TODAY:</span>
               <span style={{ fontSize: '1.3rem', color: '#fbbf24', fontWeight: '800' }}>{regToday.toLocaleString()}</span>
+              <span style={{ fontSize: '1.2rem', color: 'var(--water-blue)', fontWeight: '600' }}>| REG in last 24h:</span>
+              <span style={{ fontSize: '1.3rem', color: 'var(--water-blue)', fontWeight: '600' }}>{regtf_h.toLocaleString()}</span>  
             </div>
           </div>
         </div>
@@ -190,7 +194,7 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
                   {/* Same Day Resolution Stat */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <span style={{ fontSize: '0.85rem', color: '#00ccff', fontWeight: '600', letterSpacing: '0.3px' }}>
-                          SAME DAY RESOLUTION:
+                          RESOLVED WITHIN 24 HOURS:
                       </span>
                       <span style={{ fontSize: '1.1rem', color: '#00ccff', fontWeight: '700' }}>
                           {Number(resTodayReg).toLocaleString()}

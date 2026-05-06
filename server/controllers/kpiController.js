@@ -72,12 +72,22 @@ FROM (
 
     //today
     const [today] = await req.db.query(`
-    SELECT
+    SELECT 
         SUM(DATE(created_at) = CURDATE()) AS total_registered_today,
         SUM(status = 1 AND DATE(updated_at) = CURDATE()) AS total_resolved_today,
 
-        SUM(status = 1 AND DATE(created_at) = CURDATE() AND DATE(updated_at) = CURDATE()) AS resolved_of_today_registered
-    FROM complaint
+
+        COALESCE(SUM(
+          status = 1 
+          AND created_at >= NOW() - INTERVAL 24 HOUR 
+          AND updated_at >= NOW() - INTERVAL 24 HOUR
+          AND TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 24
+        ), 0) AS resolved_of_today_registered, 
+
+        COALESCE(SUM(created_at >= NOW() - INTERVAL 24 HOUR), 0) AS reg_24h_rolling
+
+
+        FROM complaint
     `);
     res.json({
       mainKpis: rows[0],
