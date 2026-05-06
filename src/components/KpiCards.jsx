@@ -141,6 +141,7 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
                 <div><span className="split-label">Info</span><span className="split-item">{stats.total_registered_req}</span></div>
                 <div><span className="split-label">Conn</span><span className="split-item">{stats.total_registered_new_conn}</span></div>
                 <div><span className="split-label">Others</span><span className="split-item">{stats.total_registered_other}</span></div>
+                <div><span className="split-label">CMC</span><span className="split-item">{stats.total_registered_cmc}</span></div>
               </div>
 
             </div>
@@ -299,6 +300,9 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
               </div>
               <div onClick={() => handleTypeClick(19, "HYDRANT")} style={{ cursor: "pointer" }}>
                 <span className="split-label">HYD</span><span className="split-item" style={{ color: "var(--red-crit)" }}>{stats.total_pending_hyd}</span>
+              </div>
+              <div onClick={() => handleTypeClick(19, "HYDRANT")} style={{ cursor: "pointer" }}>
+                <span className="split-label">CMC</span><span className="split-item" style={{ color: "var(--red-crit)" }}>{stats.total_pending_cmc}</span>
               </div>
             </div>
 

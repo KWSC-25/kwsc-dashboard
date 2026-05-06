@@ -13,6 +13,8 @@ export const getKpiStats = async (req, res) => {
         SUM(type_id = 12) AS total_registered_social,
         SUM(type_id = 19) AS total_registered_hyd,
         SUM(type_id =24) AS total_registered_req,
+        SUM(type_id =25) AS total_registered_cmc,
+
         
 
         /* 2. RESOLVED CARD */
@@ -40,6 +42,8 @@ export const getKpiStats = async (req, res) => {
         SUM(status = 0 AND type_id = 12) AS total_pending_social,
         SUM(status = 0 AND type_id = 19) AS total_pending_hyd,
         SUM(status = 0 AND type_id =24) AS total_pending_req,
+        SUM(status = 0 AND type_id =25) AS total_pending_cmc,
+
         -- Total pending count as of the end of yesterday
         SUM(status = 0 AND DATE(created_at) <= DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AS total_pending_yesterday
 
