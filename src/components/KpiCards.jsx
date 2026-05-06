@@ -46,6 +46,8 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
 
   const regToday = today?.total_registered_today || 0;
   const resToday = today?.total_resolved_today || 0;
+  const resTodayReg = today?.resolved_of_today_registered || 0;
+
 
   // Global % of total registered for the main card badges
   const calculatePercent = (val) => ((val / stats.total_registered) * 100).toFixed(1);
@@ -165,11 +167,39 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
                 From yesterday: <span className="stat-highlight">{renderTrend(resolvedTrend)}</span>
               </span>
 
-              <div style={{ padding: '1px 10px', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>
-                <span style={{ fontSize: '1rem', color: '#0df3c9', fontWeight: 'bold' }}>TODAY:</span>
-                <span style={{ fontSize: '1.1rem', color: '#0df3c9', fontWeight: '500' }}>{Number(resToday || 0).toLocaleString()}</span>
+              <div style={{ 
+                  padding: '2px 10px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginTop: '8px',
+                  whiteSpace: 'nowrap' // Prevents text from breaking into two lines
+              }}>
+                  {/* Main Resolved Today Stat */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ fontSize: '1.1rem', color: '#0df3c9', fontWeight: 'bold' }}>TODAY:</span>
+                      <span style={{ fontSize: '1.3rem', color: '#0df3c9', fontWeight: '700' }}>
+                          {Number(resToday).toLocaleString()}
+                      </span>
+                  </div>
+
+                  {/* Vertical Separator */}
+                  <div style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }}></div>
+
+                  {/* Same Day Resolution Stat */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#00ccff', fontWeight: '600', letterSpacing: '0.3px' }}>
+                          SAME DAY RESOLUTION:
+                      </span>
+                      <span style={{ fontSize: '1.1rem', color: '#00ccff', fontWeight: '700' }}>
+                          {Number(resTodayReg).toLocaleString()}
+                      </span>
+                  </div>
               </div>
+              
+
             </div>
+            
           </div>
 
           <div className="kpi-split" style={{ textAlign: 'right', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '15px' }}>

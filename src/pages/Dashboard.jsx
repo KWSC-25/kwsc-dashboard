@@ -44,29 +44,6 @@ const Dashboard = () => {
         }
     };
 
-
-
-    useEffect(() => {
-        const startTimer = (duration) => {
-            if (viewTimerRef.current) clearTimeout(viewTimerRef.current);
-            viewTimerRef.current = setTimeout(() => {
-                // IF POPUP IS OPEN, DO NOT SWITCH SLIDER, JUST RESTART TIMER
-                if (isPopupOpen || showModal) {
-                    startTimer(duration);
-                    return;
-                }
-
-                setShowSourceSlider(prev => {
-                    const nextState = !prev;
-                    startTimer(nextState ? 15000 : 120000);
-                    return nextState;
-                });
-            }, duration);
-        };
-        startTimer(120000);
-        return () => { if (viewTimerRef.current) clearTimeout(viewTimerRef.current); };
-    }, [isPopupOpen, showModal]); // Add dependencies here
-
     const SystemSelector = (
         <select
             value={activeSystem}

@@ -70,8 +70,9 @@ FROM (
     const [today] = await req.db.query(`
     SELECT
         SUM(DATE(created_at) = CURDATE()) AS total_registered_today,
-        SUM(status = 1 AND DATE(updated_at) = CURDATE()) AS total_resolved_today
+        SUM(status = 1 AND DATE(updated_at) = CURDATE()) AS total_resolved_today,
 
+        SUM(status = 1 AND DATE(created_at) = CURDATE() AND DATE(updated_at) = CURDATE()) AS resolved_of_today_registered
     FROM complaint
     `);
     res.json({
