@@ -72,3 +72,27 @@ export const getIntelData = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+export const getSpecialSources = async (req, res) => {
+  try {
+    const targetSources = ['Governor House', 'Federal Ombudsman', 'C.M House', 'COK'];
+    
+    const [sourceData] = await req.db.query(`
+      SELECT 
+        source,
+        COUNT(id) AS total_registered,
+        SUM(DATE(created_at) = CURDATE()) AS today_registered,
+        SUM(status = 1) AS total_resolved,
+        SUM(status = 0) AS total_pending,
+        SUM(status = 2) AS total_wip
+      FROM complaint
+      WHERE source IN (?) 
+      AND created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+      GROUP BY source;
+    `, [targetSources]);
+
+    res.json(sourceData);
+  } catch (error) {
+    console.error("Special Sources Controller Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

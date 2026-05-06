@@ -20,6 +20,7 @@ import LcmsHeader from '../components/LcmsHeader';
 import LcmsDashboard from '../components/LcmsDashboard';
 import RedZoneViolations from '../components/RedZoneViolations';
 import HydrantOperationalHours from '../components/HydrantOperationalHours';
+import SpecialSourcesCard from '../components/SpecialSourcesCard';
 
 const Dashboard = () => {
     const location = useLocation();
@@ -107,8 +108,6 @@ const Dashboard = () => {
                         <KpiCards />
 
                         <div className="view-transition-container" style={{ minHeight: '480px' }}>
-                            <AnimatePresence mode="wait">
-                                {!showSourceSlider ? (
                                     <motion.div key="main" initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
                                         <div className="main-tables-grid animate-fade-in">
                                             <div className="grid-3">
@@ -154,25 +153,19 @@ const Dashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* RIGHT COLUMN: Top Performers */}
+                                                {/* MIDDLE COLUMN: Top Performers */}
                                                 <div className="panel" style={{ padding: '15px' }}>
                                                     <TopPerformersTable title="TOP ENGINEERS WATER (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 2)} />
                                                     <TopPerformersTable title="TOP ENGINEERS SEWERAGE (LAST 3 MONTHS)" onEngineerClick={(name) => handleEngineerClick(name, 1)} />
                                                 </div>
-                                                {/* MIDDLE COLUMN: Empty */}
-                                                <div className="empty-section"></div>
-
+                                                {/* RIGHT COLUMN */}
+                                                <div className="panel" style={{ height: '100%', marginTop: '0px', padding: '0px' }}>
+                                                    <SpecialSourcesCard />
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>
-                                ) : (
-                                    <motion.div key="slider" initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -100, opacity: 0 }} transition={{ duration: 0.5, ease: "easeInOut" }}>
-                                        <div className="slider-wrapper animate-fade-in">
-                                            <SourceSlider />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            
                         </div>
 
                         <TownTable />
