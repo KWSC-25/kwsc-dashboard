@@ -45,10 +45,16 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
   const { mainKpis: stats, assignmentStats: assignments, todaystats: today } = data;
 
   const regToday = today?.total_registered_today || 0;
-  const regtf_h = today?.reg_72h_rolling || 0;
 
   const resToday = today?.total_resolved_today || 0;
-  const resTodayReg = today?.resolved_of_today_registered || 0;
+
+  const reg_24h= today?.reg_24h_rolling || 0;
+  const reg_48h= today?.reg_48h_rolling || 0;  
+  const reg_72h= today?.reg_72h_rolling || 0;
+
+  const RTRT_24h= today?.resolved_of_24h || 0;
+  const RTRT_48h= today?.resolved_of_48h || 0;
+  const RTRT_72h= today?.resolved_of_72h || 0;
 
 
   // Global % of total registered for the main card badges
@@ -150,8 +156,17 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
             <div style={{ padding: '4px 2px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
               <span style={{ fontSize: '1.2rem', color: '#fbbf24', fontWeight: '600' }}>TODAY:</span>
               <span style={{ fontSize: '1.3rem', color: '#fbbf24', fontWeight: '800' }}>{regToday.toLocaleString()}</span>
-              <span style={{ fontSize: '1.2rem', color: 'var(--water-blue)', fontWeight: '600' }}>| REG in last 72h:</span>
-              <span style={{ fontSize: '1.3rem', color: 'var(--water-blue)', fontWeight: '600' }}>{regtf_h.toLocaleString()}</span>  
+          
+            </div>
+            <div style={{ padding: '4px 2px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+              
+              <span style={{ fontSize: '1.2rem', color: 'var(--water-blue)', fontWeight: '600' }}>24h:</span>
+              <span style={{ fontSize: '1.3rem', color: 'var(--water-blue)', fontWeight: '600' }}>{reg_24h.toLocaleString()}</span>  
+              <span style={{ fontSize: '1.2rem', color: 'var(--water-blue)', fontWeight: '600' }}>| 48h:</span>
+              <span style={{ fontSize: '1.3rem', color: 'var(--water-blue)', fontWeight: '600' }}>{reg_48h.toLocaleString()}</span> 
+
+              <span style={{ fontSize: '1.2rem', color: 'var(--water-blue)', fontWeight: '600' }}>| 72h:</span>
+              <span style={{ fontSize: '1.3rem', color: 'var(--water-blue)', fontWeight: '600' }}>{reg_72h.toLocaleString()}</span> 
             </div>
           </div>
         </div>
@@ -189,19 +204,21 @@ const KpiCards = ({ onPopupToggle }) => { // Add prop
                   </div>
 
 
-                  {/* Same Day Resolution Stat */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ fontSize: '0.9rem', color: '#00ccff', fontWeight: '600' }}>
-                          RESOLVED WITHIN 72h:
-                      </span>
-                      <span style={{ fontSize: '1.1rem', color: '#00ccff', fontWeight: '700' }}>
-                          {Number(resTodayReg).toLocaleString()}
-                      </span>
-                  </div>
               </div>
-              
-
+            
             </div>
+
+            <div style={{ padding: '4px 2px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+              
+              <span style={{ fontSize: '1.2rem', color: '#0df3c9', fontWeight: '600' }}>24h:</span>
+              <span style={{ fontSize: '1.3rem', color: '#0df3c9', fontWeight: '600' }}>{RTRT_24h.toLocaleString()}</span>  
+              <span style={{ fontSize: '1.2rem', color: '#0df3c9', fontWeight: '600' }}>| 48h:</span>
+              <span style={{ fontSize: '1.3rem', color: '#0df3c9', fontWeight: '600' }}>{RTRT_48h.toLocaleString()}</span> 
+
+              <span style={{ fontSize: '1.2rem', color: '#0df3c9', fontWeight: '600' }}>| 72h:</span>
+              <span style={{ fontSize: '1.3rem', color: '#0df3c9', fontWeight: '600' }}>{RTRT_72h.toLocaleString()}</span> 
+            </div>
+            
             
           </div>
 

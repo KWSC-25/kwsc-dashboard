@@ -82,9 +82,27 @@ FROM (
           AND created_at >= NOW() - INTERVAL 72 HOUR 
           AND updated_at >= NOW() - INTERVAL 72 HOUR
           AND TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 72
-        ), 0) AS resolved_of_today_registered, 
+        ), 0) AS resolved_of_72h, 
 
-        COALESCE(SUM(created_at >= NOW() - INTERVAL 72 HOUR), 0) AS reg_72h_rolling
+        COALESCE(SUM(
+          status = 1 
+          AND created_at >= NOW() - INTERVAL 48 HOUR 
+          AND updated_at >= NOW() - INTERVAL 48 HOUR
+          AND TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 48
+        ), 0) AS resolved_of_48h, 
+
+        COALESCE(SUM(
+          status = 1 
+          AND created_at >= NOW() - INTERVAL 24 HOUR 
+          AND updated_at >= NOW() - INTERVAL 24 HOUR
+          AND TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 24
+        ), 0) AS resolved_of_24h, 
+
+        COALESCE(SUM(created_at >= NOW() - INTERVAL 72 HOUR), 0) AS reg_72h_rolling,
+        COALESCE(SUM(created_at >= NOW() - INTERVAL 48 HOUR), 0) AS reg_48h_rolling,
+        COALESCE(SUM(created_at >= NOW() - INTERVAL 24 HOUR), 0) AS reg_24h_rolling
+
+
 
 
         FROM complaint
