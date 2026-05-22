@@ -32,18 +32,20 @@ export const getHmpKpis = async (req, res) => {
             SUM(CASE WHEN b.updated_at >= ? AND o.order_type != 'OTS' AND b.status = 2 THEN 1 ELSE 0 END) AS hmp_dispatched_today,
             SUM(CASE WHEN b.updated_at >= ? AND o.order_type = 'OTS' AND b.status = 1 THEN 1 ELSE 0 END) AS ots_completed_today,
             SUM(CASE WHEN b.updated_at >= ? AND o.order_type != 'OTS' AND b.status = 1 THEN 1 ELSE 0 END) AS hmp_completed_today,
+            SUM(CASE WHEN o.created_at >= ? AND o.order_type != 'OTS' AND b.status = 3 THEN 1 ELSE 0 END) AS hmp_pending_today,
             SUM(CASE WHEN o.created_at >= ? AND o.order_type != 'OTS' THEN 1 ELSE 0 END) AS hmp_created_month,
             SUM(CASE WHEN b.updated_at >= ? AND b.status = 2 THEN 1 ELSE 0 END) AS total_dispatched_month,
             SUM(CASE WHEN b.updated_at >= ? AND b.status = 1 THEN 1 ELSE 0 END) AS total_completed_month,
             SUM(CASE WHEN b.updated_at >= ? AND o.order_type = 'OTS' AND b.status = 2 THEN 1 ELSE 0 END) AS ots_dispatched_month,
             SUM(CASE WHEN b.updated_at >= ? AND o.order_type != 'OTS' AND b.status = 2 THEN 1 ELSE 0 END) AS hmp_dispatched_month,
             SUM(CASE WHEN b.updated_at >= ? AND o.order_type = 'OTS' AND b.status = 1 THEN 1 ELSE 0 END) AS ots_completed_month,
-            SUM(CASE WHEN b.updated_at >= ? AND o.order_type != 'OTS' AND b.status = 1 THEN 1 ELSE 0 END) AS hmp_completed_month
+            SUM(CASE WHEN b.updated_at >= ? AND o.order_type != 'OTS' AND b.status = 1 THEN 1 ELSE 0 END) AS hmp_completed_month,
+            SUM(CASE WHEN o.created_at >= ? AND o.order_type != 'OTS' AND b.status = 3 THEN 1 ELSE 0 END) AS hmp_pending_month
         FROM orders o
         LEFT JOIN billings b ON o.id = b.order_id
         WHERE o.created_at >= ? OR b.updated_at >= ?`;
 
-        const orderParams = [today, today, today, today, today, today, today, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth];
+        const orderParams = [today, today, today, today, today, today, today, today, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth, startOfMonth];
 
         // 4. Gallons Query
         const gallonsQuery = `
