@@ -41,7 +41,11 @@ const HmpKpiCards = () => {
             cancelled: Number(ots.cancelled_ots_hmp_today || 0) + Number(ots.cancelled_ots_consumer_today || 0),
             by_hmp: ots.cancelled_ots_hmp_today,
             by_cons: ots.cancelled_ots_consumer_today,
-            pending: ots.pending_ots_today,
+
+            hmp_pending: orders.hmp_pending_today,
+            ots_pending: ots.pending_ots_today,
+            pending: Number(ots.pending_ots_today || 0) + Number(orders.hmp_pending_today || 0),
+            
             gal_total: gallons.total_gallons_today,
             gal_gps: gallons.total_gallons_gps_today,
             gal_comm: gallons.total_gallons_comm_today,
@@ -62,7 +66,11 @@ const HmpKpiCards = () => {
             cancelled: Number(ots.cancelled_ots_hmp_month || 0) + Number(ots.cancelled_ots_consumer_month || 0),
             by_hmp: ots.cancelled_ots_hmp_month,
             by_cons: ots.cancelled_ots_consumer_month,
-            pending: ots.pending_ots_month,
+
+            hmp_pending: orders.hmp_pending_month,
+            ots_pending: ots.pending_ots_month,
+            pending: Number(ots.pending_ots_month || 0) + Number(orders.hmp_pending_month || 0),
+
             gal_total: gallons.total_gallons_month,
             gal_gps: gallons.total_gallons_gps_month,
             gal_comm: gallons.total_gallons_comm_month,
@@ -134,10 +142,13 @@ const HmpKpiCards = () => {
                     {/* 5. Pending */}
                     <div className="hmp-card hmp-grad-red">
                         <div className="hmp-main-row">
-                            <span className="hmp-label label-red">PENDING ORDERS (OTS)</span>
+                            <span className="hmp-label label-red">PENDING ORDERS</span>
                             <span className="hmp-total">{fmt(s.pending)}</span>
                         </div>
-                       
+                        <div className="hmp-sub-row">
+                            <div className="hmp-sub-stat">OTS: <span className="label-red">{fmt(s.ots_pending)}</span></div>
+                            <div className="hmp-sub-stat">HMP: <span className="label-red">{fmt(s.hmp_pending)}</span></div>
+                        </div>
                     </div>
 
                     {/* 6. Gallons Balance Card */}
