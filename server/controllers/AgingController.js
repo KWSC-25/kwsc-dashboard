@@ -26,8 +26,7 @@ export const getDispatchAging = async (req, res) => {
             FROM hydrants h
             JOIN ots_order ots ON h.ots_hydrant  = ots.hydrant_id
             WHERE ots.status IN ('pending', 'pending_alignment')
-            AND (ots.api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') 
-                OR ots.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01'))
+            AND (ots.api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01'))
             GROUP BY h.id, h.name
             ORDER BY h.name ASC;
         `;
@@ -55,8 +54,7 @@ export const getDispatchAging = async (req, res) => {
                 END) AS above_72
             FROM ots_order ots
             WHERE ots.status IN ('pending', 'pending_alignment')
-            AND (ots.api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') 
-                OR ots.updated_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01'));
+            AND (ots.api_created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01'));
         `;
 
         const [tableData] = await req.db.execute(tableQuery);
