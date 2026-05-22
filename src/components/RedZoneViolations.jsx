@@ -44,14 +44,14 @@ const RedZoneViolations = () => {
             </div>
 
             {/* Added table-scroll-container for mobile horizontal scrolling */}
-            <div className="table-responsive-wrapper table-scroll-container" style={{ marginTop: '10px', maxHeight: '200px' }}>
+            <div className="table-responsive-wrapper Rtable-scroll-container" style={{ marginTop: '10px', maxHeight: '200px' }}>
                 <table className="modern-table violation-table">
                     <thead>
                         <tr>
                             <th>DATE</th>
                             <th>TRUCK</th>
                             <th>OWNER</th>
-                            <th>HYDRANT</th>
+                            <th>HYDRANT</th> 
                             <th>ZONE</th>
                             <th>MINS</th>
                         </tr>

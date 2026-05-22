@@ -2693,7 +2693,7 @@ body {
     }
 
     /* Fix tables from overflowing horizontally */
-    .table-scroll-container {
+    .Rtable-scroll-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
