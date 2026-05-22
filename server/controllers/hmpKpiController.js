@@ -10,11 +10,11 @@ export const getHmpKpis = async (req, res) => {
         const otsQuery = `
         SELECT 
             COUNT(CASE WHEN api_created_at >= ? THEN 1 END) AS total_ots_today,
-            SUM(CASE WHEN updated_at >= ? AND status IN ('pending_alignment', 'pending') THEN 1 ELSE 0 END) AS pending_ots_today,
+            SUM(CASE WHEN api_created_at >= ? AND status IN ('pending_alignment', 'pending') THEN 1 ELSE 0 END) AS pending_ots_today,
             SUM(CASE WHEN updated_at >= ? AND status = 'failed' THEN 1 ELSE 0 END) AS cancelled_ots_hmp_today,
             SUM(CASE WHEN updated_at >= ? AND status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_ots_consumer_today,
             COUNT(CASE WHEN api_created_at >= ? THEN 1 END) AS total_ots_month,
-            SUM(CASE WHEN updated_at >= ? AND status IN ('pending_alignment', 'pending') THEN 1 ELSE 0 END) AS pending_ots_month,
+            SUM(CASE WHEN api_created_at >= ? AND status IN ('pending_alignment', 'pending') THEN 1 ELSE 0 END) AS pending_ots_month,
             SUM(CASE WHEN updated_at >= ? AND status = 'failed' THEN 1 ELSE 0 END) AS cancelled_ots_hmp_month,
             SUM(CASE WHEN updated_at >= ? AND status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_ots_consumer_month
         FROM ots_order
