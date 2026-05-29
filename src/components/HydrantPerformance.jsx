@@ -34,7 +34,7 @@ const HydrantPerformance = () => {
     // Calculate Column Totals
     const colTotals = data.reduce((acc, row) => ({
         created: acc.created + Number(row[`created${suffix}`] || 0),
-        dispatched: acc.dispatched + getDispatchValue(row),
+        dispatched: acc.dispatched + Number(row[`dispatched${suffix}`] || 0),
         completed: acc.completed + Number(row[`completed${suffix}`] || 0),
         cancelled: acc.cancelled + Number(row[`cancelled${suffix}`] || 0),
         pending: acc.pending + Number(row[`pending${suffix}`] || 0),
@@ -91,7 +91,7 @@ const HydrantPerformance = () => {
                                     <tr key={i} className={isCritical ? "row-alert-blink" : ""}>
                                         <td className="hydrant-name-cell">{row.hydrant_name}</td>
                                         <td className="cell-created">{row[`created${suffix}`]}</td>
-                                        <td className="cell-dispatched">{getDispatchValue(row)}</td>
+                                        <td className="cell-dispatched">{row[`dispatched${suffix}`]}</td>
                                         <td className="cell-completed">{row[`completed${suffix}`]}</td>
                                         <td className="cell-cancelled">{row[`cancelled${suffix}`]}</td>
                                         <td className="cell-pending">{row[`pending${suffix}`]}</td>
