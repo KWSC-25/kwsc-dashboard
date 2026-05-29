@@ -57,9 +57,9 @@ const HmpKpiCards = () => {
             created: Number(ots.total_ots_month || 0) + Number(orders.hmp_created_month || 0),
             ots_c: ots.total_ots_month,
             hmp_c: orders.hmp_created_month,
-            dispatched: Number(orders.total_dispatched_month) + Number(orders.total_completed_month),
-            ots_d: Number(orders.ots_dispatched_month) + Number(orders.ots_completed_month) ,
-            hmp_d: Number(orders.hmp_dispatched_month) + Number(orders.hmp_completed_month),
+            dispatched: Number(orders.total_dispatched_month) ,
+            ots_d: Number(orders.ots_dispatched_month)  ,
+            hmp_d: Number(orders.hmp_dispatched_month),
             completed: orders.total_completed_month,
             ots_comp: orders.ots_completed_month,
             hmp_comp: orders.hmp_completed_month,
@@ -106,19 +106,42 @@ const HmpKpiCards = () => {
                     {/* 2. Dispatched */}
                     <div className="hmp-card hmp-grad-orange">
                         <div className="hmp-main-row">
-                            <span className="hmp-label label-orange">TOTAL DISPATCHED</span>
+                            <span className="hmp-label label-orange">DISPATCHED OVERALL</span>
                             <span className="hmp-total">{fmt(s.dispatched)}</span>
                         </div>
                         <div className="hmp-sub-row">
                             <div className="hmp-sub-stat">OTS: <span className="label-orange">{fmt(s.ots_d)}</span></div>
                             <div className="hmp-sub-stat">HMP: <span className="label-orange">{fmt(s.hmp_d)}</span></div>
                         </div>
+                        <div className="hmp-main-row">
+                            {/* Dynamically swaps text label based on row context */}
+                            <span className="hmp-label label-orange">
+                                {key === 'daily' ? 'SAME DAY DISPATCH' : 'SAME MONTH DISPATCH'}
+                            </span>
+                            <span className="hmp-total">{fmt(s.dispatched)}</span>
+                        </div>
+                        <div className="hmp-sub-row">
+                            <div className="hmp-sub-stat">OTS : <span className="label-orange">{fmt(s.ots_d)}</span></div>
+                            <div className="hmp-sub-stat">HMP : <span className="label-orange">{fmt(s.hmp_d)}</span></div>
+                        </div>
                     </div>
 
                     {/* 3. Completed */}
                     <div className="hmp-card hmp-grad-green">
                         <div className="hmp-main-row">
-                            <span className="hmp-label label-green">TOTAL COMPLETED</span>
+                            <span className="hmp-label label-green">COMPLETED OVERALL</span>
+                            <span className="hmp-total">{fmt(s.completed)}</span>
+                        </div>
+                        <div className="hmp-sub-row">
+                            <div className="hmp-sub-stat">OTS: <span className="label-green">{fmt(s.ots_comp)}</span></div>
+                            <div className="hmp-sub-stat">HMP: <span className="label-green">{fmt(s.hmp_comp)}</span></div>
+                        </div>
+
+                        <div className="hmp-main-row">
+                            {/* Dynamically swaps text label based on row context */}
+                            <span className="hmp-label label-green">
+                                {key === 'daily' ? 'SAME DAY COMPLETED' : 'SAME MONTH COMPLETED'}
+                            </span>
                             <span className="hmp-total">{fmt(s.completed)}</span>
                         </div>
                         <div className="hmp-sub-row">
