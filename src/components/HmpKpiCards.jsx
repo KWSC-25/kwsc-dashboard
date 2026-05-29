@@ -33,6 +33,8 @@ const HmpKpiCards = () => {
             completed: ots.ots_completed_today,
             cancelled: Number(ots.ots_cancelled_consumer_today) + Number(ots.ots_cancelled_hmp_today),
             pending: ots.ots_pending_today,
+            cancelled_consumer:ots.ots_cancelled_consumer_today,
+            cancelled_hydrant: ots.ots_cancelled_hmp_today
         },
         daily_hmp: {
             created: orders.hmp_created_today,
@@ -47,6 +49,8 @@ const HmpKpiCards = () => {
             completed: ots.ots_completed_month,
             cancelled: Number(ots.ots_cancelled_consumer_month) + Number(ots.ots_cancelled_hmp_month),
             pending: ots.ots_pending_month,
+            cancelled_consumer: ots.ots_cancelled_consumer_month,
+            cancelled_hydrant: ots.ots_cancelled_hmp_month
         },
         monthly_hmp: {
             created: orders.hmp_created_month,
@@ -100,11 +104,21 @@ const HmpKpiCards = () => {
                 </div>
 
                 {/* 4. Cancelled */}
-                <div className="hmp-card hmp-grad-grey">
+                <div className="hmp-card hmp-grad-grey" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div className="hmp-main-row">
-                        <span className="hmp-label">TOTAL CANCELLED BY {type === 'OTS' ? 'CONSUMER' : 'HMP'}</span>
+                        <span className="hmp-label">
+                            {type === 'OTS' ? 'TOTAL CANCELLED' : 'TOTAL CANCELLED'}
+                        </span>
                         <span className="hmp-total">{fmt(s.cancelled)}</span>
                     </div>
+                    
+                    {/* Secondary row breakdown layer exclusively for OTS */}
+                    {type === 'OTS' && (
+                        <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', fontSize: '10px', color: '#8a99a8' }}>
+                            <span style={{ color: 'white',fontSize: '13px'}}>BY CONSUMER: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                            <span style={{ color: 'white',fontSize: '13px'}}>BY HYDRANT: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
+                        </div>
+                    )}
                 </div>
 
                 {/* 5. Pending */}
@@ -153,7 +167,7 @@ const HmpKpiCards = () => {
             <div className="hmp-section-container" style={{ border: '1px solid #2a3b4c', padding: '16px', borderRadius: '8px', background: '#0a111a' }}>
                 {/* Bright Yellow Larger Title Heading */}
                 <div className="hmp-section-title" style={{ fontSize: '18px', fontWeight: '800', color: '#FFF200', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    DAILY OTS & HMP ORDERS
+                    DAILY ORDERS
                 </div>
 
                 <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
@@ -173,16 +187,16 @@ const HmpKpiCards = () => {
 
                     {/* Right Side: Shared Merged Gallons Section */}
                     <div style={{ width: '22%', minWidth: '240px' }}>
-                        {renderGallonsCard('daily_gallons', 'GALLONS DAILY')}
+                        {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
                     </div>
                 </div>
             </div>
 
             {/* ==================== GLOBAL MONTHLY SECTION ==================== */}
             <div className="hmp-section-container" style={{ border: '1px solid #2a3b4c', padding: '16px', borderRadius: '8px', background: '#0a111a' }}>
-                {/* Bright Yellow Larger Title Heading */}
-                <div className="hmp-section-title" style={{ fontSize: '18px', fontWeight: '800', color: '#FFF200', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    MONTHLY OTS & HMP ORDERS
+                {/* Sky Blue Larger Title Heading matching the border color profile */}
+                <div className="hmp-section-title" style={{ fontSize: '18px', fontWeight: '800', color: '#38bdf8', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    MONTHLY ORDERS
                 </div>
 
                 <div className="hmp-kpi-group-wrapper hmp-grp-month" style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
@@ -202,7 +216,7 @@ const HmpKpiCards = () => {
 
                     {/* Right Side: Shared Merged Gallons Section */}
                     <div style={{ width: '22%', minWidth: '240px' }}>
-                        {renderGallonsCard('monthly_gallons', 'GALLONS MONTHLY')}
+                        {renderGallonsCard('monthly_gallons', 'TOTAL GALLONS USED')}
                     </div>
                 </div>
             </div>
