@@ -22,7 +22,7 @@ export const getRedZoneViolations = async (req, res) => {
             LEFT JOIN hydrants h ON v.hydrant_id = h.id
             LEFT JOIN red_zones rz ON v.red_zone_id = rz.id
             ORDER BY v.created_at DESC
-            LIMIT 5
+            LIMIT 3
         `;
 
         const [[counts]] = await req.db.execute(countQuery);
