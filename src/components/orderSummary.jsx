@@ -35,7 +35,6 @@ const OrderSummary = () => {
                         <th>GOVT VEHICLE</th>
                         <th>P.A.F.</th>
                         <th>PAK RANGER</th>
-                        <th >TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,7 +50,6 @@ const OrderSummary = () => {
                             <td>{row.govt_vehicle}</td>
                             <td>{row.paf}</td>
                             <td>{row.pak_ranger}</td>
-                            <td className="total-num"style={{ color: 'var(--accent-cyan)', fontWeight: 'bold'}}>{row.total}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -67,7 +65,6 @@ const OrderSummary = () => {
                         <td>{calculateTotal('govt_vehicle')}</td>
                         <td>{calculateTotal('paf')}</td>
                         <td>{calculateTotal('pak_ranger')}</td>
-                        <td className="grand-total" style={{ color: 'yellow' }}>{calculateTotal('total')}</td>
                     </tr>
                 </tfoot>
             </table>

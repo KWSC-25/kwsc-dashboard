@@ -4,7 +4,7 @@ export const getOrderSummary = async (req, res) => {
             SELECT 
                 h.name AS hydrant_name,
                 SUM(CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') THEN 1 ELSE 0 END) AS commercial,
-                SUM(CASE WHEN o.order_type = 'OTS' THEN 1 ELSE 0 END) AS gps_ots,
+                COALESCE(ots.total_ots, 0) AS gps_ots,
                 SUM(CASE WHEN o.order_type = 'Online (GPS)' THEN 1 ELSE 0 END) AS gps_online,
                 SUM(CASE WHEN o.order_type = 'Dc quota' THEN 1 ELSE 0 END) AS dc_quota,
                 SUM(CASE WHEN o.order_type = 'Gps(billing)' THEN 1 ELSE 0 END) AS gps_billing,
@@ -12,14 +12,22 @@ export const getOrderSummary = async (req, res) => {
                 SUM(CASE WHEN o.order_type = 'Govt. vehicle' THEN 1 ELSE 0 END) AS govt_vehicle,
                 SUM(CASE WHEN o.order_type = 'P.A.F korangi creek' THEN 1 ELSE 0 END) AS paf,
                 SUM(CASE WHEN o.order_type = 'Pak rangers' THEN 1 ELSE 0 END) AS pak_ranger,
-                COUNT(o.id) AS total
+                (COUNT(o.id) + COALESCE(ots.total_ots, 0)) AS total
             FROM hydrants h
             LEFT JOIN orders o ON h.id = o.hydrant_id
             INNER JOIN billings b ON o.id = b.order_id
+            LEFT JOIN (
+                SELECT hydrant_id, COUNT(*) AS total_ots
+                FROM ots_order
+                WHERE api_created_at >= CURDATE()
+                GROUP BY hydrant_id
+            ) ots ON h.id = ots.hydrant_id
             WHERE o.created_at >= CURDATE()
             GROUP BY h.id, h.name
             ORDER BY h.name ASC
         `;
+
+        // Zero arguments needed in the execution array!
         const [rows] = await req.db.execute(query);
         res.json(rows);
     } catch (err) {
