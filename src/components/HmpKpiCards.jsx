@@ -112,7 +112,7 @@ const HmpKpiCards = () => {
                 {/* 2. Dispatched */}
                 <div className="hmp-card hmp-grad-orange">
                     <div className="hmp-main-row">
-                        <span className="hmp-label label-orange">TOTAL DISPATCHED {type}</span>
+                        <span className="hmp-label label-orange">DRIVER ASSIGNED  {type}</span>
                         <span className="hmp-total">{fmt(s.dispatched)}</span>
                     </div>
                 </div>
