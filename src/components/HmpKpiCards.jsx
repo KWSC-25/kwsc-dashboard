@@ -161,63 +161,53 @@ const HmpKpiCards = () => {
     };
 
     return (
-        <div className="hmp-dashboard-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '30px', width: '100%' }}>
+        <div className="hmp-dashboard-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0px', width: '100%' }}>
             
             {/* ==================== GLOBAL DAILY SECTION ==================== */}
-            <div className="hmp-section-container" style={{ border: '1px solid #2a3b4c', padding: '16px', borderRadius: '8px', background: '#0a111a' }}>
-                {/* Bright Yellow Larger Title Heading */}
-                <div className="hmp-section-title" style={{ fontSize: '18px', fontWeight: '800', color: '#FFF200', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    DAILY ORDERS
+            <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', gap: '12px', alignItems: 'stretch', position: 'relative' }}>
+                {/* Border-anchored Yellow Title */}
+                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200' }}>DAILY ORDERS</div>
+                
+                {/* Left Side Grid Panels */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {/* 1. DAILY OTS ROW */}
+                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
+                        {renderOrderCards('daily_ots', 'OTS')}
+                    </div>
+                    
+                    {/* 2. DAILY HMP ROW */}
+                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
+                        {renderOrderCards('daily_hmp', 'HMP')}
+                    </div>
                 </div>
 
-                <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
-                    {/* Left Side: Split into distinct OTS and HMP grid rows */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                        
-                        {/* 1. DAILY OTS ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
-                            {renderOrderCards('daily_ots', 'OTS')}
-                        </div>
-                        
-                        {/* 2. DAILY HMP ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
-                            {renderOrderCards('daily_hmp', 'HMP')}
-                        </div>
-                    </div>
-
-                    {/* Right Side: Shared Merged Gallons Section */}
-                    <div style={{ width: '22%', minWidth: '240px' }}>
-                        {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
-                    </div>
+                {/* Right Side Gallons */}
+                <div style={{ width: '22%', minWidth: '240px' }}>
+                    {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
                 </div>
             </div>
 
             {/* ==================== GLOBAL MONTHLY SECTION ==================== */}
-            <div className="hmp-section-container" style={{ border: '1px solid #2a3b4c', padding: '16px', borderRadius: '8px', background: '#0a111a' }}>
-                {/* Sky Blue Larger Title Heading matching the border color profile */}
-                <div className="hmp-section-title" style={{ fontSize: '18px', fontWeight: '800', color: '#38bdf8', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    MONTHLY ORDERS
+            <div className="hmp-kpi-group-wrapper hmp-grp-month" style={{ display: 'flex', gap: '12px', alignItems: 'stretch', position: 'relative', marginTop: '20px' }}>
+                {/* Border-anchored Blue Title */}
+                <div className="hmp-group-label hmp-lbl-month" style={{ color: '#38bdf8' }}>MONTHLY ORDERS</div>
+                
+                {/* Left Side Grid Panels */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {/* 3. MONTHLY OTS ROW */}
+                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
+                        {renderOrderCards('monthly_ots', 'OTS')}
+                    </div>
+                    
+                    {/* 4. MONTHLY HMP ROW */}
+                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
+                        {renderOrderCards('monthly_hmp', 'HMP')}
+                    </div>
                 </div>
 
-                <div className="hmp-kpi-group-wrapper hmp-grp-month" style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
-                    {/* Left Side: Split into distinct OTS and HMP grid rows */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                        
-                        {/* 3. MONTHLY OTS ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
-                            {renderOrderCards('monthly_ots', 'OTS')}
-                        </div>
-                        
-                        {/* 4. MONTHLY HMP ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
-                            {renderOrderCards('monthly_hmp', 'HMP')}
-                        </div>
-                    </div>
-
-                    {/* Right Side: Shared Merged Gallons Section */}
-                    <div style={{ width: '22%', minWidth: '240px' }}>
-                        {renderGallonsCard('monthly_gallons', 'TOTAL GALLONS USED')}
-                    </div>
+                {/* Right Side Gallons */}
+                <div style={{ width: '22%', minWidth: '240px' }}>
+                    {renderGallonsCard('monthly_gallons', 'TOTAL GALLONS USED')}
                 </div>
             </div>
 
