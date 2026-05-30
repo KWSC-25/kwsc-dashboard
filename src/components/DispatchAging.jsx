@@ -59,7 +59,7 @@ const DispatchAging = () => {
                         </tr>
                         <tr className="sub-header">
                             <th></th>
-                            <th>On time (within 24h)</th>
+                            <th>Since 24h</th>
                             <th>Delayed (Over 24h)</th>
                             <th>Critical (Over 48h)</th>
                             <th>Severe (Over 72h)</th>
