@@ -2,12 +2,18 @@ export const getHmpKpis = async (req, res) => {
     try { 
         // 1. Pre-calculate dates in Node.js to make queries "SARGable"
         const now = new Date();
-        const todayStart = `${now.toISOString().split('T')[0]} 00:00:00`;
-        const todayEnd = `${now.toISOString().split('T')[0]} 23:59:59`;
+        
+        // Default Single Day Window
+        const defaultTodayStart = `${now.toISOString().split('T')[0]} 00:00:00`;
+        const defaultTodayEnd = `${now.toISOString().split('T')[0]} 23:59:59`;
+
+        // Capture custom user filters if provided, otherwise fallback to standard single day
+        const { startDate, endDate } = req.query;
+        const todayStart = startDate ? `${startDate} 00:00:00` : defaultTodayStart;
+        const todayEnd = endDate ? `${endDate} 23:59:59` : defaultTodayEnd;
         
         const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
         const startOfMonthDateTime = `${startOfMonth} 00:00:00`;
-        // Dynamically get the last millisecond of the current month
         const endOfMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         const endOfMonthDateTime = `${endOfMonthDate.toISOString().split('T')[0]} 23:59:59`;
 
@@ -28,15 +34,15 @@ export const getHmpKpis = async (req, res) => {
             SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('cancelled') THEN 1 ELSE 0 END) AS ots_cancelled_consumer_month,
             SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('failed') THEN 1 ELSE 0 END) AS ots_cancelled_hmp_month
         FROM ots_order
-        WHERE api_created_at BETWEEN ? AND ?`;
+        WHERE api_created_at BETWEEN ? AND ? OR api_created_at BETWEEN ? AND ?`;
 
         const otsParams = [
-            // Today fields
+            // Today filters (Uses custom range if filtered)
             todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd,
             // Month fields
             startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime,
-            // Main WHERE clause bounds
-            startOfMonthDateTime, endOfMonthDateTime
+            // Main WHERE clause bounds to accommodate both potential custom spans and month limits safely
+            startOfMonthDateTime, endOfMonthDateTime, todayStart, todayEnd
         ];
 
         // 3. Updated Orders Query (Combined Today and Month)
@@ -55,18 +61,18 @@ export const getHmpKpis = async (req, res) => {
             SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status IN (3,4) THEN 1 ELSE 0 END) AS hmp_cancelled_month
         FROM orders o
         INNER JOIN billings b ON o.id = b.order_id
-        WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ?`;
+        WHERE o.order_type != 'OTS' AND (o.created_at BETWEEN ? AND ? OR o.created_at BETWEEN ? AND ?)`;
 
         const orderParams = [
-            // Today fields
+            // Today filters (Uses custom range if filtered)
             todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd,
             // Month fields
             startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime,
             // Main WHERE clause bounds
-            startOfMonthDateTime, endOfMonthDateTime
+            startOfMonthDateTime, endOfMonthDateTime, todayStart, todayEnd
         ];
 
-        // 4. Gallons Query - UNTOUCHED (As requested)
+        // 4. Gallons Query - UNTOUCHED (As requested, ignores custom ranges, strictly matches current standard day)
         const gallonsQuery = `
         SELECT 
             SUM(CASE WHEN o.created_at >= ? THEN tt.capacity ELSE 0 END) AS total_gallons_today,
@@ -81,9 +87,9 @@ export const getHmpKpis = async (req, res) => {
         WHERE b.status IN (1,2) 
         AND b.updated_at >= ?`;
 
-        const gallonParams = [todayStart.split(' ')[0], todayStart.split(' ')[0], todayStart.split(' ')[0], startOfMonthDateTime];
+        const gallonParams = [defaultTodayStart.split(' ')[0], defaultTodayStart.split(' ')[0], defaultTodayStart.split(' ')[0], startOfMonthDateTime];
 
-        // Execute sequentially to avoid overloading DB connections
+        // Execute queries
         const [otsData] = await req.db.execute(otsQuery, otsParams);
         const [orderData] = await req.db.execute(ordersQuery, orderParams);
         const [gallonData] = await req.db.execute(gallonsQuery, gallonParams);

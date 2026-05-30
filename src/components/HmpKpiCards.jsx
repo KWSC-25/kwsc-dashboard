@@ -1,23 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 
 const HmpKpiCards = () => {
     const [data, setData] = useState(null);
+    
+    // Date filter component states
+    const todayStr = new Date().toISOString().split('T')[0];
+    const [startDate, setStartDate] = useState(todayStr);
+    const [endDate, setEndDate] = useState(todayStr);
+    const [activeFilters, setActiveFilters] = useState({ startDate: '', endDate: '' });
+
+    // Resolved by wrapping fetch logic in useCallback to safely handle effect dependencies
+    const fetchHmpData = useCallback(async (filters = activeFilters) => {
+        try {
+            let url = 'hmpkpis/hmp-kpi';
+            if (filters.startDate && filters.endDate) {
+                url += `?startDate=${filters.startDate}&endDate=${filters.endDate}`;
+            }
+            const resp = await api.get(url);
+            setData(resp.data.data);
+        } catch (err) {
+            console.error("HMP KPI Fetch Error:", err);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeFilters]);
 
     useEffect(() => {
-        const fetchHmpData = async () => {
-            try {
-                const resp = await api.get('hmpkpis/hmp-kpi');
-                setData(resp.data.data);
-            } catch (err) {
-                console.error("HMP KPI Fetch Error:", err);
-            }
-        };
-
         fetchHmpData();
-        const interval = setInterval(fetchHmpData, 30000);
+        const interval = setInterval(() => fetchHmpData(), 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchHmpData]);
+
+    const handleApplyFilter = () => {
+        setActiveFilters({ startDate, endDate });
+    };
+
+    const handleResetFilter = () => {
+        setStartDate(todayStr);
+        setEndDate(todayStr);
+        setActiveFilters({ startDate: '', endDate: '' });
+    };
 
     if (!data || !data.ots || !data.orders || !data.gallons) {
         return <div className="hmp-loading">Fetching HMP Stats...</div>;
@@ -33,7 +55,7 @@ const HmpKpiCards = () => {
             completed: ots.ots_completed_today,
             cancelled: Number(ots.ots_cancelled_consumer_today) + Number(ots.ots_cancelled_hmp_today),
             pending: ots.ots_pending_today,
-            cancelled_consumer:ots.ots_cancelled_consumer_today,
+            cancelled_consumer: ots.ots_cancelled_consumer_today,
             cancelled_hydrant: ots.ots_cancelled_hmp_today
         },
         daily_hmp: {
@@ -107,16 +129,15 @@ const HmpKpiCards = () => {
                 <div className="hmp-card hmp-grad-grey" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div className="hmp-main-row">
                         <span className="hmp-label">
-                            {type === 'OTS' ? 'TOTAL CANCELLED' : 'TOTAL CANCELLED'} {type}
+                            {type === 'OTS' ? 'TOTAL CANCELLED' : 'TOTAL CANCELLED ' + type}
                         </span>
                         <span className="hmp-total">{fmt(s.cancelled)}</span>
                     </div>
                     
-                    {/* Secondary row breakdown layer exclusively for OTS */}
                     {type === 'OTS' && (
                         <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', fontSize: '10px', color: '#8a99a8' }}>
-                            <span style={{ color: 'white',fontSize: '13px'}}>BY CONSUMER: <strong>{fmt(s.cancelled_consumer)}</strong></span>
-                            <span style={{ color: 'white',fontSize: '13px'}}>BY HYDRANT: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
+                            <span style={{ color: 'white', fontSize: '13px' }}>BY CONSUMER: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                            <span style={{ color: 'white', fontSize: '13px' }}>BY HYDRANT: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
                         </div>
                     )}
                 </div>
@@ -145,7 +166,6 @@ const HmpKpiCards = () => {
                     <span className="hmp-total">{fmt(g.gal_total)}</span>
                 </div>
                 
-                {/* Balance Bar with 50% Target Marker */}
                 <div className="hmp-dist-bar-container">
                     <div className="hmp-target-marker"></div>
                     <div className="hmp-bar-ots" style={{ width: `${otsPerc}%` }}></div>
@@ -165,8 +185,43 @@ const HmpKpiCards = () => {
             
             {/* ==================== GLOBAL DAILY SECTION ==================== */}
             <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', gap: '12px', alignItems: 'stretch', position: 'relative' }}>
-                {/* Border-anchored Yellow Title */}
-                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200' }}>DAILY ORDERS</div>
+                
+                {/* Border-anchored Yellow Title + Custom Date Filter Toolbar Layer */}
+                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span>DAILY ORDERS</span>
+                    
+                    <div className="kpi-date-filter-inline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginLeft: '20px', padding: '2px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
+                        <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>From:</label>
+                        <input 
+                            type="date" 
+                            value={startDate} 
+                            onChange={(e) => setStartDate(e.target.value)}
+                            style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
+                        />
+                        
+                        <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>To:</label>
+                        <input 
+                            type="date" 
+                            value={endDate} 
+                            onChange={(e) => setEndDate(e.target.value)}
+                            style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
+                        />
+                        
+                        <button 
+                            onClick={handleApplyFilter}
+                            style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                            FILTER
+                        </button>
+                        
+                        <button 
+                            onClick={handleResetFilter}
+                            style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', cursor: 'pointer' }}
+                        >
+                            RESET
+                        </button>
+                    </div>
+                </div>
                 
                 {/* Left Side Grid Panels */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -181,7 +236,7 @@ const HmpKpiCards = () => {
                     </div>
                 </div>
 
-                {/* Right Side Gallons */}
+                {/* Right Side Gallons (Bypasses activeFilters, uses standard today data natively) */}
                 <div style={{ width: '22%', minWidth: '240px' }}>
                     {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
                 </div>
