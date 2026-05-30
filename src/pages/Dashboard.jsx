@@ -17,6 +17,7 @@ import DispatchAging from '../components/DispatchAging';
 import OrderSummary from '../components/orderSummary';
 import GallonSummary from '../components/GallonSummary';
 import LcmsHeader from '../components/LcmsHeader';
+import HmpKpiHeader from '../components/HmpKpiHeader';
 import LcmsDashboard from '../components/LcmsDashboard';
 import RedZoneViolations from '../components/RedZoneViolations';
 import HydrantOperationalHours from '../components/HydrantOperationalHours';
@@ -78,7 +79,7 @@ const Dashboard = () => {
             ) : activeSystem === 'hydrant' ? (
                 <HmpHeader>{SystemSelector}</HmpHeader>
             ) : activeSystem === 'hydrant kpi' ? (
-                <HmpHeader>{SystemSelector}</HmpHeader>
+                <HmpKpiHeader>{SystemSelector}</HmpKpiHeader>
             ) : (
                 <LcmsHeader>{SystemSelector}</LcmsHeader>
             )}
