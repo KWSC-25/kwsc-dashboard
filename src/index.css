@@ -3698,3 +3698,52 @@ lcms styling  */
     margin-left: auto;
     margin-right: 15px;
 }
+
+
+/* ==========================================================================
+   Responsive Fix for HmpKpiCards Mobile View
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    /* 1. Force the main wrappers from row to column layout */
+    .hmp-dashboard-wrapper,
+    .hmp-kpi-group-wrapper.hmp-grp-today,
+    .hmp-kpi-group-wrapper.hmp-grp-month {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    /* Remove the hardcoded side-by-side flex layout containers */
+    .hmp-kpi-group-wrapper > div:first-of-type {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        width: 100% !important;
+    }
+
+    /* 2. Break down the 5-column grid into single-column rows */
+    .hmp-kpi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    /* 3. Force the Gallons card block to take full width at the bottom of each section */
+    .hmp-kpi-group-wrapper > div:last-of-type {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* 4. Fix sub-row layouts (Cancellations and Gallons stats) so they stack or wrap nicely */
+    .hmp-sub-row {
+        flex-direction: column !important;
+        gap: 6px !important;
+        align-items: flex-start !important;
+    }
+
+    /* 5. Clean up group title positioning if needed so it doesn't collide */
+    .hmp-group-label {
+        position: relative !important;
+        margin-bottom: 8px;
+        left: 0 !important;
+        top: 0 !important;
+    }
+}
