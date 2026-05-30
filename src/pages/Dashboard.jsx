@@ -21,6 +21,7 @@ import LcmsDashboard from '../components/LcmsDashboard';
 import RedZoneViolations from '../components/RedZoneViolations';
 import HydrantOperationalHours from '../components/HydrantOperationalHours';
 import SpecialSourcesCard from '../components/SpecialSourcesCard';
+import HydrantKPIDashboard from '../components/HydrantKPIDashboard';
 
 const Dashboard = () => {
     const location = useLocation();
@@ -62,7 +63,9 @@ const Dashboard = () => {
         >
             <option value="complaint">COMPLAINT SYSTEM</option>
             <option value="hydrant">HYDRANT SYSTEM</option>
+            <option value="hydrant kpi">HYDRANT KPI DASHBOARD</option>
             <option value="lcms">LCMS DASHBOARD</option>
+            
         </select>
     );
 
@@ -73,6 +76,8 @@ const Dashboard = () => {
             {activeSystem === 'complaint' ? (
                 <Header selector={SystemSelector} />
             ) : activeSystem === 'hydrant' ? (
+                <HmpHeader>{SystemSelector}</HmpHeader>
+            ) : activeSystem === 'hydrant kpi' ? (
                 <HmpHeader>{SystemSelector}</HmpHeader>
             ) : (
                 <LcmsHeader>{SystemSelector}</LcmsHeader>
@@ -289,6 +294,9 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
+                )}
+                {activeSystem === 'hydrant kpi' && (
+                    <HydrantKPIDashboard />
                 )}
                 {activeSystem === 'lcms' && (
                     <LcmsDashboard /> // We will create this

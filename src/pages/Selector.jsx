@@ -36,11 +36,12 @@ const Selector = () => {
 
         },
         {
-            id: 'inventory',
-            title: 'Manhole Inventory System',
-            desc: 'Manhole and asset tracking utility',
-            icon: <Construction size={40} color="#64748b" />,
-            active: false
+            id: 'hydrant kpi',
+            title: 'Hydrant KPI Dashboard',
+            desc: 'Monitor water distribution and tankers',
+            icon: <Droplets size={40} color="#0891b2" />,
+            active: true,
+            path: '/dashboard'
         },
 
         {
