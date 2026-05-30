@@ -28,6 +28,7 @@ import redZoneRoutes from './routes/redZoneRoutes.js';
 import operationalHoursRoutes from './routes/operationalHoursRoutes.js';
 import lcmsRoutes from './routes/lcmsRoutes.js';
 import LcmsDashboardRoutes from './routes/lcmsDashboardRoutes.js';
+import newKpiRoutes from './routes/NewKpiRoutes.js';
 
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 15 minutes
@@ -63,7 +64,7 @@ app.use('/api/redzone', protect, dbSelector, redZoneRoutes);
 app.use('/api/hydrants', protect, dbSelector, operationalHoursRoutes);
 app.use('/api/admin/lcms',protect, dbSelector, lcmsRoutes);
 app.use('/api/lcmsDashboard',protect, dbSelector, LcmsDashboardRoutes);
-
+app.use('/api/newkpis', protect, dbSelector, newKpiRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server on ${PORT}`)

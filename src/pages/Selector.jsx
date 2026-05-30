@@ -36,7 +36,7 @@ const Selector = () => {
 
         },
         {
-            id: 'hydrant kpi',
+            id: 'hydrantkpi',
             title: 'Hydrant KPI Dashboard',
             desc: 'Monitor water distribution and tankers',
             icon: <Droplets size={40} color="#0891b2" />,

@@ -64,7 +64,7 @@ const Dashboard = () => {
         >
             <option value="complaint">COMPLAINT SYSTEM</option>
             <option value="hydrant">HYDRANT SYSTEM</option>
-            <option value="hydrant kpi">HYDRANT KPI DASHBOARD</option>
+            <option value="hydrantkpi">HYDRANT KPI DASHBOARD</option>
             <option value="lcms">LCMS DASHBOARD</option>
             
         </select>
@@ -78,7 +78,7 @@ const Dashboard = () => {
                 <Header selector={SystemSelector} />
             ) : activeSystem === 'hydrant' ? (
                 <HmpHeader>{SystemSelector}</HmpHeader>
-            ) : activeSystem === 'hydrant kpi' ? (
+            ) : activeSystem === 'hydrantkpi' ? (
                 <HmpKpiHeader>{SystemSelector}</HmpKpiHeader>
             ) : (
                 <LcmsHeader>{SystemSelector}</LcmsHeader>
@@ -296,7 +296,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 )}
-                {activeSystem === 'hydrant kpi' && (
+                {activeSystem === 'hydrantkpi' && (
                     <HydrantKPIDashboard />
                 )}
                 {activeSystem === 'lcms' && (
