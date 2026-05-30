@@ -107,7 +107,7 @@ const HmpKpiCards = () => {
                 <div className="hmp-card hmp-grad-grey" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div className="hmp-main-row">
                         <span className="hmp-label">
-                            {type === 'OTS' ? 'TOTAL CANCELLED' : 'TOTAL CANCELLED'}
+                            {type === 'OTS' ? 'TOTAL CANCELLED' : 'TOTAL CANCELLED'} {type}
                         </span>
                         <span className="hmp-total">{fmt(s.cancelled)}</span>
                     </div>
