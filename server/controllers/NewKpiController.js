@@ -81,12 +81,13 @@ export const TodayStats = async (req, res) => {
             startOfMonthDateTime, endOfMonthDateTime, todayStart, todayEnd
         ];
 
-        // 4. Gallons Query - UNTOUCHED 
+        // 4. Gallons Query - FIXED (Dynamically respects applied filters)
         const gallonsQuery = `
         SELECT 
-            SUM(CASE WHEN o.created_at >= ? THEN tt.capacity ELSE 0 END) AS total_gallons_today,
-            SUM(CASE WHEN o.created_at >= ? AND o.order_type NOT IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_gps_today,
-            SUM(CASE WHEN o.created_at >= ? AND o.order_type IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_comm_today,
+            SUM(CASE WHEN o.created_at BETWEEN ? AND ? THEN tt.capacity ELSE 0 END) AS total_gallons_today,
+            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND o.order_type NOT IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_gps_today,
+            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND o.order_type IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_comm_today,
+            
             SUM(tt.capacity) AS total_gallons_month,
             SUM(CASE WHEN o.order_type NOT IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_gps_month,
             SUM(CASE WHEN o.order_type IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_comm_month
@@ -94,9 +95,17 @@ export const TodayStats = async (req, res) => {
         INNER JOIN orders o ON o.id = b.order_id
         INNER JOIN truck_types tt ON tt.id = o.truck_type
         WHERE b.status IN (1,2) 
-        AND b.updated_at >= ?`;
+        AND (o.created_at BETWEEN ? AND ? OR b.updated_at BETWEEN ? AND ?);`;
 
-        const gallonParams = [defaultTodayStart.split(' ')[0], defaultTodayStart.split(' ')[0], defaultTodayStart.split(' ')[0], startOfMonthDateTime];
+        const gallonParams = [
+            // Dynamic bounds for conditional aggregations
+            todayStart, todayEnd,
+            todayStart, todayEnd,
+            todayStart, todayEnd,
+            // Main WHERE clause filtering
+            todayStart, todayEnd,
+            startOfMonthDateTime, endOfMonthDateTime
+        ];
 
         // Execute queries
         const [otsData] = await req.db.execute(otsQuery, otsParams);

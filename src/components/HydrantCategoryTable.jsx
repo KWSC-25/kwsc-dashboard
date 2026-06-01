@@ -72,10 +72,17 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                 t[combinedKey] = tableData.reduce((acc, row) => acc + (Number(row[combinedKey]) || 0), 0);
             });
         });
+        
+        // Grand total of all created orders combined for the intersection corner
+        t.grand_created_total = tableData.reduce((acc, row) => {
+            const rowCreatedSum = categories.reduce((sum, cat) => sum + (Number(row[`${cat.prefix}created`]) || 0), 0);
+            return acc + rowCreatedSum;
+        }, 0);
+
         return t;
     }, [tableData, categories, statuses]);
 
-    // Side-effect to bubble totals data upward to the dashboard container whenever data or aggregates recalculate
+    // Side-effect to bubble totals data upward to the dashboard container
     useEffect(() => {
         if (onDataCalculated && Object.keys(totals).length > 0) {
             const mappedSliderPayload = categories.map(cat => ({
@@ -92,6 +99,9 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
 
     const fmt = (val) => (val ? Number(val).toLocaleString() : "0");
 
+    // Dynamic column span calculations to prevent table structure misalignment
+    const baseColSpan = 2 + (categories.length * 5);
+
     return (
         <div className="hydrant-category-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.85)', borderRadius: '6px', padding: '16px', border: '1px solid #2e3748', width: '100%' }}>
             {/* Section Header Component */}
@@ -101,11 +111,12 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
 
             {/* Scrollable Layout Context Layer */}
             <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px', color: '#e2e8f0', minWidth: '1600px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px', color: '#e2e8f0', minWidth: '1700px' }}>
                     <thead>
                         {/* Primary Category Main Group Headers */}
                         <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
                             <th rowSpan={2} style={{ padding: '10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '180px', color: '#fff', fontSize: '13px', fontWeight: 'bold' }}>Hydrant Name</th>
+                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'center', borderRight: '2px solid #00f2ff', width: '100px', color: '#00f2ff', fontSize: '13px', fontWeight: 'bold', background: 'rgba(0, 242, 255, 0.05)' }}>TOTAL Created</th>
                             {categories.map((cat, idx) => (
                                 <th key={idx} colSpan={5} style={{ padding: '8px 4px', borderRight: idx !== categories.length - 1 ? '1px solid #4a5568' : 'none', color: '#fff', fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.3px' , textAlign: 'center'}}>
                                     {cat.label}
@@ -140,57 +151,70 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                     <tbody>
                         {loading && tableData.length === 0 ? (
                             <tr>
-                                <td colSpan={1 + categories.length * 5} style={{ padding: '30px', color: '#718096', fontSize: '13px' }}>
+                                <td colSpan={baseColSpan} style={{ padding: '30px', color: '#718096', fontSize: '13px' }}>
                                     Loading dashboard matrix breakdown metrics...
                                 </td>
                             </tr>
                         ) : tableData.length === 0 ? (
                             <tr>
-                                <td colSpan={1 + categories.length * 5} style={{ padding: '30px', color: '#718096', fontSize: '13px' }}>
+                                <td colSpan={baseColSpan} style={{ padding: '30px', color: '#718096', fontSize: '13px' }}>
                                     No transaction records found for selected period filter window.
                                 </td>
                             </tr>
                         ) : (
-                            tableData.map((row, rIdx) => (
-                                <tr 
-                                    key={rIdx} 
-                                    style={{ 
-                                        borderBottom: '1px solid #2e3748',
-                                        background: rIdx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
-                                    }}
-                                    className="hmp-table-row-hover"
-                                >
-                                    {/* Bold and White Highlighted Hydrant Identity Column */}
-                                    <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap' }}>
-                                        {row.hydrant_name}
-                                    </td>
-                                    {/* Dynamically render properties mapping the schema design matrix arrays */}
-                                    {categories.map((cat, cIdx) => (
-                                        <React.Fragment key={`row-${rIdx}-cat-${cIdx}`}>
-                                            {statuses.map((status, sIdx) => {
-                                                const key = `${cat.prefix}${status.key}`;
-                                                const val = Number(row[key]) || 0;
-                                                return (
-                                                    <td 
-                                                        key={`${cIdx}-${sIdx}`} 
-                                                        style={{ 
-                                                            padding: '10px 4px',
-                                                            fontSize: '13px',
-                                                            opacity: val === 0 ? 0.25 : 1,
-                                                            fontWeight: val > 0 ? '600' : 'normal',
-                                                            color: status.isPrimary && val > 0 ? '#00f2ff' : '#e2e8f0',
-                                                            background: status.isPrimary ? 'rgba(0, 242, 255, 0.03)' : 'transparent',
-                                                            borderRight: (sIdx === statuses.length - 1 && cIdx !== categories.length - 1) ? '1px solid #4a5568' : 'none'
-                                                        }}
-                                                    >
-                                                        {val}
-                                                    </td>
-                                                );
-                                            })}
-                                        </React.Fragment>
-                                    ))}
-                                </tr>
-                            ))
+                            tableData.map((row, rIdx) => {
+                                // Calculate the row-wise sum of ONLY 'created' order metrics dynamically
+                                const rowCreatedTotal = categories.reduce((acc, cat) => {
+                                    return acc + (Number(row[`${cat.prefix}created`]) || 0);
+                                }, 0);
+
+                                return (
+                                    <tr 
+                                        key={rIdx} 
+                                        style={{ 
+                                            borderBottom: '1px solid #2e3748',
+                                            background: rIdx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
+                                        }}
+                                        className="hmp-table-row-hover"
+                                    >
+                                        {/* Hydrant Identity Column */}
+                                        <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap' }}>
+                                            {row.hydrant_name}
+                                        </td>
+
+                                        {/* New Row-Wise Created Cumulative Column Values */}
+                                        <td style={{ padding: '10px 4px', fontWeight: '800', color: '#00f2ff', background: 'rgba(0, 242, 255, 0.05)', borderRight: '2px solid #00f2ff' }}>
+                                            {fmt(rowCreatedTotal)}
+                                        </td>
+
+                                        {/* Dynamically render properties mapping the schema design matrix arrays */}
+                                        {categories.map((cat, cIdx) => (
+                                            <React.Fragment key={`row-${rIdx}-cat-${cIdx}`}>
+                                                {statuses.map((status, sIdx) => {
+                                                    const key = `${cat.prefix}${status.key}`;
+                                                    const val = Number(row[key]) || 0;
+                                                    return (
+                                                        <td 
+                                                            key={`${cIdx}-${sIdx}`} 
+                                                            style={{ 
+                                                                padding: '10px 4px',
+                                                                fontSize: '13px',
+                                                                opacity: val === 0 ? 0.25 : 1,
+                                                                fontWeight: val > 0 ? '600' : 'normal',
+                                                                color: status.isPrimary && val > 0 ? '#00f2ff' : '#e2e8f0',
+                                                                background: status.isPrimary ? 'rgba(0, 242, 255, 0.03)' : 'transparent',
+                                                                borderRight: (sIdx === statuses.length - 1 && cIdx !== categories.length - 1) ? '1px solid #4a5568' : 'none'
+                                                            }}
+                                                        >
+                                                            {val}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+                                );
+                            })
                         )}
                         
                         {/* Dynamic Frontend Calculated Total Aggregate Row */}
@@ -198,6 +222,10 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                             <tr style={{ background: 'rgba(34, 43, 59, 0.95)', borderTop: '2px solid #4a5568', borderBottom: '2px solid #4a5568', fontWeight: 'bold' }}>
                                 <td style={{ padding: '12px 10px', textAlign: 'left', color: '#FFF200', borderRight: '2px solid #2e3748', fontSize: '14px', letterSpacing: '0.5px' }}>
                                     TOTALS
+                                </td>
+                                {/* Bottom cross-section summary for row-wise created totals */}
+                                <td style={{ padding: '12px 4px', color: '#00f2ff', background: 'rgba(0, 242, 255, 0.15)', borderRight: '2px solid #00f2ff', fontSize: '14px' }}>
+                                    {fmt(totals.grand_created_total)}
                                 </td>
                                 {categories.map((cat, cIdx) => (
                                     <React.Fragment key={`total-cat-${cIdx}`}>
