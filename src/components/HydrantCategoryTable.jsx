@@ -8,7 +8,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
     // Categories mapping exactly matching the keys returned by your express query selective aliases
     const categories = useMemo(() => [
         { label: 'Commercial', prefix: 'commercial_' },
-        { label: 'General Public (OTS)', prefix: 'gps_ots_' },
+        { label: 'OTS', prefix: 'gps_ots_' },
         { label: 'Online (GPS)', prefix: 'gps_online_' },
         { label: 'DC Quota', prefix: 'dc_quota_' },
         { label: 'GPS Billing', prefix: 'gps_billing_' },

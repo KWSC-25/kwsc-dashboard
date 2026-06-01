@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import HydrantCategoryTable from './HydrantCategoryTable'; 
 import CategorySlider from './CategorySlider';
+import HydrantPercentageStats from './HydrantPercentageStats'; // 🌟 Imported the new performance matrix
 
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
@@ -172,7 +173,6 @@ const HydrantKPIDashboard = () => {
                 
                 {/* Border-anchored Yellow Title + Custom Date Filter Toolbar Layer */}
                 <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '15px', width: '35%' }}>
-                    
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <span>TODAY ORDERS</span>
                         
@@ -210,8 +210,6 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-
-                
                 {/* Top Row: KPIs and Gallons Card Container */}
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -231,20 +229,26 @@ const HydrantKPIDashboard = () => {
                         {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
                     </div>
                 </div>
-                {/* 🌟 Moved Slider section out of the header to prevent collisions, setting a fixed gap above the KPIs */}
+
+                {/* Slider Section */}
                 <div style={{ width: '100%', marginBottom: '10px' }}>
                     <CategorySlider categories={computedCategories} />
                 </div>
-                {/* Bottom Row: Segment-Wise Breakdown Table Container */}
+
+                {/* Segment-Wise Breakdown Category Table */}
                 <div style={{ width: '100%', marginTop: '14px' }}>
                     <HydrantCategoryTable 
                         activeFilters={activeFilters} 
                         onDataCalculated={handleTableDataCalculated}
                     />
                 </div>
+
+                {/* 🌟 New Section: Hydrant Performance Grid Table */}
+                <div style={{ width: '100%', marginTop: '20px' }}>
+                    <HydrantPercentageStats activeFilters={activeFilters} />
+                </div>
                 
             </div>
-
         </div>
     );
 };
