@@ -10,7 +10,9 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         { label: 'AVERAGE ORDER TAT', key: 'avg_tat', isTat: true },
         { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
         { label: '% PENDING', key: 'pending_percentage', color: '#f44336' },
-        { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' }
+        { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
+        { label: '% CANCELLED', key: 'cancelled_percentage', color: '#0000' }
+
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {

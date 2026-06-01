@@ -6,7 +6,6 @@ import HydrantPercentageStats from './HydrantPercentageStats'; // 🌟 Imported 
 
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
-    const [computedCategories, setComputedCategories] = useState([]); // Dynamic aggregated slider context bridge
     
     const todayStr = new Date().toISOString().split('T')[0];
     const [startDate, setStartDate] = useState(todayStr);
@@ -43,8 +42,7 @@ const HydrantKPIDashboard = () => {
     };
 
     // Callback pipeline method to safely absorb computed categories array from child table element
-    const handleTableDataCalculated = useCallback((categoriesPayload) => {
-        setComputedCategories(categoriesPayload);
+    const handleTableDataCalculated = useCallback(() => {
     }, []);
 
     if (!data || !data.ots || !data.orders || !data.gallons) {
@@ -140,30 +138,7 @@ const HydrantKPIDashboard = () => {
         );
     };
 
-    const renderGallonsCard = (galKey, titleText) => {
-        const g = stats[galKey];
-        const totalGal = Number(g.gal_total) || 0; 
-        const otsPerc = totalGal > 0 ? (Number(g.gal_gps) / totalGal) * 100 : 0;
-        const hmpPerc = totalGal > 0 ? (Number(g.gal_comm) / totalGal) * 100 : 0;
 
-        return (
-            <div className="hmp-card hmp-grad-purple" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div className="hmp-main-row">
-                    <span className="hmp-label label-purple">{titleText}</span>
-                    <span className="hmp-total">{fmt(g.gal_total)}</span>
-                </div>
-                <div className="hmp-dist-bar-container">
-                    <div className="hmp-target-marker"></div>
-                    <div className="hmp-bar-ots" style={{ width: `${otsPerc}%` }}></div>
-                    <div className="hmp-bar-hmp" style={{ width: `${hmpPerc}%` }}></div>
-                </div>
-                <div className="hmp-sub-row" style={{ border: 'none', paddingTop: '4px' }}>
-                    <div className="hmp-sub-stat">GPS/OTHERS: <span className="label-cyan">{fmt(g.gal_gps)} <span style={{ fontWeight: 'normal' }}> ({fmt(g.gal_gps_per)}%)</span></span></div>
-                    <div className="hmp-sub-stat">COMMERCIAL: <span className="label-purple">{fmt(g.gal_comm)} <span style={{ fontWeight: 'normal' }}> ({fmt(g.gal_comm_per)}%)</span></span></div>
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div className="hydrant-kpi-dashboard-wrapper animate-fade-in" style={{ padding: '20px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '0px', width: '100%' }}>
@@ -224,15 +199,12 @@ const HydrantKPIDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Right Side Merged Today Gallons Segment */}
-                    <div style={{ width: '22%', minWidth: '240px' }}>
-                        {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
-                    </div>
+                
                 </div>
 
-                {/* Slider Section */}
-                <div style={{ width: '100%', marginBottom: '10px' }}>
-                    <CategorySlider categories={computedCategories} />
+                {/* 🌟 New Section: Hydrant Performance Grid Table */}
+                <div style={{ width: '100%', marginTop: '20px' }}>
+                    <HydrantPercentageStats activeFilters={activeFilters} />
                 </div>
 
                 {/* Segment-Wise Breakdown Category Table */}

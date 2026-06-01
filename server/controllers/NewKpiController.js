@@ -328,6 +328,11 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             ROUND(COALESCE(ord.pending_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_pending_percentage,
             ROUND(COALESCE(ots.ots_pending, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_pending_percentage,
             -- ========================================================
+            -- CANCELLED PERCENTAGE
+            -- ========================================================
+            ROUND(COALESCE(ord.cancelled_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_cancelled_percentage,
+            ROUND(COALESCE(ots.ots_cancelled, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_cancelled_percentage,
+            -- ========================================================
             -- DRIVER ASSIGNED PERCENTAGE
             -- ========================================================
             ROUND(COALESCE(ord.assigned_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_driver_assigned_percentage,
@@ -357,6 +362,7 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 COUNT(DISTINCT CASE WHEN b.status = 1 THEN o.id END) AS completed_count,
                 COUNT(DISTINCT CASE WHEN b.status = 0 THEN o.id END) AS pending_count,
                 COUNT(DISTINCT CASE WHEN b.status = 2 THEN o.id END) AS assigned_count,
+                COUNT(DISTINCT CASE WHEN b.status in (3,4) THEN o.id END) AS cancelled_count,
                 SUM(CASE WHEN b.status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) END) AS total_completed_seconds
             FROM orders o
             LEFT JOIN billings b ON o.id = b.order_id
@@ -371,6 +377,8 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 SUM(CASE WHEN status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_driver_assigned,
                 SUM(CASE WHEN status IN ('completed', 'self_closed') THEN 1 ELSE 0 END) AS ots_completed,
                 SUM(CASE WHEN status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS ots_pending,
+                SUM(CASE WHEN status IN ('failed', 'cancelled') THEN 1 ELSE 0 END) AS ots_cancelled,
+
                 SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS total_completed_seconds
             FROM ots_order
             WHERE api_created_at BETWEEN ? AND ?
@@ -396,14 +404,17 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 completed_percentage: row.hmp_completed_percentage !== null ? `${row.hmp_completed_percentage}%` : '0%',
                 pending_percentage: row.hmp_pending_percentage !== null ? `${row.hmp_pending_percentage}%` : '0%',
                 driver_assigned_percentage: row.hmp_driver_assigned_percentage !== null ? `${row.hmp_driver_assigned_percentage}%` : '0%',
-                avg_tat: row.hmp_avg_tat
+                avg_tat: row.hmp_avg_tat,
+                cancelled_percentage:  row.hmp_cancelled_percentage !== null ? `${row.hmp_cancelled_percentage}%` : '0%',
             },
             ots: {
                 total_created: row.ots_total_created,
                 completed_percentage: row.ots_completed_percentage !== null ? `${row.ots_completed_percentage}%` : '0%',
                 pending_percentage: row.ots_pending_percentage !== null ? `${row.ots_pending_percentage}%` : '0%',
                 driver_assigned_percentage: row.ots_driver_assigned_percentage !== null ? `${row.ots_driver_assigned_percentage}%` : '0%',
-                avg_tat: row.ots_avg_tat
+                avg_tat: row.ots_avg_tat,
+                cancelled_percentage:  row.ots_cancelled_percentage !== null ? `${row.ots_cancelled_percentage}%` : '0%',
+
             }
         }));
 
