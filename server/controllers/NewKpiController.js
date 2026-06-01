@@ -260,8 +260,7 @@ export const OrderSummaryToday = async (req, res) => {
             FROM ots_order
             WHERE api_created_at BETWEEN ? AND ?
             GROUP BY hydrant_id
-        ) ots ON h.id = ots.hydrant_id
-        WHERE h.id IN (1, 2, 3, 4, 5, 6, 7, 15)
+        ) ots ON h.ots_hydrant = ots.hydrant_id
         GROUP BY h.id, h.name
         HAVING total > 0
         ORDER BY h.name ASC;`;
@@ -283,3 +282,15 @@ export const OrderSummaryToday = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+

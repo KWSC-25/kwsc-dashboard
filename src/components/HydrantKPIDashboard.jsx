@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
+import HydrantCategoryTable from './HydrantCategoryTable'; 
+import CategorySlider from './CategorySlider';
 
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
+    const [computedCategories, setComputedCategories] = useState([]); // Dynamic aggregated slider context bridge
     
-    // Date filter component states
     const todayStr = new Date().toISOString().split('T')[0];
     const [startDate, setStartDate] = useState(todayStr);
     const [endDate, setEndDate] = useState(todayStr);
     const [activeFilters, setActiveFilters] = useState({ startDate: '', endDate: '' });
 
-    // Fetches stats from the brand new controller path
     const fetchTodayStats = useCallback(async (filters = activeFilters) => {
         try {
             let url = 'newkpis/today-stats';
@@ -39,6 +40,11 @@ const HydrantKPIDashboard = () => {
         setEndDate(todayStr);
         setActiveFilters({ startDate: '', endDate: '' });
     };
+
+    // Callback pipeline method to safely absorb computed categories array from child table element
+    const handleTableDataCalculated = useCallback((categoriesPayload) => {
+        setComputedCategories(categoriesPayload);
+    }, []);
 
     if (!data || !data.ots || !data.orders || !data.gallons) {
         return <div className="hmp-loading" style={{ color: '#fff', padding: '20px' }}>Fetching Hydrant KPI Stats...</div>;
@@ -80,7 +86,6 @@ const HydrantKPIDashboard = () => {
         const s = stats[key];
         return (
             <>
-                {/* 1. Created */}
                 <div className="hmp-card hmp-grad-cyan">
                     <div className="hmp-main-row">
                         <span className="hmp-label label-cyan">TOTAL CREATED {type}</span>
@@ -88,7 +93,6 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-                {/* 2. Dispatched */}
                 <div className="hmp-card hmp-grad-orange">
                     <div className="hmp-main-row">
                         <span className="hmp-label label-orange">DRIVER ASSIGNED  {type}</span>
@@ -96,7 +100,6 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-                {/* 3. Completed */}
                 <div className="hmp-card hmp-grad-green">
                     <div className="hmp-main-row">
                         <span className="hmp-label label-green">TOTAL COMPLETED {type}</span>
@@ -104,7 +107,6 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-                {/* 4. Cancelled */}
                 <div className="hmp-card hmp-grad-grey" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div className="hmp-main-row">
                         <span className="hmp-label">
@@ -112,7 +114,6 @@ const HydrantKPIDashboard = () => {
                         </span>
                         <span className="hmp-total">{fmt(s.cancelled)}</span>
                     </div>
-                    
                     {type === 'OTS' && (
                         <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', fontSize: '10px', color: '#8a99a8' }}>
                             <span style={{ color: 'white', fontSize: '13px' }}>BY CONSUMER: <strong>{fmt(s.cancelled_consumer)}</strong></span>
@@ -121,7 +122,6 @@ const HydrantKPIDashboard = () => {
                     )}
                 </div>
 
-                {/* 5. Pending */}
                 <div className="hmp-card hmp-grad-red">
                     <div className="hmp-main-row">
                         <span className="hmp-label label-red">TOTAL PENDING {type}</span>
@@ -129,11 +129,10 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-                {/* 6. Average Order TAT */}
                 <div className="hmp-card hmp-grad-golden">
                     <div className="hmp-main-row">
                         <span className="hmp-label label-golden">AVERAGE ORDER TAT {type}</span>
-                        <span className="hmp-total" style={{ fontSize: '18px', textTransform: 'none' }}>{s.avg_tat}</span>
+                        <span className="hmp-total" style={{ fontSize: '15px', textTransform: 'none' }}>{s.avg_tat}</span>
                     </div>
                 </div>
             </>
@@ -152,13 +151,11 @@ const HydrantKPIDashboard = () => {
                     <span className="hmp-label label-purple">{titleText}</span>
                     <span className="hmp-total">{fmt(g.gal_total)}</span>
                 </div>
-                
                 <div className="hmp-dist-bar-container">
                     <div className="hmp-target-marker"></div>
                     <div className="hmp-bar-ots" style={{ width: `${otsPerc}%` }}></div>
                     <div className="hmp-bar-hmp" style={{ width: `${hmpPerc}%` }}></div>
                 </div>
-
                 <div className="hmp-sub-row" style={{ border: 'none', paddingTop: '4px' }}>
                     <div className="hmp-sub-stat">GPS/OTHERS: <span className="label-cyan">{fmt(g.gal_gps)} <span style={{ fontWeight: 'normal' }}> ({fmt(g.gal_gps_per)}%)</span></span></div>
                     <div className="hmp-sub-stat">COMMERCIAL: <span className="label-purple">{fmt(g.gal_comm)} <span style={{ fontWeight: 'normal' }}> ({fmt(g.gal_comm_per)}%)</span></span></div>
@@ -171,63 +168,81 @@ const HydrantKPIDashboard = () => {
         <div className="hydrant-kpi-dashboard-wrapper animate-fade-in" style={{ padding: '20px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '0px', width: '100%' }}>
             
             {/* ==================== GLOBAL TODAY SECTION ==================== */}
-            <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', gap: '12px', alignItems: 'stretch', position: 'relative' }}>
+            <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch', position: 'relative' }}>
                 
                 {/* Border-anchored Yellow Title + Custom Date Filter Toolbar Layer */}
-                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span>TODAY ORDERS</span>
+                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '15px', width: '35%' }}>
                     
-                    <div className="kpi-date-filter-inline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginLeft: '20px', padding: '2px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
-                        <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>From:</label>
-                        <input 
-                            type="date" 
-                            value={startDate} 
-                            onChange={(e) => setStartDate(e.target.value)}
-                            style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
-                        />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <span>TODAY ORDERS</span>
                         
-                        <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>To:</label>
-                        <input 
-                            type="date" 
-                            value={endDate} 
-                            onChange={(e) => setEndDate(e.target.value)}
-                            style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
-                        />
-                        
-                        <button 
-                            onClick={handleApplyFilter}
-                            style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                            FILTER
-                        </button>
-                        
-                        <button 
-                            onClick={handleResetFilter}
-                            style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', cursor: 'pointer' }}
-                        >
-                            RESET
-                        </button>
-                    </div>
-                </div>
-                
-                {/* Left Side Double Row Grid Layout (OTS Row and HMP Row inside 1 container) */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    {/* 1. OTS ROW */}
-                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
-                        {renderOrderCards('daily_ots', 'OTS')}
-                    </div>
-                    
-                    {/* 2. HMP ROW */}
-                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
-                        {renderOrderCards('daily_hmp', 'HMP')}
+                        <div className="kpi-date-filter-inline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginLeft: '20px', padding: '2px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
+                            <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>From:</label>
+                            <input 
+                                type="date" 
+                                value={startDate} 
+                                onChange={(e) => setStartDate(e.target.value)}
+                                style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
+                            />
+                            
+                            <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>To:</label>
+                            <input 
+                                type="date" 
+                                value={endDate} 
+                                onChange={(e) => setEndDate(e.target.value)}
+                                style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
+                            />
+                            
+                            <button 
+                                onClick={handleApplyFilter}
+                                style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                FILTER
+                            </button>
+                            
+                            <button 
+                                onClick={handleResetFilter}
+                                style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', cursor: 'pointer' }}
+                            >
+                                RESET
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Side Merged Today Gallons Segment */}
-                <div style={{ width: '22%', minWidth: '240px' }}>
-                    {/* Corrected to pass daily_gallons object descriptor key */}
-                    {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
+
+                
+                {/* Top Row: KPIs and Gallons Card Container */}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {/* 1. OTS ROW */}
+                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
+                            {renderOrderCards('daily_ots', 'OTS')}
+                        </div>
+                        
+                        {/* 2. HMP ROW */}
+                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
+                            {renderOrderCards('daily_hmp', 'HMP')}
+                        </div>
+                    </div>
+
+                    {/* Right Side Merged Today Gallons Segment */}
+                    <div style={{ width: '22%', minWidth: '240px' }}>
+                        {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
+                    </div>
                 </div>
+                {/* 🌟 Moved Slider section out of the header to prevent collisions, setting a fixed gap above the KPIs */}
+                <div style={{ width: '100%', marginBottom: '10px' }}>
+                    <CategorySlider categories={computedCategories} />
+                </div>
+                {/* Bottom Row: Segment-Wise Breakdown Table Container */}
+                <div style={{ width: '100%', marginTop: '14px' }}>
+                    <HydrantCategoryTable 
+                        activeFilters={activeFilters} 
+                        onDataCalculated={handleTableDataCalculated}
+                    />
+                </div>
+                
             </div>
 
         </div>
