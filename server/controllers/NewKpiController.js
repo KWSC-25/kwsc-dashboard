@@ -294,12 +294,124 @@ export const OrderSummaryToday = async (req, res) => {
 
 
 
+// ==========================================================
+// NEW CONTROLLER: HYDRANT METRIC GRID WITH SUB-COLUMN METRICS
+// ==========================================================
+export const HydrantPerformanceGridToday = async (req, res) => {
+    try {
+        const now = new Date();
+        
+        // Setup dynamic parameters compatible with dashboard date pickers
+        const defaultTodayStart = `${now.toISOString().split('T')[0]} 00:00:00`;
+        const defaultTodayEnd = `${now.toISOString().split('T')[0]} 23:59:59`;
 
+        const { startDate, endDate } = req.query;
+        const todayStart = startDate ? `${startDate} 00:00:00` : defaultTodayStart;
+        const todayEnd = endDate ? `${endDate} 23:59:59` : defaultTodayEnd;
 
+        const gridQuery = `
+        SELECT 
+            h.name AS hydrant_name,
+            -- ========================================================
+            -- TOTAL CREATED BY SOURCE
+            -- ========================================================
+            COALESCE(ord.created_count, 0) AS hmp_total_created,
+            COALESCE(ots.ots_created, 0) AS ots_total_created,
+            -- ========================================================
+            -- COMPLETED PERCENTAGE
+            -- ========================================================
+            ROUND(COALESCE(ord.completed_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_completed_percentage,
+            ROUND(COALESCE(ots.ots_completed, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_completed_percentage,
+            -- ========================================================
+            -- PENDING PERCENTAGE
+            -- ========================================================
+            ROUND(COALESCE(ord.pending_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_pending_percentage,
+            ROUND(COALESCE(ots.ots_pending, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_pending_percentage,
+            -- ========================================================
+            -- DRIVER ASSIGNED PERCENTAGE
+            -- ========================================================
+            ROUND(COALESCE(ord.assigned_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_driver_assigned_percentage,
+            ROUND(COALESCE(ots.ots_driver_assigned, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_driver_assigned_percentage,
+            -- ========================================================
+            -- UNIFIED HMP AVERAGE TAT (HHH:mm Format String)
+            -- ========================================================
+            CONCAT(
+                LPAD(COALESCE(FLOOR((ord.total_completed_seconds / NULLIF(ord.completed_count, 0)) / 3600), 0), 2, '0'),
+                ':',
+                LPAD(COALESCE(FLOOR(((ord.total_completed_seconds / NULLIF(ord.completed_count, 0)) % 3600) / 60), 0), 2, '0')
+            ) AS hmp_avg_tat,
+            -- ========================================================
+            -- UNIFIED OTS AVERAGE TAT (HHH:mm Format String)
+            -- ========================================================
+            CONCAT(
+                LPAD(COALESCE(FLOOR((ots.total_completed_seconds / NULLIF(ots.ots_completed, 0)) / 3600), 0), 2, '0'),
+                ':',
+                LPAD(COALESCE(FLOOR(((ots.total_completed_seconds / NULLIF(ots.ots_completed, 0)) % 3600) / 60), 0), 2, '0')
+            ) AS ots_avg_tat
+        FROM hydrants h
+        -- 1. Standard HMP Orders Pre-Aggregated
+        LEFT JOIN (
+            SELECT 
+                o.hydrant_id,
+                COUNT(DISTINCT o.id) AS created_count,
+                COUNT(DISTINCT CASE WHEN b.status = 1 THEN o.id END) AS completed_count,
+                COUNT(DISTINCT CASE WHEN b.status = 0 THEN o.id END) AS pending_count,
+                COUNT(DISTINCT CASE WHEN b.status = 2 THEN o.id END) AS assigned_count,
+                SUM(CASE WHEN b.status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) END) AS total_completed_seconds
+            FROM orders o
+            LEFT JOIN billings b ON o.id = b.order_id
+            WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ?
+            GROUP BY o.hydrant_id
+        ) ord ON h.id = ord.hydrant_id
+        -- 2. OTS Orders Pre-Aggregated
+        LEFT JOIN (
+            SELECT 
+                hydrant_id, 
+                COUNT(*) AS ots_created,
+                SUM(CASE WHEN status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_driver_assigned,
+                SUM(CASE WHEN status IN ('completed', 'self_closed') THEN 1 ELSE 0 END) AS ots_completed,
+                SUM(CASE WHEN status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS ots_pending,
+                SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS total_completed_seconds
+            FROM ots_order
+            WHERE api_created_at BETWEEN ? AND ?
+            GROUP BY hydrant_id
+        ) ots ON h.ots_hydrant = ots.hydrant_id
+        GROUP BY h.id, h.name
+        HAVING hmp_total_created > 0 OR ots_total_created > 0
+        ORDER BY h.name ASC;`;
 
+        // Chronologically pass query bounds to match standard and OTS subquery placeholders
+        const gridParams = [
+            todayStart, todayEnd, // Placeholder arguments for HMP subquery WHERE block
+            todayStart, todayEnd  // Placeholder arguments for OTS subquery WHERE block
+        ];
 
+        const [rows] = await req.db.execute(gridQuery, gridParams);
 
+        // Map responses seamlessly to inject percentage signs for clean UI table consumption
+        const processedRows = rows.map(row => ({
+            hydrant_name: row.hydrant_name,
+            hmp: {
+                total_created: row.hmp_total_created,
+                completed_percentage: row.hmp_completed_percentage !== null ? `${row.hmp_completed_percentage}%` : '0%',
+                pending_percentage: row.hmp_pending_percentage !== null ? `${row.hmp_pending_percentage}%` : '0%',
+                driver_assigned_percentage: row.hmp_driver_assigned_percentage !== null ? `${row.hmp_driver_assigned_percentage}%` : '0%',
+                avg_tat: row.hmp_avg_tat
+            },
+            ots: {
+                total_created: row.ots_total_created,
+                completed_percentage: row.ots_completed_percentage !== null ? `${row.ots_completed_percentage}%` : '0%',
+                pending_percentage: row.ots_pending_percentage !== null ? `${row.ots_pending_percentage}%` : '0%',
+                driver_assigned_percentage: row.ots_driver_assigned_percentage !== null ? `${row.ots_driver_assigned_percentage}%` : '0%',
+                avg_tat: row.ots_avg_tat
+            }
+        }));
 
-
-
-
+        res.json({
+            success: true,
+            data: processedRows
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
