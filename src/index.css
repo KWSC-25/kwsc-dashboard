@@ -15,6 +15,8 @@
     --lcms-navy: #0f172a;
     --lcms-card-bg: #1e293b;
     --lcms-blue: #38bdf8;
+      --hmp-golden: #fb7a24;
+
 }
 
 body {
@@ -1865,6 +1867,8 @@ body {
 .hmp-grad-red { background: linear-gradient(90deg, rgba(248, 113, 113, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
 .hmp-grad-purple { background: linear-gradient(90deg, rgba(168, 85, 247, 0.2) 0%, rgba(13, 18, 34, 0.4) 100%); }
 .hmp-grad-grey { background: linear-gradient(90deg, rgba(148, 163, 184, 0.15) 0%, rgba(13, 18, 34, 0.4) 100%); }
+.hmp-grad-golden { background: linear-gradient(90deg, rgba(235, 139, 6, 0.4) 0%, rgba(82, 53, 17, 0.2) 100%); }
+
 
 .hmp-main-row {
     display: flex;
@@ -1940,6 +1944,8 @@ body {
 .label-green { color: var(--hmp-green) !important; }
 .label-red { color: var(--hmp-red) !important; }
 .label-purple { color: var(--hmp-purple) !important; }
+.label-golden { color: var(--hmp-golden) !important; }
+
 
 .hmp-loading {
     color: var(--hmp-cyan);

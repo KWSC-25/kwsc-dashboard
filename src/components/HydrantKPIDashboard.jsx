@@ -55,7 +55,8 @@ const HydrantKPIDashboard = () => {
             cancelled: Number(ots.ots_cancelled_consumer_today) + Number(ots.ots_cancelled_hmp_today),
             pending: ots.ots_pending_today,
             cancelled_consumer: ots.ots_cancelled_consumer_today,
-            cancelled_hydrant: ots.ots_cancelled_hmp_today
+            cancelled_hydrant: ots.ots_cancelled_hmp_today,
+            avg_tat: ots.ots_avg_tat_readable 
         },
         daily_hmp: {
             created: orders.hmp_created_today,
@@ -63,8 +64,10 @@ const HydrantKPIDashboard = () => {
             completed: orders.hmp_completed_today,
             cancelled: orders.hmp_cancelled_today,
             pending: orders.hmp_pending_today,
+            avg_tat: orders.hmp_avg_tat_readable 
         },
         daily_gallons: {
+            get total() { return gallons.total_gallons_today },
             gal_total: gallons.total_gallons_today,
             gal_gps: gallons.total_gallons_gps_today,
             gal_comm: gallons.total_gallons_comm_today,
@@ -123,6 +126,14 @@ const HydrantKPIDashboard = () => {
                     <div className="hmp-main-row">
                         <span className="hmp-label label-red">TOTAL PENDING {type}</span>
                         <span className="hmp-total">{fmt(s.pending)}</span>
+                    </div>
+                </div>
+
+                {/* 6. Average Order TAT */}
+                <div className="hmp-card hmp-grad-golden">
+                    <div className="hmp-main-row">
+                        <span className="hmp-label label-golden">AVERAGE ORDER TAT {type}</span>
+                        <span className="hmp-total" style={{ fontSize: '18px', textTransform: 'none' }}>{s.avg_tat}</span>
                     </div>
                 </div>
             </>
@@ -202,18 +213,19 @@ const HydrantKPIDashboard = () => {
                 {/* Left Side Double Row Grid Layout (OTS Row and HMP Row inside 1 container) */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     {/* 1. OTS ROW */}
-                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
+                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
                         {renderOrderCards('daily_ots', 'OTS')}
                     </div>
                     
                     {/* 2. HMP ROW */}
-                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '8px' }}>
+                    <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
                         {renderOrderCards('daily_hmp', 'HMP')}
                     </div>
                 </div>
 
                 {/* Right Side Merged Today Gallons Segment */}
                 <div style={{ width: '22%', minWidth: '240px' }}>
+                    {/* Corrected to pass daily_gallons object descriptor key */}
                     {renderGallonsCard('daily_gallons', 'TOTAL GALLONS USED')}
                 </div>
             </div>
