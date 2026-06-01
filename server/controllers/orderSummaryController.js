@@ -21,7 +21,7 @@ export const getOrderSummary = async (req, res) => {
                 FROM ots_order
                 WHERE api_created_at >= CURDATE()
                 GROUP BY hydrant_id
-            ) ots ON h.id = ots.hydrant_id
+            ) ots ON h.ots_hydrant = ots.hydrant_id
             WHERE o.created_at >= CURDATE()
             GROUP BY h.id, h.name
             ORDER BY h.name ASC
