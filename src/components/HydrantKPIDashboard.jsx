@@ -53,6 +53,18 @@ const HydrantKPIDashboard = () => {
     const { ots, orders } = data;
     const fmt = (val) => (val ? Number(val).toLocaleString() : "0");
 
+    // Formatter utility to convert value into clean millions notation (e.g. 1.52M) ONLY if it reaches or crosses 1 Million (1,000,000)
+    const fmtLargeUnits = (val) => {
+        if (!val) return "0";
+        const num = Number(val);
+        if (num >= 1000000) {
+            const millions = num / 1000000;
+            // Uses up to 2 decimal places, slicing off trailing zeros cleanly via parseFloat
+            return `${parseFloat(millions.toFixed(2))}M`;
+        }
+        return num.toLocaleString();
+    };
+
     const stats = {
         daily_ots: {
             created: ots.total_created_ots_today,
@@ -96,7 +108,7 @@ const HydrantKPIDashboard = () => {
         
         const configurations = {
             created: {
-                label: `TOTAL CREATED ${type}`,
+                label: `CREATED ${type}`,
                 grad: "hmp-grad-cyan",
                 lblClass: "label-cyan",
                 count: s.created,
@@ -105,7 +117,7 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false
             },
             completed: {
-                label: `TOTAL COMPLETED ${type}`,
+                label: `COMPLETED ${type}`,
                 grad: "hmp-grad-green",
                 lblClass: "label-green",
                 count: s.completed,
@@ -132,7 +144,7 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false
             },
             cancelled: {
-                label: type === 'OTS' ? 'TOTAL CANCELLED' : `TOTAL CANCELLED ${type}`,
+                label: type === 'OTS' ? 'CANCELLED' : `CANCELLED ${type}`,
                 grad: "hmp-grad-grey",
                 lblClass: "",
                 count: s.cancelled,
@@ -168,27 +180,27 @@ const HydrantKPIDashboard = () => {
                 {/* Sub Row 1: Main Metric Total Counts */}
                 <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '15px' }}>{cfg.label}</span>
-                    <span className="hmp-total" style={{ fontSize: '32px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
+                    <span className="hmp-total" style={{ fontSize: '40px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
                 </div>
                 {/* Retained original consumer vs hydrant cancellation breakdown block */}
                 {cfg.isCancelledCard && type === 'OTS' && (
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '15px', color: '#8a99a8' }}>
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '20px', color: '#8a99a8' }}>
                         <span style={{ color: 'white' }}>By Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
                         <span style={{ color: 'white' }}>By Hydrant: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
                     </div>
                 )}
                 
                 {/* Sub Row 2: Gallon Counts */}
-                <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '18px', color: '#be66e3' }}>
-                    <span>GALLONS:</span>
-                    <strong>{fmt(cfg.gallons)} Gal</strong>
+                <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '20px', color: '#be66e3', fontWeight:'bold' }}>
+                    <span>Million GALLONS:</span>
+                    <strong>{Number(cfg.gallons) >= 1000000 ? fmtLargeUnits(cfg.gallons) : `${fmt(cfg.gallons)}`}</strong>
                 </div>
 
                 {/* Sub Row 3: Amount Metric */}
                 {type === 'OTS' && (
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '18px', color: '#e0e6ed' }}>
-                        <span>AMOUNT:</span>
-                        <strong>PKR {fmt(cfg.amount)}</strong>
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '20px', color: '#e0e6ed', fontWeight:'bold' }}>
+                        <span>Million AMOUNT:</span>
+                        <strong>{Number(cfg.amount) >= 1000000 ? `${fmtLargeUnits(cfg.amount)}` : `${fmt(cfg.amount)}`}</strong>
                     </div>
                 )}
             </div>
@@ -252,7 +264,7 @@ const HydrantKPIDashboard = () => {
                                 width: 'calc(33.333% + 8px)',
                                 top: '-6px', 
                                 bottom: '-6px', 
-                                border: '1px solid rgba(191, 84, 46, 0.70)', 
+                                border: '1px solid rgba(191, 84, 46, 0.99)', 
                                 backgroundColor: 'rgba(255, 255, 255, 0.03)', 
                                 borderRadius: '8px', 
                                 zIndex: 1, 

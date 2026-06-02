@@ -7,7 +7,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
 
     // Metric rows definition config 
     const metricRows = useMemo(() => [
-        { label: 'AVERAGE ORDER TAT (HHH:mm)', key: 'avg_tat', isTat: true },
+        { label: 'AVERAGE ORDER TAT', key: 'avg_tat', isTat: true },
         { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
         { label: '% PENDING (Not Assigned)', key: 'pending_percentage', color: '#f44336' },
         { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
@@ -65,7 +65,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                     <thead>
                         {/* Primary Header Row: Hydrant Top Grouping */}
                         <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
-                            <th style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '15px', fontWeight: 'bold' }}>
+                            <th style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>
                                 Operational Metrics
                             </th>
                             {loading && performanceData.length === 0 ? (
@@ -81,7 +81,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                             borderRight: '1px solid #4a5568', 
                                             color: '#ffffff', 
                                             fontWeight: '800', 
-                                            fontSize: '15px', 
+                                            fontSize: '20px', 
                                             letterSpacing: '0.9px', 
                                             textAlign: 'center',
                                             background: 'rgba(255, 255, 255, 0.02)'
@@ -117,7 +117,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                         padding: '12px 10px', 
                                         textAlign: 'left', 
                                         fontWeight: '700', 
-                                        fontSize:'14px',
+                                        fontSize:'22px',
                                         color: metric.isTat ? '#FFF200' : '#ffffff', 
                                         background: 'rgba(26, 32, 44, 0.3)', 
                                         borderRight: '2px solid #2e3748', 
@@ -135,7 +135,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                                 key={`cell-${mIdx}-${rIdx}`}
                                                 style={{ 
                                                     padding: '10px 4px', 
-                                                    fontSize: '18px', 
+                                                    fontSize: '25px', 
                                                     fontWeight: '600',
                                                     color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
                                                     borderRight: '1px solid #4a5568'

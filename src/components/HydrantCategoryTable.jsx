@@ -115,10 +115,10 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                     <thead>
                         {/* Primary Category Main Group Headers */}
                         <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
-                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '180px', color: '#fff', fontSize: '13px', fontWeight: 'bold' }}>Hydrant Name</th>
-                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'center', borderRight: '2px solid #00f2ff', width: '100px', color: '#00f2ff', fontSize: '13px', fontWeight: 'bold', background: 'rgba(0, 242, 255, 0.05)' }}>TOTAL Created</th>
+                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '180px', color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>Hydrant Name</th>
+                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'center', borderRight: '2px solid #00f2ff', width: '100px', color: '#00f2ff', fontSize: '18px', fontWeight: 'bold', background: 'rgba(0, 242, 255, 0.05)' }}>TOTAL Created</th>
                             {categories.map((cat, idx) => (
-                                <th key={idx} colSpan={5} style={{ padding: '8px 4px', borderRight: idx !== categories.length - 1 ? '1px solid #4a5568' : 'none', color: '#fff', fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.3px' , textAlign: 'center'}}>
+                                <th key={idx} colSpan={5} style={{ padding: '8px 4px', borderRight: idx !== categories.length - 1 ? '1px solid #4a5568' : 'none', color: '#fff', fontWeight: 'bold', fontSize: '18px', letterSpacing: '0.3px' , textAlign: 'center'}}>
                                     {cat.label}
                                 </th>
                             ))}
@@ -178,7 +178,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                         className="hmp-table-row-hover"
                                     >
                                         {/* Hydrant Identity Column */}
-                                        <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap', fontSize:'18px' }}>
                                             {row.hydrant_name}
                                         </td>
 
@@ -198,7 +198,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                                             key={`${cIdx}-${sIdx}`} 
                                                             style={{ 
                                                                 padding: '10px 4px',
-                                                                fontSize: '13px',
+                                                                fontSize: '18px',
                                                                 opacity: val === 0 ? 0.25 : 1,
                                                                 fontWeight: val > 0 ? '600' : 'normal',
                                                                 color: status.isPrimary && val > 0 ? '#00f2ff' : '#e2e8f0',

@@ -7,7 +7,7 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
 
     // Metric rows definition config 
     const metricRows = useMemo(() => [
-        { label: 'AVERAGE ORDER TAT (HHH:mm)', key: 'avg_tat', isTat: true },
+        { label: 'AVERAGE ORDER TAT', key: 'avg_tat', isTat: true },
         { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
         { label: '% PENDING (Not Assigned)', key: 'pending_percentage', color: '#f44336' },
         { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
