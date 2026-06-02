@@ -85,10 +85,10 @@ export const TodayStats = async (req, res) => {
 
         // Helper Utility function to format total seconds to human-readable format
         const formatDurationText = (totalSeconds) => {
-            if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds)) return "0 mins";
+            if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds)) return "0";
             
             let seconds = Math.floor(Number(totalSeconds));
-            if (seconds <= 0) return "0 mins";
+            if (seconds <= 0) return "0";
 
             const months = Math.floor(seconds / (30 * 24 * 3600));
             seconds %= (30 * 24 * 3600);

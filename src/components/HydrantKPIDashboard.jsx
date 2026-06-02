@@ -91,12 +91,11 @@ const HydrantKPIDashboard = () => {
         }
     };
 
-    const renderOrderCards = (key, type) => {
+    const renderSingleCard = (key, type, cardType) => {
         const s = stats[key];
         
-        // Define mappings dynamically for sub-rows mapping loop definitions
-        const configurations = [
-            {
+        const configurations = {
+            created: {
                 label: `TOTAL CREATED ${type}`,
                 grad: "hmp-grad-cyan",
                 lblClass: "label-cyan",
@@ -105,16 +104,7 @@ const HydrantKPIDashboard = () => {
                 amount: s.created_amount,
                 isTatCard: false
             },
-            {
-                label: `DRIVER ASSIGNED ${type}`,
-                grad: "hmp-grad-orange",
-                lblClass: "label-orange",
-                count: s.dispatched,
-                gallons: s.dispatched_gallons,
-                amount: s.dispatched_amount,
-                isTatCard: false
-            },
-            {
+            completed: {
                 label: `TOTAL COMPLETED ${type}`,
                 grad: "hmp-grad-green",
                 lblClass: "label-green",
@@ -123,7 +113,25 @@ const HydrantKPIDashboard = () => {
                 amount: s.completed_amount,
                 isTatCard: false
             },
-            {
+            dispatched: {
+                label: `DRIVER ASSIGNED ${type}`,
+                grad: "hmp-grad-orange",
+                lblClass: "label-orange",
+                count: s.dispatched,
+                gallons: s.dispatched_gallons,
+                amount: s.dispatched_amount,
+                isTatCard: false
+            },
+            pending: {
+                label: `NOT ASSIGNED ${type}`,
+                grad: "hmp-grad-red",
+                lblClass: "label-red",
+                count: s.pending,
+                gallons: s.pending_gallons,
+                amount: s.pending_amount,
+                isTatCard: false
+            },
+            cancelled: {
                 label: type === 'OTS' ? 'TOTAL CANCELLED' : `TOTAL CANCELLED ${type}`,
                 grad: "hmp-grad-grey",
                 lblClass: "",
@@ -133,68 +141,58 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false,
                 isCancelledCard: true
             },
-            {
-                label: `TOTAL PENDING ${type}`,
-                grad: "hmp-grad-red",
-                lblClass: "label-red",
-                count: s.pending,
-                gallons: s.pending_gallons,
-                amount: s.pending_amount,
-                isTatCard: false
-            },
-            {
+            tat: {
                 label: `AVERAGE ORDER TAT ${type}`,
                 grad: "hmp-grad-golden",
                 lblClass: "label-golden",
                 count: s.avg_tat,
                 isTatCard: true
             }
-        ];
+        };
 
-        return configurations.map((cfg, index) => {
-            if (cfg.isTatCard) {
-                return (
-                    <div key={index} className={`hmp-card ${cfg.grad}`}>
-                        <div className="hmp-main-row">
-                            <span className={`hmp-label ${cfg.lblClass}`}>{cfg.label}</span>
-                            <span className="hmp-total" style={{ fontSize: '15px', textTransform: 'none' }}>{cfg.count}</span>
-                        </div>
-                    </div>
-                );
-            }
+        const cfg = configurations[cardType];
 
+        if (cfg.isTatCard) {
             return (
-                <div key={index} className={`hmp-card ${cfg.grad}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center', padding: '10px 12px' }}>
-                    {/* Sub Row 1: Main Metric Total Counts */}
-                    <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '11px' }}>{cfg.label}</span>
-                        <span className="hmp-total" style={{ fontSize: '16px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
+                <div className={`hmp-card ${cfg.grad}`} style={{ height: '100%' }}>
+                    <div className="hmp-main-row">
+                        <span className={`hmp-label ${cfg.lblClass}`}>{cfg.label}</span>
+                        <span className="hmp-total" style={{ fontSize: '32px', textTransform: 'none' }}>{cfg.count}</span>
                     </div>
-
-                    {/* Sub Row 2: Gallon Counts (Applicable to both HMP and OTS) */}
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '12px', color: '#e0e6ed' }}>
-                        <span>GALLONS:</span>
-                        <strong>{fmt(cfg.gallons)} Gal</strong>
-                    </div>
-
-                    {/* Sub Row 3: Amount Metric (Strictly rendered for OTS row cards) */}
-                    {type === 'OTS' && (
-                        <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '12px', color: '#ffd700' }}>
-                            <span>AMOUNT:</span>
-                            <strong>PKR {fmt(cfg.amount)}</strong>
-                        </div>
-                    )}
-
-                    {/* Retained original consumer vs hydrant cancellation breakdown breakdown block inside grid array */}
-                    {cfg.isCancelledCard && type === 'OTS' && (
-                        <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '10px', color: '#8a99a8' }}>
-                            <span style={{ color: 'white' }}>CONS: <strong>{fmt(s.cancelled_consumer)}</strong></span>
-                            <span style={{ color: 'white' }}>HYD: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
-                        </div>
-                    )}
                 </div>
             );
-        });
+        }
+
+        return (
+            <div className={`hmp-card ${cfg.grad}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center', padding: '10px 12px', height: '100%' }}>
+                {/* Sub Row 1: Main Metric Total Counts */}
+                <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '15px' }}>{cfg.label}</span>
+                    <span className="hmp-total" style={{ fontSize: '32px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
+                </div>
+                {/* Retained original consumer vs hydrant cancellation breakdown block */}
+                {cfg.isCancelledCard && type === 'OTS' && (
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '15px', color: '#8a99a8' }}>
+                        <span style={{ color: 'white' }}>By Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                        <span style={{ color: 'white' }}>By Hydrant: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
+                    </div>
+                )}
+                
+                {/* Sub Row 2: Gallon Counts */}
+                <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '18px', color: '#be66e3' }}>
+                    <span>GALLONS:</span>
+                    <strong>{fmt(cfg.gallons)} Gal</strong>
+                </div>
+
+                {/* Sub Row 3: Amount Metric */}
+                {type === 'OTS' && (
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '18px', color: '#e0e6ed' }}>
+                        <span>AMOUNT:</span>
+                        <strong>PKR {fmt(cfg.amount)}</strong>
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
@@ -243,17 +241,63 @@ const HydrantKPIDashboard = () => {
                 </div>
 
                 {/* Top Row: KPIs and Gallons Card Container */}
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginTop: '10px', position: 'relative' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
+                        
+                        {/* ==================== SINGLE UNIFIED PENDING WRAPPER BOX ==================== */}
+                        <div 
+                            style={{ 
+                                position: 'absolute', 
+                                left: 'calc(33.333% - 4px)', // Dynamically targets the 3rd and 4th columns space out of 6
+                                width: 'calc(33.333% + 8px)',
+                                top: '-6px', 
+                                bottom: '-6px', 
+                                border: '1px solid rgba(191, 84, 46, 0.70)', 
+                                backgroundColor: 'rgba(255, 255, 255, 0.03)', 
+                                borderRadius: '8px', 
+                                zIndex: 1, 
+                                pointerEvents: 'none' // Ensures users can still click interactions inside cards
+                            }}
+                        >
+                            {/* Unified Top-Middle Heading */}
+                            <div 
+                                style={{ 
+                                    position: 'absolute', 
+                                    top: '-17px', 
+                                    left: '50%', 
+                                    transform: 'translateX(-50%)', 
+                                    padding: '0 12px', 
+                                    fontSize: '15px', 
+                                    backgroundColor: '#111622',
+                                    fontWeight: 'bold', 
+                                    color: '#ff4d4f', 
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                Pending Orders
+                            </div>
+                        </div>
+
                         {/* 1. OTS ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
-                            {renderOrderCards('daily_ots', 'OTS')}
+                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
+                            <div>{renderSingleCard('daily_ots', 'OTS', 'created')}</div>
+                            <div>{renderSingleCard('daily_ots', 'OTS', 'completed')}</div>
+                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_ots', 'OTS', 'dispatched')}</div>
+                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_ots', 'OTS', 'pending')}</div>
+                            <div>{renderSingleCard('daily_ots', 'OTS', 'cancelled')}</div>
+                            <div>{renderSingleCard('daily_ots', 'OTS', 'tat')}</div>
                         </div>
                         
                         {/* 2. HMP ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px' }}>
-                            {renderOrderCards('daily_hmp', 'HMP')}
+                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
+                            <div>{renderSingleCard('daily_hmp', 'HMP', 'created')}</div>
+                            <div>{renderSingleCard('daily_hmp', 'HMP', 'completed')}</div>
+                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_hmp', 'HMP', 'dispatched')}</div>
+                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_hmp', 'HMP', 'pending')}</div>
+                            <div>{renderSingleCard('daily_hmp', 'HMP', 'cancelled')}</div>
+                            <div>{renderSingleCard('daily_hmp', 'HMP', 'tat')}</div>
                         </div>
+
                     </div>
                 </div>
 

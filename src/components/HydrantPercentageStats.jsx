@@ -52,7 +52,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         <div className="hydrant-performance-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.85)', borderRadius: '6px', padding: '16px', border: '1px solid #2e3748', width: '100%' }}>
             {/* Component Section Header */}
             <h3 style={{ margin: '0 0 14px 0', fontSize: '20px', fontWeight: '600', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Hydrant Operational Percentage & Efficiency Performance Metrics
+                Hydrant Wise Performance (Overall Average)
             </h3>
 
             {/* Scrollable Context Layer */}
