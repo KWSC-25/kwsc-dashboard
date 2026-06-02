@@ -14,8 +14,6 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
         { label: '% OTS', key: 'total_created_ots_percentage', color: '#38bdf8' },
         { label: '% HMP', key: 'total_created_hmp_percentage', color: '#a78bfa' }
-
-
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
@@ -73,23 +71,30 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                             ) : performanceData.length === 0 ? (
                                 <th style={{ color: '#718096', fontStyle: 'italic' }}>No active hydrants matched filter parameters</th>
                             ) : (
-                                performanceData.map((row, idx) => (
-                                    <th 
-                                        key={idx} 
-                                        style={{ 
-                                            padding: '12px 6px', 
-                                            borderRight: '1px solid #4a5568', 
-                                            color: '#ffffff', 
-                                            fontWeight: '800', 
-                                            fontSize: '20px', 
-                                            letterSpacing: '0.9px', 
-                                            textAlign: 'center',
-                                            background: 'rgba(255, 255, 255, 0.02)'
-                                        }}
-                                    >
-                                        {row.hydrant_name}
-                                    </th>
-                                ))
+                                performanceData.map((row, idx) => {
+                                    // Shorten 'CRUSH PLANT' to 'CP' cleanly for screen economy
+                                    const displayedName = row.hydrant_name 
+                                        ? row.hydrant_name.replace('CRUSH PLANT', 'CP') 
+                                        : '';
+
+                                    return (
+                                        <th 
+                                            key={idx} 
+                                            style={{ 
+                                                padding: '12px 6px', 
+                                                borderRight: '1px solid #4a5568', 
+                                                color: '#ffffff', 
+                                                fontWeight: '800', 
+                                                fontSize: '20px', 
+                                                letterSpacing: '0.9px', 
+                                                textAlign: 'center',
+                                                background: 'rgba(255, 255, 255, 0.02)'
+                                            }}
+                                        >
+                                            {displayedName}
+                                        </th>
+                                    );
+                                })
                             )}
                         </tr>
                     </thead>
@@ -103,50 +108,57 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                 <td style={{ padding: '30px', color: '#718096' }}>No records evaluated for this transaction scope window.</td>
                             </tr>
                         ) : (
-                            metricRows.map((metric, mIdx) => (
-                                <tr 
-                                    key={mIdx}
-                                    style={{ 
-                                        borderBottom: '1px solid #2e3748',
-                                        background: mIdx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent'
-                                    }}
-                                    className="hmp-table-row-hover"
-                                >
-                                    {/* Left Anchor Primary Metric Parameter Cell */}
-                                    <td style={{ 
-                                        padding: '12px 10px', 
-                                        textAlign: 'left', 
-                                        fontWeight: '700', 
-                                        fontSize:'22px',
-                                        color: metric.isTat ? '#FFF200' : '#ffffff', 
-                                        background: 'rgba(26, 32, 44, 0.3)', 
-                                        borderRight: '2px solid #2e3748', 
-                                        whiteSpace: 'nowrap' 
-                                    }}>
-                                        {metric.label}
-                                    </td>
+                            metricRows.map((metric, mIdx) => {
+                                // Dynamic validation for targeting the boundary line breaks
+                                const isCompletedRow = metric.label === '% COMPLETED';
+                                const isCancelledRow = metric.label === '% CANCELLED';
 
-                                    {/* Combined Metric View Value Outputs */}
-                                    {performanceData.map((row, rIdx) => {
-                                        const totalValue = row.total[metric.key];
+                                return (
+                                    <tr 
+                                        key={mIdx}
+                                        style={{ 
+                                            borderBottom: isCancelledRow ? '4px solid #67676e' : '1px solid #2e3748',
+                                            borderTop: isCompletedRow ? '4px solid #67676e' : 'none',
+                                            background: mIdx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent'
+                                        }}
+                                        className="hmp-table-row-hover"
+                                    >
+                                        {/* Left Anchor Primary Metric Parameter Cell */}
+                                        <td style={{ 
+                                            padding: '12px 10px', 
+                                            textAlign: 'left', 
+                                            fontWeight: '700', 
+                                            fontSize: '22px',
+                                            color: metric.isTat ? '#FFF200' : '#ffffff', 
+                                            background: 'rgba(26, 32, 44, 0.3)', 
+                                            borderRight: '2px solid #2e3748', 
+                                            whiteSpace: 'nowrap' 
+                                        }}>
+                                            {metric.label}
+                                        </td>
 
-                                        return (
-                                            <td 
-                                                key={`cell-${mIdx}-${rIdx}`}
-                                                style={{ 
-                                                    padding: '10px 4px', 
-                                                    fontSize: '25px', 
-                                                    fontWeight: '600',
-                                                    color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
-                                                    borderRight: '1px solid #4a5568'
-                                                }}
-                                            >
-                                                {totalValue}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            ))
+                                        {/* Combined Metric View Value Outputs */}
+                                        {performanceData.map((row, rIdx) => {
+                                            const totalValue = row.total[metric.key];
+
+                                            return (
+                                                <td 
+                                                    key={`cell-${mIdx}-${rIdx}`}
+                                                    style={{ 
+                                                        padding: '10px 4px', 
+                                                        fontSize: '25px', 
+                                                        fontWeight: '600',
+                                                        color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
+                                                        borderRight: '1px solid #4a5568'
+                                                    }}
+                                                >
+                                                    {totalValue}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

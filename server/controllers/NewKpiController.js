@@ -376,7 +376,7 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 ELSE h.name 
             END
         HAVING SUM(COALESCE(ord.created_count, 0)) > 0 OR SUM(COALESCE(ots.ots_created, 0)) > 0
-        ORDER BY combined_hydrant_name ASC;`;
+        ORDER BY combined_hydrant_name DESC;`;
 
         const gridParams = [
             todayStart, todayEnd,
