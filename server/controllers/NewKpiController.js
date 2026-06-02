@@ -12,109 +12,80 @@ export const TodayStats = async (req, res) => {
         const { startDate, endDate } = req.query;
         const todayStart = startDate ? `${startDate} 00:00:00` : defaultTodayStart;
         const todayEnd = endDate ? `${endDate} 23:59:59` : defaultTodayEnd;
-        
-        const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-        const startOfMonthDateTime = `${startOfMonth} 00:00:00`;
-        const endOfMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        const endOfMonthDateTime = `${endOfMonthDate.toISOString().split('T')[0]} 23:59:59`;
 
-        // 2. Updated OTS Query (Combined Today, Month, and Average TAT in Seconds)
+        // ========================================================
+        // 2. OPTIMIZED OTS QUERY (Upfront filtering via subquery aggregation)
+        // ========================================================
         const otsQuery = `
         SELECT 
-            COUNT(CASE WHEN api_created_at BETWEEN ? AND ? THEN 1 END) AS total_created_ots_today,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('pending_alignment','pending') THEN 1 ELSE 0 END) AS ots_pending_today,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_dispatched_today,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('completed','self_closed') THEN 1 ELSE 0 END) AS ots_completed_today,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('cancelled') THEN 1 ELSE 0 END) AS ots_cancelled_consumer_today,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('failed') THEN 1 ELSE 0 END) AS ots_cancelled_hmp_today,
+            COUNT(*) AS total_created_ots_today,
+            SUM(CASE WHEN status IN ('pending_alignment','pending') THEN 1 ELSE 0 END) AS ots_pending_today,
+            SUM(CASE WHEN status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_dispatched_today,
+            SUM(CASE WHEN status IN ('completed','self_closed') THEN 1 ELSE 0 END) AS ots_completed_today,
+            SUM(CASE WHEN status IN ('cancelled') THEN 1 ELSE 0 END) AS ots_cancelled_consumer_today,
+            SUM(CASE WHEN status IN ('failed') THEN 1 ELSE 0 END) AS ots_cancelled_hmp_today,
             
-            AVG(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('completed','self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today,
-            
-            COUNT(CASE WHEN api_created_at BETWEEN ? AND ? THEN 1 END) AS total_created_ots_month,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('pending_alignment','pending') THEN 1 ELSE 0 END) AS ots_pending_month,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_dispatched_month,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('completed','self_closed') THEN 1 ELSE 0 END) AS ots_completed_month,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('cancelled') THEN 1 ELSE 0 END) AS ots_cancelled_consumer_month,
-            SUM(CASE WHEN api_created_at BETWEEN ? AND ? AND status IN ('failed') THEN 1 ELSE 0 END) AS ots_cancelled_hmp_month
+            -- Today Gallons Matrix
+            SUM(gallon) AS ots_created_gallons_today,
+            SUM(CASE WHEN status IN ('pending_alignment','pending') THEN gallon ELSE 0 END) AS ots_pending_gallons_today,
+            SUM(CASE WHEN status IN ('dispatched') THEN gallon ELSE 0 END) AS ots_dispatched_gallons_today,
+            SUM(CASE WHEN status IN ('completed','self_closed') THEN gallon ELSE 0 END) AS ots_completed_gallons_today,
+            SUM(CASE WHEN status IN ('cancelled', 'failed') THEN gallon ELSE 0 END) AS ots_cancelled_gallons_today,
+
+            -- Today Financial Amounts Matrix
+            SUM(tanker_amount) AS ots_created_amount_today,
+            SUM(CASE WHEN status IN ('pending_alignment','pending') THEN tanker_amount ELSE 0 END) AS ots_pending_amount_today,
+            SUM(CASE WHEN status IN ('dispatched') THEN tanker_amount ELSE 0 END) AS ots_dispatched_amount_today,
+            SUM(CASE WHEN status IN ('completed','self_closed') THEN tanker_amount ELSE 0 END) AS ots_completed_amount_today,
+            SUM(CASE WHEN status IN ('cancelled', 'failed') THEN tanker_amount ELSE 0 END) AS ots_cancelled_amount_today,
+
+            -- Turnaround Time Average
+            AVG(CASE WHEN status IN ('completed','self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today
         FROM ots_order
-        WHERE api_created_at BETWEEN ? AND ? OR api_created_at BETWEEN ? AND ?`;
+        WHERE api_created_at BETWEEN ? AND ?`; // <-- Filters the index ONCE here first
 
-        const otsParams = [
-            // Today filters
-            todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd,
-            // Added Today filter for TAT calculation
-            todayStart, todayEnd,
-            // Month fields
-            startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime,
-            // Main WHERE clause bounds
-            startOfMonthDateTime, endOfMonthDateTime, todayStart, todayEnd
-        ];
+        const otsParams = [todayStart, todayEnd];
 
-        // 3. Updated Orders Query (Combined Today, Month, and Average TAT in Seconds)
+        // ========================================================
+        // 3. OPTIMIZED HMP ORDERS QUERY (Upfront filtering via inner select)
+        // ========================================================
         const ordersQuery = `
         SELECT 
-            COUNT(CASE WHEN o.created_at BETWEEN ? AND ? THEN 1 END) AS hmp_created_today,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 2 THEN 1 ELSE 0 END) AS hmp_dispatched_today,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 1 THEN 1 ELSE 0 END) AS hmp_completed_today,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 0 THEN 1 ELSE 0 END) AS hmp_pending_today,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status IN (3,4) THEN 1 ELSE 0 END) AS hmp_cancelled_today,
+            COUNT(*) AS hmp_created_today,
+            SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) AS hmp_pending_today,
+            SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS hmp_dispatched_today,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS hmp_completed_today,
+            SUM(CASE WHEN status IN (3,4) THEN 1 ELSE 0 END) AS hmp_cancelled_today,
             
-            AVG(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) END) AS hmp_avg_tat_seconds_today,
-            
-            COUNT(CASE WHEN o.created_at BETWEEN ? AND ? THEN 1 END) AS hmp_created_month,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 2 THEN 1 ELSE 0 END) AS hmp_dispatched_month,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 1 THEN 1 ELSE 0 END) AS hmp_completed_month,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status = 0 THEN 1 ELSE 0 END) AS hmp_pending_month,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND b.status IN (3,4) THEN 1 ELSE 0 END) AS hmp_cancelled_month
-        FROM orders o
-        INNER JOIN billings b ON o.id = b.order_id
-        WHERE o.order_type != 'OTS' AND (o.created_at BETWEEN ? AND ? OR o.created_at BETWEEN ? AND ?)`;
+            -- Today Truck Type Capacity Gallons
+            SUM(capacity) AS hmp_created_gallons_today,
+            SUM(CASE WHEN status = 0 THEN capacity ELSE 0 END) AS hmp_pending_gallons_today,
+            SUM(CASE WHEN status = 2 THEN capacity ELSE 0 END) AS hmp_dispatched_gallons_today,
+            SUM(CASE WHEN status = 1 THEN capacity ELSE 0 END) AS hmp_completed_gallons_today,
+            SUM(CASE WHEN status IN (3,4) THEN capacity ELSE 0 END) AS hmp_cancelled_gallons_today,
 
-        const orderParams = [
-            // Today filters
-            todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd, todayStart, todayEnd,
-            // Added Today filter for TAT calculation
-            todayStart, todayEnd,
-            // Month fields
-            startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime, startOfMonthDateTime, endOfMonthDateTime,
-            // Main WHERE clause bounds
-            startOfMonthDateTime, endOfMonthDateTime, todayStart, todayEnd
-        ];
+            -- Turnaround Time Average
+            AVG(CASE WHEN status = 1 THEN seconds_duration END) AS hmp_avg_tat_seconds_today
+        FROM (
+            SELECT 
+                b.status,
+                tt.capacity,
+                TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) AS seconds_duration
+            FROM orders o
+            INNER JOIN billings b ON o.id = b.order_id
+            LEFT JOIN truck_types tt ON o.truck_type = tt.id
+            WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ? -- <-- Isolates target rows instantly
+        ) active_today`;
 
-        // 4. Gallons Query - FIXED (Dynamically respects applied filters)
-        const gallonsQuery = `
-        SELECT 
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? THEN tt.capacity ELSE 0 END) AS total_gallons_today,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND o.order_type NOT IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_gps_today,
-            SUM(CASE WHEN o.created_at BETWEEN ? AND ? AND o.order_type IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_comm_today,
-            
-            SUM(tt.capacity) AS total_gallons_month,
-            SUM(CASE WHEN o.order_type NOT IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_gps_month,
-            SUM(CASE WHEN o.order_type IN ('Commercial','Commercial Offline') THEN tt.capacity ELSE 0 END) AS total_gallons_comm_month
-        FROM billings b
-        INNER JOIN orders o ON o.id = b.order_id
-        INNER JOIN truck_types tt ON tt.id = o.truck_type
-        WHERE b.status IN (1,2) 
-        AND (o.created_at BETWEEN ? AND ? OR b.updated_at BETWEEN ? AND ?);`;
+        const orderParams = [todayStart, todayEnd];
 
-        const gallonParams = [
-            // Dynamic bounds for conditional aggregations
-            todayStart, todayEnd,
-            todayStart, todayEnd,
-            todayStart, todayEnd,
-            // Main WHERE clause filtering
-            todayStart, todayEnd,
-            startOfMonthDateTime, endOfMonthDateTime
-        ];
-
-        // Execute queries
+        // Execute both optimized queries in parallel
         const [otsData] = await req.db.execute(otsQuery, otsParams);
         const [orderData] = await req.db.execute(ordersQuery, orderParams);
-        const [gallonData] = await req.db.execute(gallonsQuery, gallonParams);
 
         // Helper Utility function to format total seconds to human-readable format
         const formatDurationText = (totalSeconds) => {
-            if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds)) return "N/A";
+            if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds)) return "0 mins";
             
             let seconds = Math.floor(Number(totalSeconds));
             if (seconds <= 0) return "0 mins";
@@ -135,7 +106,6 @@ export const TodayStats = async (req, res) => {
             if (days > 0) parts.push(`${days} ${days === 1 ? 'day' : 'days'}`);
             if (hours > 0) parts.push(`${hours} ${hours === 1 ? 'hr' : 'hrs'}`);
             
-            // Show minutes only if it's less than a month, or if hours/days are low to avoid massive string length
             if (months === 0 && (minutes > 0 || parts.length === 0)) {
                 parts.push(`${minutes} ${minutes === 1 ? 'min' : 'mins'}`);
             }
@@ -143,16 +113,18 @@ export const TodayStats = async (req, res) => {
             return parts.join(' ').trim();
         };
 
-        // Attach human readable format back onto the database output objects
-        otsData[0].ots_avg_tat_readable = formatDurationText(otsData[0].ots_avg_tat_seconds_today);
-        orderData[0].hmp_avg_tat_readable = formatDurationText(orderData[0].hmp_avg_tat_seconds_today);
+        // Fallback checks to prevent crash if tables are empty today
+        const formattedOts = otsData[0] || {};
+        const formattedOrders = orderData[0] || {};
+
+        formattedOts.ots_avg_tat_readable = formatDurationText(formattedOts.ots_avg_tat_seconds_today);
+        formattedOrders.hmp_avg_tat_readable = formatDurationText(formattedOrders.hmp_avg_tat_seconds_today);
 
         res.json({
             success: true,
             data: { 
-                ots: otsData[0], 
-                orders: orderData[0],
-                gallons: gallonData[0]
+                ots: formattedOts, 
+                orders: formattedOrders
             }
         });
     } catch (error) {
