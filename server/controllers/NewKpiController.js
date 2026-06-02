@@ -269,6 +269,26 @@ export const OrderSummaryToday = async (req, res) => {
 // ==========================================================
 // NEW CONTROLLER: HYDRANT METRIC GRID WITH SUB-COLUMN METRICS
 // ==========================================================
+// Helper function to format seconds into a dynamic D H m layout
+const formatSecondsToDHm = (totalSeconds, completedCount) => {
+    if (!completedCount || completedCount <= 0 || !totalSeconds || totalSeconds <= 0) {
+        return "0m";
+    }
+
+    const avgSeconds = Math.floor(totalSeconds / completedCount);
+    
+    const days = Math.floor(avgSeconds / 86400);
+    const hours = Math.floor((avgSeconds % 86400) / 3600);
+    const minutes = Math.floor((avgSeconds % 3600) / 60);
+
+    const parts = [];
+    if (days > 0) parts.push(`${days}D`);
+    if (hours > 0 || days > 0) parts.push(`${hours}H`); // Show hours if days exist, even if hours is 0
+    parts.push(`${minutes}m`);
+
+    return parts.join(' ');
+};
+
 export const HydrantPerformanceGridToday = async (req, res) => {
     try {
         const now = new Date();
@@ -283,61 +303,30 @@ export const HydrantPerformanceGridToday = async (req, res) => {
 
         const gridQuery = `
         SELECT 
-            h.name AS hydrant_name,
+            -- Combine Names via mapping rule
+            CASE 
+                WHEN h.id IN (5, 15) THEN 'NIPA'
+                WHEN h.id IN (2, 13) THEN 'SAFOORA'
+                ELSE h.name 
+            END AS combined_hydrant_name,
             -- ========================================================
             -- TOTAL CREATED BY SOURCE
             -- ========================================================
-            COALESCE(ord.created_count, 0) AS hmp_total_created,
-            COALESCE(ots.ots_created, 0) AS ots_total_created,
+            SUM(COALESCE(ord.created_count, 0)) AS hmp_total_created,
+            SUM(COALESCE(ots.ots_created, 0)) AS ots_total_created,
             -- ========================================================
-            -- RAW COUNTS FOR TOTAL/COMBINED EXACT PERCENTAGE MATH
+            -- RAW COUNTS AND SECONDS FOR DYNAMIC JS CALCULATIONS
             -- ========================================================
-            COALESCE(ord.completed_count, 0) AS hmp_completed_count,
-            COALESCE(ots.ots_completed, 0) AS ots_completed_count,
-            COALESCE(ord.pending_count, 0) AS hmp_pending_count,
-            COALESCE(ots.ots_pending, 0) AS ots_pending_count,
-            COALESCE(ord.cancelled_count, 0) AS hmp_cancelled_count,
-            COALESCE(ots.ots_cancelled, 0) AS ots_cancelled_count,
-            COALESCE(ord.assigned_count, 0) AS hmp_assigned_count, 
-            COALESCE(ots.ots_driver_assigned, 0) AS ots_assigned_count,
-            COALESCE(ord.total_completed_seconds, 0) AS hmp_total_seconds,
-            COALESCE(ots.total_completed_seconds, 0) AS ots_total_seconds,
-            -- ========================================================
-            -- COMPLETED PERCENTAGE
-            -- ========================================================
-            ROUND(COALESCE(ord.completed_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_completed_percentage,
-            ROUND(COALESCE(ots.ots_completed, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_completed_percentage,
-            -- ========================================================
-            -- PENDING PERCENTAGE
-            -- ========================================================
-            ROUND(COALESCE(ord.pending_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_pending_percentage,
-            ROUND(COALESCE(ots.ots_pending, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_pending_percentage,
-            -- ========================================================
-            -- CANCELLED PERCENTAGE
-            -- ========================================================
-            ROUND(COALESCE(ord.cancelled_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_cancelled_percentage,
-            ROUND(COALESCE(ots.ots_cancelled, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_cancelled_percentage,
-            -- ========================================================
-            -- DRIVER ASSIGNED PERCENTAGE
-            -- ========================================================
-            ROUND(COALESCE(ord.assigned_count, 0) * 100.0 / NULLIF(ord.created_count, 0), 2) AS hmp_driver_assigned_percentage,
-            ROUND(COALESCE(ots.ots_driver_assigned, 0) * 100.0 / NULLIF(ots.ots_created, 0), 2) AS ots_driver_assigned_percentage,
-            -- ========================================================
-            -- UNIFIED HMP AVERAGE TAT (HHH:mm Format String)
-            -- ========================================================
-            CONCAT(
-                LPAD(COALESCE(FLOOR((ord.total_completed_seconds / NULLIF(ord.completed_count, 0)) / 3600), 0), 2, '0'),
-                ':',
-                LPAD(COALESCE(FLOOR(((ord.total_completed_seconds / NULLIF(ord.completed_count, 0)) % 3600) / 60), 0), 2, '0')
-            ) AS hmp_avg_tat,
-            -- ========================================================
-            -- UNIFIED OTS AVERAGE TAT (HHH:mm Format String)
-            -- ========================================================
-            CONCAT(
-                LPAD(COALESCE(FLOOR((ots.total_completed_seconds / NULLIF(ots.ots_completed, 0)) / 3600), 0), 2, '0'),
-                ':',
-                LPAD(COALESCE(FLOOR(((ots.total_completed_seconds / NULLIF(ots.ots_completed, 0)) % 3600) / 60), 0), 2, '0')
-            ) AS ots_avg_tat
+            SUM(COALESCE(ord.completed_count, 0)) AS hmp_completed_count,
+            SUM(COALESCE(ots.ots_completed, 0)) AS ots_completed_count,
+            SUM(COALESCE(ord.pending_count, 0)) AS hmp_pending_count,
+            SUM(COALESCE(ots.ots_pending, 0)) AS ots_pending_count,
+            SUM(COALESCE(ord.cancelled_count, 0)) AS hmp_cancelled_count,
+            SUM(COALESCE(ots.ots_cancelled, 0)) AS ots_cancelled_count,
+            SUM(COALESCE(ord.assigned_count, 0)) AS hmp_assigned_count, 
+            SUM(COALESCE(ots.ots_driver_assigned, 0)) AS ots_assigned_count,
+            SUM(COALESCE(ord.total_completed_seconds, 0)) AS hmp_total_seconds,
+            SUM(COALESCE(ots.total_completed_seconds, 0)) AS ots_total_seconds
         FROM hydrants h
         -- 1. Standard HMP Orders safely pre-aggregated avoiding duplication artifacts
         LEFT JOIN (
@@ -380,8 +369,14 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             WHERE api_created_at BETWEEN ? AND ?
             GROUP BY hydrant_id
         ) ots ON h.ots_hydrant = ots.hydrant_id
-        WHERE COALESCE(ord.created_count, 0) > 0 OR COALESCE(ots.ots_created, 0) > 0
-        ORDER BY h.name ASC;`;
+        GROUP BY 
+            CASE 
+                WHEN h.id IN (5, 15) THEN 'NIPA'
+                WHEN h.id IN (2, 13) THEN 'SAFOORA'
+                ELSE h.name 
+            END
+        HAVING SUM(COALESCE(ord.created_count, 0)) > 0 OR SUM(COALESCE(ots.ots_created, 0)) > 0
+        ORDER BY combined_hydrant_name ASC;`;
 
         const gridParams = [
             todayStart, todayEnd,
@@ -391,40 +386,55 @@ export const HydrantPerformanceGridToday = async (req, res) => {
         const [rows] = await req.db.execute(gridQuery, gridParams);
 
         const processedRows = rows.map(row => {
-            // Explicitly cast to Number to avoid String Concatenation bugs ("1" + "2" = "12")
-            const totalCreated = Number(row.hmp_total_created) + Number(row.ots_total_created);
-            const totalCompletedCount = Number(row.hmp_completed_count) + Number(row.ots_completed_count);
+            const hmpTotalCreated = Number(row.hmp_total_created);
+            const otsTotalCreated = Number(row.ots_total_created);
+            const totalCreated = hmpTotalCreated + otsTotalCreated;
+            
+            const hmpCompletedCount = Number(row.hmp_completed_count);
+            const otsCompletedCount = Number(row.ots_completed_count);
+            const totalCompletedCount = hmpCompletedCount + otsCompletedCount;
+
             const totalPendingCount = Number(row.hmp_pending_count) + Number(row.ots_pending_count);
             const totalCancelledCount = Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count);
             const totalAssignedCount = Number(row.hmp_assigned_count) + Number(row.ots_assigned_count);
 
-            // Total Turnaround Time Calculations
-            const totalSeconds = Number(row.hmp_total_seconds) + Number(row.ots_total_seconds);
-            let totalAvgTat = "00:00";
-            if (totalCompletedCount > 0) {
-                const avgSeconds = totalSeconds / totalCompletedCount;
-                const hours = String(Math.floor(avgSeconds / 3600)).padStart(2, '0');
-                const minutes = String(Math.floor((avgSeconds % 3600) / 60)).padStart(2, '0');
-                totalAvgTat = `${hours}:${minutes}`;
-            }
+            // Compute precise math percentages on top of combined mapped values
+            const hmpCompletedPct = hmpTotalCreated > 0 ? ((hmpCompletedCount * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+            const otsCompletedPct = otsTotalCreated > 0 ? ((otsCompletedCount * 100) / otsTotalCreated).toFixed(2) : "0.00";
+
+            const hmpPendingPct = hmpTotalCreated > 0 ? ((Number(row.hmp_pending_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+            const otsPendingPct = otsTotalCreated > 0 ? ((Number(row.ots_pending_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
+
+            const hmpCancelledPct = hmpTotalCreated > 0 ? ((Number(row.hmp_cancelled_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+            const otsCancelledPct = otsTotalCreated > 0 ? ((Number(row.ots_cancelled_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
+
+            const hmpAssignedPct = hmpTotalCreated > 0 ? ((Number(row.hmp_assigned_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+            const otsAssignedPct = otsTotalCreated > 0 ? ((Number(row.ots_assigned_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
+
+            // Turnaround Time calculations processed dynamically via helper
+            const hmpAvgTat = formatSecondsToDHm(Number(row.hmp_total_seconds), hmpCompletedCount);
+            const otsAvgTat = formatSecondsToDHm(Number(row.ots_total_seconds), otsCompletedCount);
+            
+            const totalSecondsCombined = Number(row.hmp_total_seconds) + Number(row.ots_total_seconds);
+            const totalAvgTat = formatSecondsToDHm(totalSecondsCombined, totalCompletedCount);
 
             return {
-                hydrant_name: row.hydrant_name,
+                hydrant_name: row.combined_hydrant_name,
                 hmp: {
-                    total_created: row.hmp_total_created,
-                    completed_percentage: row.hmp_completed_percentage !== null ? `${row.hmp_completed_percentage}%` : '0%',
-                    pending_percentage: row.hmp_pending_percentage !== null ? `${row.hmp_pending_percentage}%` : '0%',
-                    driver_assigned_percentage: row.hmp_driver_assigned_percentage !== null ? `${row.hmp_driver_assigned_percentage}%` : '0%',
-                    avg_tat: row.hmp_avg_tat,
-                    cancelled_percentage: row.hmp_cancelled_percentage !== null ? `${row.hmp_cancelled_percentage}%` : '0%',
+                    total_created: hmpTotalCreated,
+                    completed_percentage: `${hmpCompletedPct}%`,
+                    pending_percentage: `${hmpPendingPct}%`,
+                    driver_assigned_percentage: `${hmpAssignedPct}%`,
+                    avg_tat: hmpAvgTat,
+                    cancelled_percentage: `${hmpCancelledPct}%`,
                 },
                 ots: {
-                    total_created: row.ots_total_created,
-                    completed_percentage: row.ots_completed_percentage !== null ? `${row.ots_completed_percentage}%` : '0%',
-                    pending_percentage: row.ots_pending_percentage !== null ? `${row.ots_pending_percentage}%` : '0%',
-                    driver_assigned_percentage: row.ots_driver_assigned_percentage !== null ? `${row.ots_driver_assigned_percentage}%` : '0%',
-                    avg_tat: row.ots_avg_tat,
-                    cancelled_percentage: row.ots_cancelled_percentage !== null ? `${row.ots_cancelled_percentage}%` : '0%',
+                    total_created: otsTotalCreated,
+                    completed_percentage: `${otsCompletedPct}%`,
+                    pending_percentage: `${otsPendingPct}%`,
+                    driver_assigned_percentage: `${otsAssignedPct}%`,
+                    avg_tat: otsAvgTat,
+                    cancelled_percentage: `${otsCancelledPct}%`,
                 },
                 total: {
                     total_created: totalCreated,
@@ -433,10 +443,8 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                     driver_assigned_percentage: totalCreated > 0 ? `${((totalAssignedCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
                     cancelled_percentage: totalCreated > 0 ? `${((totalCancelledCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
                     avg_tat: totalAvgTat,
-                    
-                    // Added requested parameters calculation based on total created metrics
-                    total_created_hmp_percentage: totalCreated > 0 ? `${((Number(row.hmp_total_created) / totalCreated) * 100).toFixed(2)}%` : '0.00%',
-                    total_created_ots_percentage: totalCreated > 0 ? `${((Number(row.ots_total_created) / totalCreated) * 100).toFixed(2)}%` : '0.00%'
+                    total_created_hmp_percentage: totalCreated > 0 ? `${((hmpTotalCreated / totalCreated) * 100).toFixed(2)}%` : '0.00%',
+                    total_created_ots_percentage: totalCreated > 0 ? `${((otsTotalCreated / totalCreated) * 100).toFixed(2)}%` : '0.00%'
                 }
             };
         });
