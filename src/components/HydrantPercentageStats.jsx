@@ -11,7 +11,11 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
         { label: '% PENDING (Not Assigned)', key: 'pending_percentage', color: '#f44336' },
         { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
-        { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' }
+        { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
+        { label: '% OTS', key: 'total_created_ots_percentage', color: '#38bdf8' },
+        { label: '% HMP', key: 'total_created_hmp_percentage', color: '#a78bfa' }
+
+
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {

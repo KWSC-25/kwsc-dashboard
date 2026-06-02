@@ -7,11 +7,11 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
 
     // Metric rows definition config 
     const metricRows = useMemo(() => [
-        { label: 'AVERAGE ORDER TAT', key: 'avg_tat', isTat: true },
+        { label: 'AVERAGE ORDER TAT (HHH:mm)', key: 'avg_tat', isTat: true },
         { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
-        { label: '% PENDING', key: 'pending_percentage', color: '#f44336' },
+        { label: '% PENDING (Not Assigned)', key: 'pending_percentage', color: '#f44336' },
         { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
-        { label: '% CANCELLED', key: 'cancelled_percentage', color: '#e53e3e' }
+        { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
@@ -61,7 +61,7 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                     <thead>
                         {/* Primary Header Row: Hydrant Top Grouping */}
                         <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
-                            <th rowSpan={2} style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '13px', fontWeight: 'bold' }}>
+                            <th rowSpan={2} style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '15px', fontWeight: 'bold' }}>
                                 Operational Metrics
                             </th>
                             {loading && performanceData.length === 0 ? (
@@ -78,8 +78,8 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                             borderRight: '2px solid #4a5568', 
                                             color: '#ffffff', 
                                             fontWeight: '800', 
-                                            fontSize: '12px', 
-                                            letterSpacing: '0.3px', 
+                                            fontSize: '15px', 
+                                            letterSpacing: '0.9px', 
                                             textAlign: 'center',
                                             background: 'rgba(255, 255, 255, 0.02)'
                                         }}
@@ -93,9 +93,9 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                         <tr style={{ borderBottom: '2px solid #2e3748', background: 'rgba(26, 32, 44, 0.4)' }}>
                             {performanceData.length > 0 && performanceData.map((_, idx) => (
                                 <React.Fragment key={`sub-src-${idx}`}>
-                                    <th style={{ padding: '6px 2px', fontSize: '11px', fontWeight: '700', color: '#00f2ff', width: '65px', background: 'rgba(0, 242, 255, 0.04)', textAlign:'center' }}>OTS</th>
-                                    <th style={{ padding: '6px 2px', fontSize: '11px', fontWeight: '700', color: '#e2e8f0', width: '65px', textAlign:'center' }}>HMP</th>
-                                    <th style={{ padding: '6px 2px', fontSize: '11px', fontWeight: '700', color: '#FFF200', width: '65px', borderRight: '2px solid #4a5568', background: 'rgba(255, 242, 0, 0.04)', textAlign:'center' }}>TOTAL</th>
+                                    <th style={{ padding: '6px 2px', fontSize: '14px', fontWeight: '700', color: '#00f2ff', width: '65px', background: 'rgba(0, 242, 255, 0.04)', textAlign:'center' }}>OTS</th>
+                                    <th style={{ padding: '6px 2px', fontSize: '14px', fontWeight: '700', color: '#e2e8f0', width: '65px', textAlign:'center' }}>HMP</th>
+                                    <th style={{ padding: '6px 2px', fontSize: '14px', fontWeight: '700', color: '#a78bfa', width: '65px', borderRight: '2px solid #4a5568', background: 'rgba(255, 242, 0, 0.04)', textAlign:'center' }}>TOTAL</th>
                                 </React.Fragment>
                             ))}
                         </tr>
@@ -122,8 +122,9 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                     {/* Left Anchor Primary Metric Parameter Cell */}
                                     <td style={{ 
                                         padding: '12px 10px', 
-                                        textAlign: 'left', 
-                                        fontWeight: '700', 
+                                        textAlign: 'left',
+                                        fontSize:'14px', 
+                                        fontWeight: '500', 
                                         color: metric.isTat ? '#FFF200' : '#ffffff', 
                                         background: 'rgba(26, 32, 44, 0.3)', 
                                         borderRight: '2px solid #2e3748', 
@@ -143,7 +144,7 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                                 {/* OTS Column */}
                                                 <td style={{ 
                                                     padding: '10px 4px', 
-                                                    fontSize: '13px', 
+                                                    fontSize: '18px', 
                                                     fontWeight: '600',
                                                     color: metric.isTat ? '#FFF200' : (metric.color || '#00f2ff'),
                                                     background: 'rgba(0, 242, 255, 0.02)'
@@ -153,16 +154,16 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                                 {/* HMP Column */}
                                                 <td style={{ 
                                                     padding: '10px 4px', 
-                                                    fontSize: '13px', 
+                                                    fontSize: '18px', 
                                                     fontWeight: '600',
-                                                    color: metric.isTat ? '#FFF200' : '#e2e8f0'
+                                                    color: metric.isTat ? '#FFF200' : (metric.color || '#00f2ff')
                                                 }}>
                                                     {hmpValue}
                                                 </td>
                                                 {/* Combined Total Column */}
                                                 <td style={{ 
                                                     padding: '10px 4px', 
-                                                    fontSize: '13px', 
+                                                    fontSize: '18px', 
                                                     fontWeight: '700',
                                                     color: metric.isTat ? '#FFF200' : (metric.color || '#ffffff'),
                                                     borderRight: '2px solid #4a5568',
