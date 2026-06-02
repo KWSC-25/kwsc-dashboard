@@ -208,7 +208,7 @@ const HydrantKPIDashboard = () => {
                         
                         <div className="kpi-date-filter-inline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginLeft: '20px', padding: '2px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
                             <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>From:</label>
-                            <input 
+                            <input  
                                 type="date" 
                                 value={startDate} 
                                 onChange={(e) => setStartDate(e.target.value)}
