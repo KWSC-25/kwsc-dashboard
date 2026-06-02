@@ -4,6 +4,7 @@ import HydrantCategoryTable from './HydrantCategoryTable';
 import CategorySlider from './CategorySlider';
 import HydrantPercentageStats from './HydrantPercentageStats'; 
 import HydrantPercentageStats2 from './HydrantPercentageStats2';
+
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
     
@@ -45,11 +46,11 @@ const HydrantKPIDashboard = () => {
     const handleTableDataCalculated = useCallback(() => {
     }, []);
 
-    if (!data || !data.ots || !data.orders || !data.gallons) {
+    if (!data || !data.ots || !data.orders) {
         return <div className="hmp-loading" style={{ color: '#fff', padding: '20px' }}>Fetching Hydrant KPI Stats...</div>;
     }
 
-    const { ots, orders, gallons } = data;
+    const { ots, orders } = data;
     const fmt = (val) => (val ? Number(val).toLocaleString() : "0");
 
     const stats = {
@@ -61,7 +62,18 @@ const HydrantKPIDashboard = () => {
             pending: ots.ots_pending_today,
             cancelled_consumer: ots.ots_cancelled_consumer_today,
             cancelled_hydrant: ots.ots_cancelled_hmp_today,
-            avg_tat: ots.ots_avg_tat_readable 
+            avg_tat: ots.ots_avg_tat_readable,
+            // Sub-row matrices variables mapped here
+            created_gallons: ots.ots_created_gallons_today,
+            dispatched_gallons: ots.ots_dispatched_gallons_today,
+            completed_gallons: ots.ots_completed_gallons_today,
+            cancelled_gallons: ots.ots_cancelled_gallons_today,
+            pending_gallons: ots.ots_pending_gallons_today,
+            created_amount: ots.ots_created_amount_today,
+            dispatched_amount: ots.ots_dispatched_amount_today,
+            completed_amount: ots.ots_completed_amount_today,
+            cancelled_amount: ots.ots_cancelled_amount_today,
+            pending_amount: ots.ots_pending_amount_today
         },
         daily_hmp: {
             created: orders.hmp_created_today,
@@ -69,76 +81,121 @@ const HydrantKPIDashboard = () => {
             completed: orders.hmp_completed_today,
             cancelled: orders.hmp_cancelled_today,
             pending: orders.hmp_pending_today,
-            avg_tat: orders.hmp_avg_tat_readable 
-        },
-        daily_gallons: {
-            get total() { return gallons.total_gallons_today },
-            gal_total: gallons.total_gallons_today,
-            gal_gps: gallons.total_gallons_gps_today,
-            gal_comm: gallons.total_gallons_comm_today,
-            gal_gps_per: Number(gallons.total_gallons_today > 0 ? (gallons.total_gallons_gps_today / gallons.total_gallons_today * 100) : 0).toFixed(2),
-            gal_comm_per: Number(gallons.total_gallons_today > 0 ? (gallons.total_gallons_comm_today / gallons.total_gallons_today * 100) : 0).toFixed(2)
+            avg_tat: orders.hmp_avg_tat_readable,
+            // Sub-row gallons matrices variables mapped here
+            created_gallons: orders.hmp_created_gallons_today,
+            dispatched_gallons: orders.hmp_dispatched_gallons_today,
+            completed_gallons: orders.hmp_completed_gallons_today,
+            cancelled_gallons: orders.hmp_cancelled_gallons_today,
+            pending_gallons: orders.hmp_pending_gallons_today
         }
     };
 
     const renderOrderCards = (key, type) => {
         const s = stats[key];
-        return (
-            <>
-                <div className="hmp-card hmp-grad-cyan">
-                    <div className="hmp-main-row">
-                        <span className="hmp-label label-cyan">TOTAL CREATED {type}</span>
-                        <span className="hmp-total">{fmt(s.created)}</span>
-                    </div>
-                </div>
+        
+        // Define mappings dynamically for sub-rows mapping loop definitions
+        const configurations = [
+            {
+                label: `TOTAL CREATED ${type}`,
+                grad: "hmp-grad-cyan",
+                lblClass: "label-cyan",
+                count: s.created,
+                gallons: s.created_gallons,
+                amount: s.created_amount,
+                isTatCard: false
+            },
+            {
+                label: `DRIVER ASSIGNED ${type}`,
+                grad: "hmp-grad-orange",
+                lblClass: "label-orange",
+                count: s.dispatched,
+                gallons: s.dispatched_gallons,
+                amount: s.dispatched_amount,
+                isTatCard: false
+            },
+            {
+                label: `TOTAL COMPLETED ${type}`,
+                grad: "hmp-grad-green",
+                lblClass: "label-green",
+                count: s.completed,
+                gallons: s.completed_gallons,
+                amount: s.completed_amount,
+                isTatCard: false
+            },
+            {
+                label: type === 'OTS' ? 'TOTAL CANCELLED' : `TOTAL CANCELLED ${type}`,
+                grad: "hmp-grad-grey",
+                lblClass: "",
+                count: s.cancelled,
+                gallons: s.cancelled_gallons,
+                amount: s.cancelled_amount,
+                isTatCard: false,
+                isCancelledCard: true
+            },
+            {
+                label: `TOTAL PENDING ${type}`,
+                grad: "hmp-grad-red",
+                lblClass: "label-red",
+                count: s.pending,
+                gallons: s.pending_gallons,
+                amount: s.pending_amount,
+                isTatCard: false
+            },
+            {
+                label: `AVERAGE ORDER TAT ${type}`,
+                grad: "hmp-grad-golden",
+                lblClass: "label-golden",
+                count: s.avg_tat,
+                isTatCard: true
+            }
+        ];
 
-                <div className="hmp-card hmp-grad-orange">
-                    <div className="hmp-main-row">
-                        <span className="hmp-label label-orange">DRIVER ASSIGNED  {type}</span>
-                        <span className="hmp-total">{fmt(s.dispatched)}</span>
+        return configurations.map((cfg, index) => {
+            if (cfg.isTatCard) {
+                return (
+                    <div key={index} className={`hmp-card ${cfg.grad}`}>
+                        <div className="hmp-main-row">
+                            <span className={`hmp-label ${cfg.lblClass}`}>{cfg.label}</span>
+                            <span className="hmp-total" style={{ fontSize: '15px', textTransform: 'none' }}>{cfg.count}</span>
+                        </div>
                     </div>
-                </div>
+                );
+            }
 
-                <div className="hmp-card hmp-grad-green">
-                    <div className="hmp-main-row">
-                        <span className="hmp-label label-green">TOTAL COMPLETED {type}</span>
-                        <span className="hmp-total">{fmt(s.completed)}</span>
+            return (
+                <div key={index} className={`hmp-card ${cfg.grad}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center', padding: '10px 12px' }}>
+                    {/* Sub Row 1: Main Metric Total Counts */}
+                    <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '11px' }}>{cfg.label}</span>
+                        <span className="hmp-total" style={{ fontSize: '16px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
                     </div>
-                </div>
 
-                <div className="hmp-card hmp-grad-grey" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <div className="hmp-main-row">
-                        <span className="hmp-label">
-                            {type === 'OTS' ? 'TOTAL CANCELLED' : 'TOTAL CANCELLED ' + type}
-                        </span>
-                        <span className="hmp-total">{fmt(s.cancelled)}</span>
+                    {/* Sub Row 2: Gallon Counts (Applicable to both HMP and OTS) */}
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '12px', color: '#e0e6ed' }}>
+                        <span>GALLONS:</span>
+                        <strong>{fmt(cfg.gallons)} Gal</strong>
                     </div>
+
+                    {/* Sub Row 3: Amount Metric (Strictly rendered for OTS row cards) */}
                     {type === 'OTS' && (
-                        <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', fontSize: '10px', color: '#8a99a8' }}>
-                            <span style={{ color: 'white', fontSize: '13px' }}>BY CONSUMER: <strong>{fmt(s.cancelled_consumer)}</strong></span>
-                            <span style={{ color: 'white', fontSize: '13px' }}>BY HYDRANT: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
+                        <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '12px', color: '#ffd700' }}>
+                            <span>AMOUNT:</span>
+                            <strong>PKR {fmt(cfg.amount)}</strong>
+                        </div>
+                    )}
+
+                    {/* Retained original consumer vs hydrant cancellation breakdown breakdown block inside grid array */}
+                    {cfg.isCancelledCard && type === 'OTS' && (
+                        <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '10px', color: '#8a99a8' }}>
+                            <span style={{ color: 'white' }}>CONS: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                            <span style={{ color: 'white' }}>HYD: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
                         </div>
                     )}
                 </div>
-
-                <div className="hmp-card hmp-grad-red">
-                    <div className="hmp-main-row">
-                        <span className="hmp-label label-red">TOTAL PENDING {type}</span>
-                        <span className="hmp-total">{fmt(s.pending)}</span>
-                    </div>
-                </div>
-
-                <div className="hmp-card hmp-grad-golden">
-                    <div className="hmp-main-row">
-                        <span className="hmp-label label-golden">AVERAGE ORDER TAT {type}</span>
-                        <span className="hmp-total" style={{ fontSize: '15px', textTransform: 'none' }}>{s.avg_tat}</span>
-                    </div>
-                </div>
-            </>
-        );
+            );
+        });
     };
-
-
 
     return (
         <div className="hydrant-kpi-dashboard-wrapper animate-fade-in" style={{ padding: '20px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '0px', width: '100%' }}>
@@ -198,11 +255,9 @@ const HydrantKPIDashboard = () => {
                             {renderOrderCards('daily_hmp', 'HMP')}
                         </div>
                     </div>
-
-                
                 </div>
 
-                {/* 🌟 New Section: Hydrant Performance Grid Table */}
+                {/* New Section: Hydrant Performance Grid Table */}
                 <div style={{ width: '100%', marginTop: '20px' }}>
                     <HydrantPercentageStats activeFilters={activeFilters} />
                 </div>
@@ -215,7 +270,7 @@ const HydrantKPIDashboard = () => {
                     />
                 </div>
 
-                {/* 🌟 New Section: Hydrant Performance Grid Table */}
+                {/* New Section: Hydrant Performance Grid Table 2 */}
                 <div style={{ width: '100%', marginTop: '20px' }}>
                     <HydrantPercentageStats2 activeFilters={activeFilters} />
                 </div>
