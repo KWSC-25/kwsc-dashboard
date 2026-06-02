@@ -298,7 +298,7 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             COALESCE(ots.ots_pending, 0) AS ots_pending_count,
             COALESCE(ord.cancelled_count, 0) AS hmp_cancelled_count,
             COALESCE(ots.ots_cancelled, 0) AS ots_cancelled_count,
-            COALESCE(ord.assigned_count, 0) AS hmp_assigned_count,
+            COALESCE(ord.assigned_count, 0) AS hmp_assigned_count, 
             COALESCE(ots.ots_driver_assigned, 0) AS ots_assigned_count,
             COALESCE(ord.total_completed_seconds, 0) AS hmp_total_seconds,
             COALESCE(ots.total_completed_seconds, 0) AS ots_total_seconds,
@@ -391,14 +391,15 @@ export const HydrantPerformanceGridToday = async (req, res) => {
         const [rows] = await req.db.execute(gridQuery, gridParams);
 
         const processedRows = rows.map(row => {
-            const totalCreated = row.hmp_total_created + row.ots_total_created;
-            const totalCompletedCount = row.hmp_completed_count + row.ots_completed_count;
-            const totalPendingCount = row.hmp_pending_count + row.ots_pending_count;
-            const totalCancelledCount = row.hmp_cancelled_count + row.ots_cancelled_count;
-            const totalAssignedCount = row.hmp_assigned_count + row.ots_assigned_count;
+            // Explicitly cast to Number to avoid String Concatenation bugs ("1" + "2" = "12")
+            const totalCreated = Number(row.hmp_total_created) + Number(row.ots_total_created);
+            const totalCompletedCount = Number(row.hmp_completed_count) + Number(row.ots_completed_count);
+            const totalPendingCount = Number(row.hmp_pending_count) + Number(row.ots_pending_count);
+            const totalCancelledCount = Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count);
+            const totalAssignedCount = Number(row.hmp_assigned_count) + Number(row.ots_assigned_count);
 
             // Total Turnaround Time Calculations
-            const totalSeconds = row.hmp_total_seconds + row.ots_total_seconds;
+            const totalSeconds = Number(row.hmp_total_seconds) + Number(row.ots_total_seconds);
             let totalAvgTat = "00:00";
             if (totalCompletedCount > 0) {
                 const avgSeconds = totalSeconds / totalCompletedCount;
@@ -428,10 +429,14 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 total: {
                     total_created: totalCreated,
                     completed_percentage: totalCreated > 0 ? `${((totalCompletedCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
-                    pending_percentage: totalPendingCount,
+                    pending_percentage: totalCreated > 0 ? `${((totalPendingCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
                     driver_assigned_percentage: totalCreated > 0 ? `${((totalAssignedCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
                     cancelled_percentage: totalCreated > 0 ? `${((totalCancelledCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
-                    avg_tat: totalAvgTat
+                    avg_tat: totalAvgTat,
+                    
+                    // Added requested parameters calculation based on total created metrics
+                    total_created_hmp_percentage: totalCreated > 0 ? `${((Number(row.hmp_total_created) / totalCreated) * 100).toFixed(2)}%` : '0.00%',
+                    total_created_ots_percentage: totalCreated > 0 ? `${((Number(row.ots_total_created) / totalCreated) * 100).toFixed(2)}%` : '0.00%'
                 }
             };
         });
