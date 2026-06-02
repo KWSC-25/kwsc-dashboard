@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../utils/api';
 
-const HydrantPercentageStats = ({ activeFilters }) => {
+const HydrantPercentageStats2 = ({ activeFilters }) => {
     const [performanceData, setPerformanceData] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -52,29 +52,30 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         <div className="hydrant-performance-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.85)', borderRadius: '6px', padding: '16px', border: '1px solid #2e3748', width: '100%' }}>
             {/* Component Section Header */}
             <h3 style={{ margin: '0 0 14px 0', fontSize: '20px', fontWeight: '600', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Hydrant Operational Percentage & Efficiency Performance Metrics
+                Hydrant Operational Percentage & Efficiency Performance Metrics (Detailed View)
             </h3>
 
             {/* Scrollable Context Layer */}
             <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px', color: '#e2e8f0', minWidth: '1000px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px', color: '#e2e8f0', minWidth: '1600px' }}>
                     <thead>
                         {/* Primary Header Row: Hydrant Top Grouping */}
                         <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
-                            <th style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '13px', fontWeight: 'bold' }}>
+                            <th rowSpan={2} style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '13px', fontWeight: 'bold' }}>
                                 Operational Metrics
                             </th>
                             {loading && performanceData.length === 0 ? (
-                                <th style={{ color: '#718096', fontStyle: 'italic' }}>Loading performance structure...</th>
+                                <th colSpan={24} style={{ color: '#718096', fontStyle: 'italic' }}>Loading performance structure...</th>
                             ) : performanceData.length === 0 ? (
-                                <th style={{ color: '#718096', fontStyle: 'italic' }}>No active hydrants matched filter parameters</th>
+                                <th colSpan={24} style={{ color: '#718096', fontStyle: 'italic' }}>No active hydrants matched filter parameters</th>
                             ) : (
                                 performanceData.map((row, idx) => (
                                     <th 
                                         key={idx} 
+                                        colSpan={3} 
                                         style={{ 
-                                            padding: '12px 6px', 
-                                            borderRight: '1px solid #4a5568', 
+                                            padding: '8px 4px', 
+                                            borderRight: '2px solid #4a5568', 
                                             color: '#ffffff', 
                                             fontWeight: '800', 
                                             fontSize: '12px', 
@@ -88,15 +89,25 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                 ))
                             )}
                         </tr>
+                        {/* Secondary Header Row: Source Breakdown Subcolumns */}
+                        <tr style={{ borderBottom: '2px solid #2e3748', background: 'rgba(26, 32, 44, 0.4)' }}>
+                            {performanceData.length > 0 && performanceData.map((_, idx) => (
+                                <React.Fragment key={`sub-src-${idx}`}>
+                                    <th style={{ padding: '6px 2px', fontSize: '11px', fontWeight: '700', color: '#00f2ff', width: '65px', background: 'rgba(0, 242, 255, 0.04)', textAlign:'center' }}>OTS</th>
+                                    <th style={{ padding: '6px 2px', fontSize: '11px', fontWeight: '700', color: '#e2e8f0', width: '65px', textAlign:'center' }}>HMP</th>
+                                    <th style={{ padding: '6px 2px', fontSize: '11px', fontWeight: '700', color: '#FFF200', width: '65px', borderRight: '2px solid #4a5568', background: 'rgba(255, 242, 0, 0.04)', textAlign:'center' }}>TOTAL</th>
+                                </React.Fragment>
+                            ))}
+                        </tr>
                     </thead>
                     <tbody>
                         {loading && performanceData.length === 0 ? (
                             <tr>
-                                <td style={{ padding: '30px', color: '#718096' }}>Initializing matrix grid data streams...</td>
+                                <td colSpan={25} style={{ padding: '30px', color: '#718096' }}>Initializing matrix grid data streams...</td>
                             </tr>
                         ) : performanceData.length === 0 ? (
                             <tr>
-                                <td style={{ padding: '30px', color: '#718096' }}>No records evaluated for this transaction scope window.</td>
+                                <td colSpan={25} style={{ padding: '30px', color: '#718096' }}>No records evaluated for this transaction scope window.</td>
                             </tr>
                         ) : (
                             metricRows.map((metric, mIdx) => (
@@ -121,23 +132,45 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                         {metric.label}
                                     </td>
 
-                                    {/* Combined Metric View Value Outputs */}
+                                    {/* Columns mapping OTS, HMP, and Total explicitly */}
                                     {performanceData.map((row, rIdx) => {
+                                        const otsValue = row.ots[metric.key];
+                                        const hmpValue = row.hmp[metric.key];
                                         const totalValue = row.total[metric.key];
 
                                         return (
-                                            <td 
-                                                key={`cell-${mIdx}-${rIdx}`}
-                                                style={{ 
+                                            <React.Fragment key={`cell-${mIdx}-${rIdx}`}>
+                                                {/* OTS Column */}
+                                                <td style={{ 
                                                     padding: '10px 4px', 
                                                     fontSize: '13px', 
                                                     fontWeight: '600',
-                                                    color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
-                                                    borderRight: '1px solid #4a5568'
-                                                }}
-                                            >
-                                                {totalValue}
-                                            </td>
+                                                    color: metric.isTat ? '#FFF200' : (metric.color || '#00f2ff'),
+                                                    background: 'rgba(0, 242, 255, 0.02)'
+                                                }}>
+                                                    {otsValue}
+                                                </td>
+                                                {/* HMP Column */}
+                                                <td style={{ 
+                                                    padding: '10px 4px', 
+                                                    fontSize: '13px', 
+                                                    fontWeight: '600',
+                                                    color: metric.isTat ? '#FFF200' : '#e2e8f0'
+                                                }}>
+                                                    {hmpValue}
+                                                </td>
+                                                {/* Combined Total Column */}
+                                                <td style={{ 
+                                                    padding: '10px 4px', 
+                                                    fontSize: '13px', 
+                                                    fontWeight: '700',
+                                                    color: metric.isTat ? '#FFF200' : (metric.color || '#ffffff'),
+                                                    borderRight: '2px solid #4a5568',
+                                                    background: 'rgba(255, 242, 0, 0.02)'
+                                                }}>
+                                                    {totalValue}
+                                                </td>
+                                            </React.Fragment>
                                         );
                                     })}
                                 </tr>
@@ -150,4 +183,4 @@ const HydrantPercentageStats = ({ activeFilters }) => {
     );
 };
 
-export default HydrantPercentageStats;
+export default HydrantPercentageStats2;

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import HydrantCategoryTable from './HydrantCategoryTable'; 
 import CategorySlider from './CategorySlider';
-import HydrantPercentageStats from './HydrantPercentageStats'; // 🌟 Imported the new performance matrix
-
+import HydrantPercentageStats from './HydrantPercentageStats'; 
+import HydrantPercentageStats2 from './HydrantPercentageStats2';
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
     
@@ -217,7 +217,7 @@ const HydrantKPIDashboard = () => {
 
                 {/* 🌟 New Section: Hydrant Performance Grid Table */}
                 <div style={{ width: '100%', marginTop: '20px' }}>
-                    <HydrantPercentageStats activeFilters={activeFilters} />
+                    <HydrantPercentageStats2 activeFilters={activeFilters} />
                 </div>
                 
             </div>
