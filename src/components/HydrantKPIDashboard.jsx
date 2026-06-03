@@ -135,7 +135,9 @@ const HydrantKPIDashboard = () => {
             dispatched_amount: ots.ots_dispatched_amount_today,
             completed_amount: ots.ots_completed_amount_today,
             cancelled_amount: ots.ots_cancelled_amount_today,
-            pending_amount: ots.ots_pending_amount_today
+            pending_amount: ots.ots_pending_amount_today,
+            pending_max_aging: ots.ots_max_pending_aging_readable,
+            assigned_max_aging: ots.ots_max_assigned_aging_readable
         },
         daily_hmp: {
             created: orders.hmp_created_today,
@@ -148,7 +150,9 @@ const HydrantKPIDashboard = () => {
             dispatched_gallons: orders.hmp_dispatched_gallons_today,
             completed_gallons: orders.hmp_completed_gallons_today,
             cancelled_gallons: orders.hmp_cancelled_gallons_today,
-            pending_gallons: orders.hmp_pending_gallons_today
+            pending_gallons: orders.hmp_pending_gallons_today,
+            pending_max_aging: orders.hmp_max_pending_aging_readable,
+            assigned_max_aging: orders.hmp_max_assigned_aging_readable
         }
     };
 

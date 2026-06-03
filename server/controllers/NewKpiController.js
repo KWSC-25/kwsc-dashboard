@@ -40,9 +40,13 @@ export const TodayStats = async (req, res) => {
             SUM(CASE WHEN status IN ('cancelled', 'failed') THEN total_amount ELSE 0 END) AS ots_cancelled_amount_today,
 
             -- Turnaround Time Average
-            AVG(CASE WHEN status IN ('completed','self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today
+            AVG(CASE WHEN status IN ('completed','self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today,
+            
+            -- Max Open Order Aging Metrics (Seconds from creation until NOW)
+            MAX(CASE WHEN status IN ('pending_alignment','pending') THEN TIMESTAMPDIFF(SECOND, api_created_at, NOW()) END) AS ots_max_pending_aging_seconds,
+            MAX(CASE WHEN status IN ('dispatched') THEN TIMESTAMPDIFF(SECOND, api_created_at, NOW()) END) AS ots_max_assigned_aging_seconds
         FROM ots_order
-        WHERE api_created_at BETWEEN ? AND ?`; // <-- Filters the index ONCE here first
+        WHERE api_created_at BETWEEN ? AND ?`;
 
         const otsParams = [todayStart, todayEnd];
 
@@ -65,16 +69,21 @@ export const TodayStats = async (req, res) => {
             SUM(CASE WHEN status IN (3,4) THEN capacity ELSE 0 END) AS hmp_cancelled_gallons_today,
 
             -- Turnaround Time Average
-            AVG(CASE WHEN status = 1 THEN seconds_duration END) AS hmp_avg_tat_seconds_today
+            AVG(CASE WHEN status = 1 THEN seconds_duration END) AS hmp_avg_tat_seconds_today,
+            
+            -- Max Open Order Aging Metrics (Seconds from creation until NOW)
+            MAX(CASE WHEN status = 0 THEN seconds_aging_now END) AS hmp_max_pending_aging_seconds,
+            MAX(CASE WHEN status = 2 THEN seconds_aging_now END) AS hmp_max_assigned_aging_seconds
         FROM (
             SELECT 
                 b.status,
                 tt.capacity,
-                TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) AS seconds_duration
+                TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) AS seconds_duration,
+                TIMESTAMPDIFF(SECOND, o.created_at, NOW()) AS seconds_aging_now
             FROM orders o
             INNER JOIN billings b ON o.id = b.order_id
             LEFT JOIN truck_types tt ON o.truck_type = tt.id
-            WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ? -- <-- Isolates target rows instantly
+            WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ?
         ) active_today`;
 
         const orderParams = [todayStart, todayEnd];
@@ -117,8 +126,17 @@ export const TodayStats = async (req, res) => {
         const formattedOts = otsData[0] || {};
         const formattedOrders = orderData[0] || {};
 
+        // Format Turnaround Times
         formattedOts.ots_avg_tat_readable = formatDurationText(formattedOts.ots_avg_tat_seconds_today);
         formattedOrders.hmp_avg_tat_readable = formatDurationText(formattedOrders.hmp_avg_tat_seconds_today);
+
+        // Format New Max Aging Values for OTS
+        formattedOts.ots_max_pending_aging_readable = formatDurationText(formattedOts.ots_max_pending_aging_seconds);
+        formattedOts.ots_max_assigned_aging_readable = formatDurationText(formattedOts.ots_max_assigned_aging_seconds);
+
+        // Format New Max Aging Values for HMP
+        formattedOrders.hmp_max_pending_aging_readable = formatDurationText(formattedOrders.hmp_max_pending_aging_seconds);
+        formattedOrders.hmp_max_assigned_aging_readable = formatDurationText(formattedOrders.hmp_max_assigned_aging_seconds);
 
         res.json({
             success: true,
