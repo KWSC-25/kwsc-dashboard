@@ -269,7 +269,6 @@ export const OrderSummaryToday = async (req, res) => {
 // ==========================================================
 // NEW CONTROLLER: HYDRANT METRIC GRID WITH SUB-COLUMN METRICS
 // ==========================================================
-// Helper function to format seconds into a dynamic D H m layout
 const formatSecondsToDHm = (totalSeconds, completedCount) => {
     if (!completedCount || completedCount <= 0 || !totalSeconds || totalSeconds <= 0) {
         return "0m";
@@ -282,41 +281,114 @@ const formatSecondsToDHm = (totalSeconds, completedCount) => {
     const minutes = Math.floor((avgSeconds % 3600) / 60);
 
     const parts = [];
-    if (days > 0) parts.push(`${days}D`);
-    if (hours > 0 || days > 0) parts.push(`${hours}H`); // Show hours if days exist, even if hours is 0
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0 || days > 0) parts.push(`${hours}h`); 
     parts.push(`${minutes}m`);
 
     return parts.join(' ');
+};
+
+// Formats absolute running decimal hours as a decimal string suffixed with 'h' (e.g., 7.5h)
+const formatRunningHoursToDecimalStr = (runningHoursDecimal) => {
+    if (!runningHoursDecimal || runningHoursDecimal <= 0) {
+        return "0h";
+    }
+    // Using parseFloat to drop trailing zeros if it's a whole integer (e.g., 7h instead of 7.0h)
+    // If you explicitly always want 1 decimal place (like 7.0h), use .toFixed(1) instead.
+    return `${parseFloat(runningHoursDecimal.toFixed(2))}h`;
+};
+
+// Calculates running decimal hours for a single day based on its timeline context
+const calculateSingleDayRunningHours = (slots, isToday) => {
+    const now = new Date();
+    const currentHrs = now.getHours();
+    const currentMins = now.getMinutes();
+    const currentTimeSlot24 = `${String(currentHrs).padStart(2, '0')}:${currentMins < 30 ? '00' : '30'}`;
+
+    const dynamicTimeSlots = [];
+    // If it's today, cap loops at the current hour. If it's a historical day, scan the full 24 hours (up to hour 23).
+    const maxHour = isToday ? currentHrs : 23;
+
+    for (let h = 0; h <= maxHour; h++) {
+        for (let m of ['00', '30']) {
+            const ts = `${String(h).padStart(2, '0')}:${m}`;
+            dynamicTimeSlots.push(ts);
+            if (isToday && ts === currentTimeSlot24) break;
+        }
+        if (isToday && dynamicTimeSlots[dynamicTimeSlots.length - 1] === currentTimeSlot24) break;
+    }
+
+    let runningHoursDecimal = 0;
+    let lastKnownStatus = null; 
+
+    dynamicTimeSlots.forEach(ts => {
+        const entry = slots[ts];
+
+        if (entry && entry.s !== undefined) {
+            lastKnownStatus = entry.s;
+
+            if (lastKnownStatus !== 'CCTV_OFF' && lastKnownStatus !== 'FILLING_STOP') {
+                runningHoursDecimal += 0.5;
+            }
+        } else {
+            if (lastKnownStatus === 'FILLING_START' || lastKnownStatus === 'ACTIVE' || lastKnownStatus === 'OPERATIONAL') {
+                runningHoursDecimal += 0.5;
+            }
+        }
+    });
+
+    return runningHoursDecimal;
+};
+
+// Iterates over all logged days in the range selection, matching contexts to return formatted aggregate running hours
+const aggregateHydrantRunningHours = (logsArray) => {
+    if (!logsArray || logsArray.length === 0) return "0h";
+
+    // Establish clean date comparisons using localized local execution timezone components
+    const todayStr = new Date().toLocaleDateString('en-CA'); // 'YYYY-MM-DD'
+    let cumulativeHoursDecimal = 0;
+
+    logsArray.forEach(log => {
+        if (!log.slots) return;
+        const slots = typeof log.slots === 'string' ? JSON.parse(log.slots) : log.slots;
+        
+        // Handle database Date objects or string dates cleanly
+        const logDateObj = new Date(log.entry_date);
+        const logDateStr = logDateObj.toLocaleDateString('en-CA'); 
+        
+        const isToday = (logDateStr === todayStr);
+
+        cumulativeHoursDecimal += calculateSingleDayRunningHours(slots, isToday);
+    });
+
+    return formatRunningHoursToDecimalStr(cumulativeHoursDecimal);
 };
 
 export const HydrantPerformanceGridToday = async (req, res) => {
     try {
         const now = new Date();
         
-        // Setup dynamic parameters compatible with dashboard date pickers
         const defaultTodayStart = `${now.toISOString().split('T')[0]} 00:00:00`;
         const defaultTodayEnd = `${now.toISOString().split('T')[0]} 23:59:59`;
 
         const { startDate, endDate } = req.query;
         const todayStart = startDate ? `${startDate} 00:00:00` : defaultTodayStart;
         const todayEnd = endDate ? `${endDate} 23:59:59` : defaultTodayEnd;
+        
+        // Extract plain dates (YYYY-MM-DD) for status log range processing
+        const logStartDate = todayStart.split(' ')[0];
+        const logEndDate = todayEnd.split(' ')[0];
 
         const gridQuery = `
         SELECT 
-            -- Combine Names via mapping rule
+            MAX(h.id) AS hydrant_id,
             CASE 
                 WHEN h.id IN (5, 15) THEN 'NIPA'
                 WHEN h.id IN (2, 13) THEN 'SAFOORA'
                 ELSE h.name 
             END AS combined_hydrant_name,
-            -- ========================================================
-            -- TOTAL CREATED BY SOURCE
-            -- ========================================================
             SUM(COALESCE(ord.created_count, 0)) AS hmp_total_created,
             SUM(COALESCE(ots.ots_created, 0)) AS ots_total_created,
-            -- ========================================================
-            -- RAW COUNTS AND SECONDS FOR DYNAMIC JS CALCULATIONS
-            -- ========================================================
             SUM(COALESCE(ord.completed_count, 0)) AS hmp_completed_count,
             SUM(COALESCE(ots.ots_completed, 0)) AS ots_completed_count,
             SUM(COALESCE(ord.pending_count, 0)) AS hmp_pending_count,
@@ -328,7 +400,6 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             SUM(COALESCE(ord.total_completed_seconds, 0)) AS hmp_total_seconds,
             SUM(COALESCE(ots.total_completed_seconds, 0)) AS ots_total_seconds
         FROM hydrants h
-        -- 1. Standard HMP Orders safely pre-aggregated avoiding duplication artifacts
         LEFT JOIN (
             SELECT 
                 o.hydrant_id,
@@ -340,7 +411,6 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 SUM(CASE WHEN b.latest_status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS total_completed_seconds
             FROM orders o
             LEFT JOIN (
-                -- Target only the single latest update change inside billings table per order
                 SELECT 
                     tbl_b.order_id, 
                     tbl_b.status AS latest_status,
@@ -355,7 +425,6 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ?
             GROUP BY o.hydrant_id
         ) ord ON h.id = ord.hydrant_id
-        -- 2. OTS Orders Pre-Aggregated
         LEFT JOIN (
             SELECT 
                 hydrant_id, 
@@ -385,6 +454,51 @@ export const HydrantPerformanceGridToday = async (req, res) => {
 
         const [rows] = await req.db.execute(gridQuery, gridParams);
 
+        let globalTotalHmpCreated = 0;
+        let globalTotalOtsCreated = 0;
+        let globalTotalCompleted = 0;
+        let globalTotalPending = 0;
+        let globalTotalAssigned = 0;
+        let globalTotalCancelled = 0;
+
+        rows.forEach(row => {
+            globalTotalHmpCreated += Number(row.hmp_total_created);
+            globalTotalOtsCreated += Number(row.ots_total_created);
+            globalTotalCompleted += (Number(row.hmp_completed_count) + Number(row.ots_completed_count));
+            globalTotalPending += (Number(row.hmp_pending_count) + Number(row.ots_pending_count));
+            globalTotalAssigned += (Number(row.hmp_assigned_count) + Number(row.ots_assigned_count));
+            globalTotalCancelled += (Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count));
+        });
+
+        // ========================================================
+        // RANGE-BASED LOG EVALUATION ACROSS FILTERS
+        // ========================================================
+        let logsMap = {};
+        if (rows.length > 0) {
+            const hydrantIds = rows.map(r => r.hydrant_id);
+            const logsQuery = `
+                SELECT hydrant_id, entry_date, slots 
+                FROM hydrant_status_logs 
+                WHERE entry_date BETWEEN ? AND ? AND hydrant_id IN (${hydrantIds.map(() => '?').join(',')})`;
+            
+            const [logRows] = await req.db.execute(logsQuery, [logStartDate, logEndDate, ...hydrantIds]);
+            
+            // Group status records inside arrays grouped by unique hydrant_id
+            logsMap = logRows.reduce((acc, currentLog) => {
+                if (!acc[currentLog.hydrant_id]) {
+                    acc[currentLog.hydrant_id] = [];
+                }
+                acc[currentLog.hydrant_id].push({
+                    entry_date: currentLog.entry_date,
+                    slots: currentLog.slots
+                });
+                return acc;
+            }, {});
+        }
+
+        // ========================================================
+        // DYNAMIC ROW RESPONSE SYNCHRONIZATION
+        // ========================================================
         const processedRows = rows.map(row => {
             const hmpTotalCreated = Number(row.hmp_total_created);
             const otsTotalCreated = Number(row.ots_total_created);
@@ -398,7 +512,6 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             const totalCancelledCount = Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count);
             const totalAssignedCount = Number(row.hmp_assigned_count) + Number(row.ots_assigned_count);
 
-            // Compute precise math percentages on top of combined mapped values
             const hmpCompletedPct = hmpTotalCreated > 0 ? ((hmpCompletedCount * 100) / hmpTotalCreated).toFixed(2) : "0.00";
             const otsCompletedPct = otsTotalCreated > 0 ? ((otsCompletedCount * 100) / otsTotalCreated).toFixed(2) : "0.00";
 
@@ -411,22 +524,35 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             const hmpAssignedPct = hmpTotalCreated > 0 ? ((Number(row.hmp_assigned_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
             const otsAssignedPct = otsTotalCreated > 0 ? ((Number(row.ots_assigned_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
 
-            // Turnaround Time calculations processed dynamically via helper
             const hmpAvgTat = formatSecondsToDHm(Number(row.hmp_total_seconds), hmpCompletedCount);
             const otsAvgTat = formatSecondsToDHm(Number(row.ots_total_seconds), otsCompletedCount);
             
             const totalSecondsCombined = Number(row.hmp_total_seconds) + Number(row.ots_total_seconds);
             const totalAvgTat = formatSecondsToDHm(totalSecondsCombined, totalCompletedCount);
+            const overallAvgTat = formatSecondsToDHm(totalSecondsCombined, globalTotalCompleted);
+
+            const hydrantHmpPercentage = totalCreated > 0 ? ((hmpTotalCreated / totalCreated) * 100).toFixed(2) : "0.00";
+            const hydrantOtsPercentage = totalCreated > 0 ? ((otsTotalCreated / totalCreated) * 100).toFixed(2) : "0.00";
+
+            const completedOverallPct = globalTotalCompleted > 0 ? ((totalCompletedCount / globalTotalCompleted) * 100).toFixed(2) : "0.00";
+            const pendingOverallPct = globalTotalPending > 0 ? ((totalPendingCount / globalTotalPending) * 100).toFixed(2) : "0.00";
+            const assignedOverallPct = globalTotalAssigned > 0 ? ((totalAssignedCount / globalTotalAssigned) * 100).toFixed(2) : "0.00";
+            const cancelledOverallPct = globalTotalCancelled > 0 ? ((totalCancelledCount / globalTotalCancelled) * 100).toFixed(2) : "0.00";
+
+            // Process collected array logs across the chosen filter boundaries
+            const hydrantLogEntriesArray = logsMap[row.hydrant_id] || [];
+            const formattedRunningHours = aggregateHydrantRunningHours(hydrantLogEntriesArray);
 
             return {
                 hydrant_name: row.combined_hydrant_name,
+                running_hours: formattedRunningHours,
                 hmp: {
                     total_created: hmpTotalCreated,
                     completed_percentage: `${hmpCompletedPct}%`,
                     pending_percentage: `${hmpPendingPct}%`,
                     driver_assigned_percentage: `${hmpAssignedPct}%`,
                     avg_tat: hmpAvgTat,
-                    cancelled_percentage: `${hmpCancelledPct}%`,
+                    cancelled_percentage: `${hmpCancelledPct}%`
                 },
                 ots: {
                     total_created: otsTotalCreated,
@@ -434,7 +560,7 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                     pending_percentage: `${otsPendingPct}%`,
                     driver_assigned_percentage: `${otsAssignedPct}%`,
                     avg_tat: otsAvgTat,
-                    cancelled_percentage: `${otsCancelledPct}%`,
+                    cancelled_percentage: `${otsCancelledPct}%`
                 },
                 total: {
                     total_created: totalCreated,
@@ -442,9 +568,20 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                     pending_percentage: totalCreated > 0 ? `${((totalPendingCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
                     driver_assigned_percentage: totalCreated > 0 ? `${((totalAssignedCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
                     cancelled_percentage: totalCreated > 0 ? `${((totalCancelledCount / totalCreated) * 100).toFixed(2)}%` : '0.00%',
+                    
                     avg_tat: totalAvgTat,
-                    total_created_hmp_percentage: totalCreated > 0 ? `${((hmpTotalCreated / totalCreated) * 100).toFixed(2)}%` : '0.00%',
-                    total_created_ots_percentage: totalCreated > 0 ? `${((otsTotalCreated / totalCreated) * 100).toFixed(2)}%` : '0.00%'
+                    avg_tat_total: overallAvgTat,
+                    
+                    created_hmp_percentage_total: globalTotalHmpCreated > 0 ? `${((hmpTotalCreated / globalTotalHmpCreated) * 100).toFixed(2)}%` : '0.00%',
+                    created_ots_percentage_total: globalTotalOtsCreated > 0 ? `${((otsTotalCreated / globalTotalOtsCreated) * 100).toFixed(2)}%` : '0.00%',
+                    
+                    created_hmp_percentage: `${hydrantHmpPercentage}%`,
+                    created_ots_percentage: `${hydrantOtsPercentage}%`,
+
+                    completed_percentage_total: `${completedOverallPct}%`,
+                    pending_percentage_total: `${pendingOverallPct}%`,
+                    driver_assigned_percentage_total: `${assignedOverallPct}%`,
+                    cancelled_percentage_total: `${cancelledOverallPct}%`
                 }
             };
         });
