@@ -13,7 +13,7 @@ const HmpKpiHeader = ({ children }) => {
     return (
         <header className="hmp-header-main">
             <div className="title-group">
-                <h1>Hydrant <span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '1.3rem'}}>MANAGEMENT KPI DASHBOARD (LIVE)</small></span></h1>
+                <h1><span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '2.9rem'}}>HYDRANT MANAGEMENT KPI CEO DASHBOARD (LIVE)</small></span></h1>
             </div>
             
             <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '15px' , marginRight:'10px'}}>
@@ -31,7 +31,7 @@ const HmpKpiHeader = ({ children }) => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '0.85rem',
+                        fontSize: '1.2rem',
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.background = '#d3d3d380'}
@@ -55,7 +55,7 @@ const HmpKpiHeader = ({ children }) => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '0.85rem',
+                        fontSize: '1.5rem',
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.background = '#ef444444'}

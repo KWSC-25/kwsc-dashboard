@@ -227,7 +227,7 @@ const HydrantKPIDashboard = () => {
             <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch', position: 'relative' }}>
                 
                 {/* Header Control Panel Bar */}
-                <div className="hmp-group-label hmp-lbl-today" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'flex-start', gap: '16px', width: '100%', marginBottom: '4px' }}>
+                <div className="hmp-group-label hmp-lbl-today" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'flex-start', gap: '16px', width: '32%', marginBottom: '4px' }}>
                     
                     {/* Integrated Slider Header Title */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -302,8 +302,8 @@ const HydrantKPIDashboard = () => {
                                 position: 'absolute', 
                                 left: 'calc((100% / 6.5) * 0.5 + ((100% / 6.5) * 2) - 4px)', 
                                 width: 'calc((100% / 6.5) * 2 + 8px)',
-                                top: '-6px', 
-                                bottom: '-6px', 
+                                top: '-18px', 
+                                bottom: '-9px', 
                                 border: '1px solid rgba(191, 84, 46, 0.99)', 
                                 backgroundColor: 'rgba(255, 255, 255, 0.03)', 
                                 borderRadius: '8px', 
@@ -319,7 +319,7 @@ const HydrantKPIDashboard = () => {
                                     left: '50%', 
                                     transform: 'translateX(-50%)', 
                                     padding: '0 12px', 
-                                    fontSize: '20px', 
+                                    fontSize: '25px', 
                                     backgroundColor: '#111622',
                                     fontWeight: 'bold', 
                                     color: '#ff4d4f', 
