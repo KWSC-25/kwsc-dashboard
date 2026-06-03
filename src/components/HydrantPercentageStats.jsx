@@ -13,7 +13,8 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
         { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
         { label: '% OTS', key: 'total_created_ots_percentage', color: '#38bdf8' },
-        { label: '% HMP', key: 'total_created_hmp_percentage', color: '#a78bfa' }
+        { label: '% HMP', key: 'total_created_hmp_percentage', color: '#a78bfa' },
+        { label: 'Hydrant Running Hours', key: 'total_created_hmp_percentage', color: '#FFF200' }
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
@@ -51,28 +52,38 @@ const HydrantPercentageStats = ({ activeFilters }) => {
     }, [fetchPerformanceGrid]);
 
     return (
-        <div className="hydrant-performance-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.85)', borderRadius: '6px', padding: '16px', border: '1px solid #2e3748', width: '100%' }}>
+        <div className="hydrant-performance-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.95)', borderRadius: '6px', padding: '20px', border: '1px solid #2e3748', width: '100%' }}>
             {/* Component Section Header */}
-            <h3 style={{ margin: '0 0 14px 0', fontSize: '20px', fontWeight: '600', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <h3 style={{ margin: '0 0 18px 0', fontSize: '32px', fontWeight: '700', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Hydrant Wise Performance (Overall Average)
             </h3>
 
             {/* Scrollable Context Layer */}
             <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px', color: '#e2e8f0', minWidth: '1000px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', color: '#e2e8f0', minWidth: '1200px' }}>
                     <thead>
                         {/* Primary Header Row: Hydrant Top Grouping */}
-                        <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
-                            <th style={{ padding: '12px 10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '220px', color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>
+                        <tr style={{ background: 'rgba(46, 55, 72, 0.6)', borderTop: '2px solid #4a5568', borderBottom: '1px solid #2e3748' }}>
+                            <th 
+                                rowSpan={2} 
+                                style={{ 
+                                    padding: '16px 12px', 
+                                    textAlign: 'left', 
+                                    borderRight: '3px solid #4a5568', 
+                                    width: '280px', 
+                                    color: '#fff', 
+                                    fontSize: '24px', 
+                                    fontWeight: 'bold' 
+                                }}
+                            >
                                 Operational Metrics
                             </th>
                             {loading && performanceData.length === 0 ? (
-                                <th style={{ color: '#718096', fontStyle: 'italic' }}>Loading performance structure...</th>
+                                <th colSpan={14} style={{ color: '#718096', fontStyle: 'italic', fontSize: '18px' }}>Loading performance structure...</th>
                             ) : performanceData.length === 0 ? (
-                                <th style={{ color: '#718096', fontStyle: 'italic' }}>No active hydrants matched filter parameters</th>
+                                <th colSpan={14} style={{ color: '#718096', fontStyle: 'italic', fontSize: '18px' }}>No active hydrants matched filter parameters</th>
                             ) : (
                                 performanceData.map((row, idx) => {
-                                    // Shorten 'CRUSH PLANT' to 'CP' cleanly for screen economy
                                     const displayedName = row.hydrant_name 
                                         ? row.hydrant_name.replace('CRUSH PLANT', 'CP') 
                                         : '';
@@ -80,15 +91,16 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                     return (
                                         <th 
                                             key={idx} 
+                                            colSpan={2}
                                             style={{ 
-                                                padding: '12px 6px', 
-                                                borderRight: '1px solid #4a5568', 
+                                                padding: '14px 6px', 
+                                                borderRight: '2px solid #4a5568', 
                                                 color: '#ffffff', 
                                                 fontWeight: '800', 
-                                                fontSize: '20px', 
-                                                letterSpacing: '0.9px', 
+                                                fontSize: '22px', 
+                                                letterSpacing: '1px', 
                                                 textAlign: 'center',
-                                                background: 'rgba(255, 255, 255, 0.02)'
+                                                background: 'rgba(255, 255, 255, 0.03)'
                                             }}
                                         >
                                             {displayedName}
@@ -97,63 +109,111 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                 })
                             )}
                         </tr>
+                        {/* Secondary Sub-Header Row: Self & Total splits */}
+                        {performanceData.length > 0 && (
+                            <tr style={{ background: 'rgba(34, 41, 56, 0.7)', borderBottom: '2px solid #4a5568' }}>
+                                {performanceData.map((_, idx) => (
+                                    <React.Fragment key={`sub-th-${idx}`}>
+                                        <th style={{ padding: '8px 4px', fontSize: '16px', fontWeight: '700', color: 'white', borderRight: '1px solid #2e3748', textAlign:'center' }}>SELF</th>
+                                        <th style={{ padding: '8px 4px', fontSize: '16px', fontWeight: '700', color: 'white', borderRight: '2px solid #4a5568' ,  textAlign:'center'}}>TOTAL</th>
+                                    </React.Fragment>
+                                ))}
+                            </tr>
+                        )}
                     </thead>
                     <tbody>
                         {loading && performanceData.length === 0 ? (
                             <tr>
-                                <td style={{ padding: '30px', color: '#718096' }}>Initializing matrix grid data streams...</td>
+                                <td style={{ padding: '40px', color: '#718096', fontSize: '18px' }}>Initializing matrix grid data streams...</td>
                             </tr>
                         ) : performanceData.length === 0 ? (
                             <tr>
-                                <td style={{ padding: '30px', color: '#718096' }}>No records evaluated for this transaction scope window.</td>
+                                <td style={{ padding: '40px', color: '#718096', fontSize: '18px' }}>No records evaluated for this transaction scope window.</td>
                             </tr>
                         ) : (
                             metricRows.map((metric, mIdx) => {
-                                // Dynamic validation for targeting the boundary line breaks
                                 const isCompletedRow = metric.label === '% COMPLETED';
                                 const isCancelledRow = metric.label === '% CANCELLED';
+                                const isRunningHoursRow = metric.label === 'Hydrant Running Hours';
 
                                 return (
                                     <tr 
                                         key={mIdx}
                                         style={{ 
                                             borderBottom: isCancelledRow ? '4px solid #67676e' : '1px solid #2e3748',
-                                            borderTop: isCompletedRow ? '4px solid #67676e' : 'none',
+                                            borderTop: (isCompletedRow || isRunningHoursRow) ? '4px solid #67676e' : 'none',
                                             background: mIdx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent'
                                         }}
                                         className="hmp-table-row-hover"
                                     >
-                                        {/* Left Anchor Primary Metric Parameter Cell */}
+                                        {/* Left Anchor Primary Metric Label Cell */}
                                         <td style={{ 
-                                            padding: '12px 10px', 
+                                            padding: '16px 12px', 
                                             textAlign: 'left', 
                                             fontWeight: '700', 
-                                            fontSize: '22px',
+                                            fontSize: '28px',
                                             color: metric.isTat ? '#FFF200' : '#ffffff', 
-                                            background: 'rgba(26, 32, 44, 0.3)', 
-                                            borderRight: '2px solid #2e3748', 
+                                            background: 'rgba(26, 32, 44, 0.4)', 
+                                            borderRight: '3px solid #4a5568', 
                                             whiteSpace: 'nowrap' 
                                         }}>
                                             {metric.label}
                                         </td>
 
-                                        {/* Combined Metric View Value Outputs */}
+                                        {/* Data Value Output Cells */}
                                         {performanceData.map((row, rIdx) => {
-                                            const totalValue = row.total[metric.key];
+                                            // Handle the un-divided bottom running hours row condition
+                                            if (isRunningHoursRow) {
+                                                return (
+                                                    <td 
+                                                        key={`cell-running-${mIdx}-${rIdx}`}
+                                                        colSpan={2}
+                                                        style={{ 
+                                                            padding: '14px 4px', 
+                                                            fontSize: '30px', 
+                                                            fontWeight: '700',
+                                                            color: metric.color || '#e2e8f0',
+                                                            borderRight: '2px solid #4a5568',
+                                                            background: 'rgba(255, 242, 0, 0.04)'
+                                                        }}
+                                                    >
+                                                        {row.total[metric.key]}
+                                                    </td>
+                                                );
+                                            }
+
+                                            // Default divided columns setup
+                                            const selfValue = row.total[metric.key];
+                                            const totalValue = row.total[`${metric.key}_total`];
 
                                             return (
-                                                <td 
-                                                    key={`cell-${mIdx}-${rIdx}`}
-                                                    style={{ 
-                                                        padding: '10px 4px', 
-                                                        fontSize: '25px', 
-                                                        fontWeight: '600',
-                                                        color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
-                                                        borderRight: '1px solid #4a5568'
-                                                    }}
-                                                >
-                                                    {totalValue}
-                                                </td>
+                                                <React.Fragment key={`cell-group-${mIdx}-${rIdx}`}>
+                                                    {/* Self Column Value */}
+                                                    <td 
+                                                        style={{ 
+                                                            padding: '14px 4px', 
+                                                            fontSize: '32px', 
+                                                            fontWeight: '600',
+                                                            color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
+                                                            borderRight: '1px solid #2e3748'
+                                                        }}
+                                                    >
+                                                        {selfValue}
+                                                    </td>
+                                                    {/* Total Column Value */}
+                                                    <td 
+                                                        style={{ 
+                                                            padding: '14px 4px', 
+                                                            fontSize: '32px', 
+                                                            fontWeight: '600',
+                                                            color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
+                                                            borderRight: '2px solid #4a5568',
+                                                            background: 'rgba(255, 255, 255, 0.01)'
+                                                        }}
+                                                    >
+                                                        {totalValue}
+                                                    </td>
+                                                </React.Fragment>
                                             );
                                         })}
                                     </tr>

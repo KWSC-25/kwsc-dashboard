@@ -105,20 +105,20 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
     return (
         <div className="hydrant-category-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.85)', borderRadius: '6px', padding: '16px', border: '1px solid #2e3748', width: '100%' }}>
             {/* Section Header Component */}
-            <h3 style={{ margin: '0 0 14px 0', fontSize: '20px', fontWeight: '600', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '30px', fontWeight: '600', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Category Based Hydrant Wise Breakdown of Orders
             </h3>
 
             {/* Scrollable Layout Context Layer */}
             <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px', color: '#e2e8f0', minWidth: '1700px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '18px', color: '#e2e8f0', minWidth: '1700px' }}>
                     <thead>
                         {/* Primary Category Main Group Headers */}
                         <tr style={{ background: 'rgba(46, 55, 72, 0.5)', borderTop: '1px solid #2e3748', borderBottom: '1px solid #2e3748' }}>
-                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '180px', color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>Hydrant Name</th>
+                            <th rowSpan={2} style={{ padding: '10px', textAlign: 'left', borderRight: '2px solid #2e3748', width: '180px', color: '#fff', fontSize: '25px', fontWeight: 'bold' }}>Hydrant Name</th>
                             <th rowSpan={2} style={{ padding: '10px', textAlign: 'center', borderRight: '2px solid #00f2ff', width: '100px', color: '#00f2ff', fontSize: '18px', fontWeight: 'bold', background: 'rgba(0, 242, 255, 0.05)' }}>TOTAL Created</th>
                             {categories.map((cat, idx) => (
-                                <th key={idx} colSpan={5} style={{ padding: '8px 4px', borderRight: idx !== categories.length - 1 ? '1px solid #4a5568' : 'none', color: '#fff', fontWeight: 'bold', fontSize: '18px', letterSpacing: '0.3px' , textAlign: 'center'}}>
+                                <th key={idx} colSpan={5} style={{ padding: '8px 4px', borderRight: idx !== categories.length - 1 ? '1px solid #4a5568' : 'none', color: '#fff', fontWeight: 'bold', fontSize: '25px', letterSpacing: '0.3px' , textAlign: 'center'}}>
                                     {cat.label}
                                 </th>
                             ))}
@@ -132,7 +132,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                             key={`${cIdx}-${sIdx}`} 
                                             style={{ 
                                                 padding: '6px 2px', 
-                                                fontSize: '11px', 
+                                                fontSize: '13px', 
                                                 fontWeight: '700',
                                                 color: status.color,
                                                 background: status.isPrimary ? 'rgba(0, 242, 255, 0.12)' : 'transparent',
@@ -178,7 +178,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                         className="hmp-table-row-hover"
                                     >
                                         {/* Hydrant Identity Column */}
-                                        <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap', fontSize:'18px' }}>
+                                        <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap', fontSize:'20px' }}>
                                             {row.hydrant_name}
                                         </td>
 
@@ -198,7 +198,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                                             key={`${cIdx}-${sIdx}`} 
                                                             style={{ 
                                                                 padding: '10px 4px',
-                                                                fontSize: '18px',
+                                                                fontSize: '23px',
                                                                 opacity: val === 0 ? 0.25 : 1,
                                                                 fontWeight: val > 0 ? '600' : 'normal',
                                                                 color: status.isPrimary && val > 0 ? '#00f2ff' : '#e2e8f0',

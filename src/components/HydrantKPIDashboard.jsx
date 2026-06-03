@@ -13,6 +13,18 @@ const HydrantKPIDashboard = () => {
     const [endDate, setEndDate] = useState(todayStr);
     const [activeFilters, setActiveFilters] = useState({ startDate: '', endDate: '' });
 
+    // Responsive state tracker for dynamic styling adjustments
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        handleResize(); // Run initial calculation loop
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const fetchTodayStats = useCallback(async (filters = activeFilters) => {
         try {
             let url = 'newkpis/today-stats';
@@ -108,7 +120,7 @@ const HydrantKPIDashboard = () => {
         
         const configurations = {
             created: {
-                label: `CREATED ${type}`,
+                label: `CREATED`,
                 grad: "hmp-grad-cyan",
                 lblClass: "label-cyan",
                 count: s.created,
@@ -117,7 +129,7 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false
             },
             completed: {
-                label: `COMPLETED ${type}`,
+                label: `COMPLETED`,
                 grad: "hmp-grad-green",
                 lblClass: "label-green",
                 count: s.completed,
@@ -126,7 +138,7 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false
             },
             dispatched: {
-                label: `DRIVER ASSIGNED ${type}`,
+                label: `DRIVER ASSIGNED`,
                 grad: "hmp-grad-orange",
                 lblClass: "label-orange",
                 count: s.dispatched,
@@ -135,7 +147,7 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false
             },
             pending: {
-                label: `NOT ASSIGNED ${type}`,
+                label: `NOT ASSIGNED`,
                 grad: "hmp-grad-red",
                 lblClass: "label-red",
                 count: s.pending,
@@ -144,7 +156,7 @@ const HydrantKPIDashboard = () => {
                 isTatCard: false
             },
             cancelled: {
-                label: type === 'OTS' ? 'CANCELLED' : `CANCELLED ${type}`,
+                label: `CANCELLED`,
                 grad: "hmp-grad-grey",
                 lblClass: "",
                 count: s.cancelled,
@@ -154,7 +166,7 @@ const HydrantKPIDashboard = () => {
                 isCancelledCard: true
             },
             tat: {
-                label: `AVERAGE ORDER TAT ${type}`,
+                label: `AVG TAT`,
                 grad: "hmp-grad-golden",
                 lblClass: "label-golden",
                 count: s.avg_tat,
@@ -168,8 +180,8 @@ const HydrantKPIDashboard = () => {
             return (
                 <div className={`hmp-card ${cfg.grad}`} style={{ height: '100%' }}>
                     <div className="hmp-main-row">
-                        <span className={`hmp-label ${cfg.lblClass}`}>{cfg.label}</span>
-                        <span className="hmp-total" style={{ fontSize: '32px', textTransform: 'none' }}>{cfg.count}</span>
+                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '32px' }}>{cfg.label}</span>
+                        <span className="hmp-total" style={{ fontSize: '35px', textTransform: 'none' }}>{cfg.count}</span>
                     </div>
                 </div>
             );
@@ -179,27 +191,27 @@ const HydrantKPIDashboard = () => {
             <div className={`hmp-card ${cfg.grad}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center', padding: '10px 12px', height: '100%' }}>
                 {/* Sub Row 1: Main Metric Total Counts */}
                 <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '15px' }}>{cfg.label}</span>
-                    <span className="hmp-total" style={{ fontSize: '40px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
+                    <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '25px' }}>{cfg.label}</span>
+                    <span className="hmp-total" style={{ fontSize: '45px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
                 </div>
                 {/* Retained original consumer vs hydrant cancellation breakdown block */}
                 {cfg.isCancelledCard && type === 'OTS' && (
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '20px', color: '#8a99a8' }}>
-                        <span style={{ color: 'white' }}>By Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
-                        <span style={{ color: 'white' }}>By Hydrant: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '25px', color: '#8a99a8' }}>
+                        <span style={{ color: 'white' }}>Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                        <span style={{ color: 'white' }}>Hydrant: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
                     </div>
                 )}
                 
                 {/* Sub Row 2: Gallon Counts */}
-                <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '20px', color: '#be66e3', fontWeight:'bold' }}>
-                    <span>Million GALLONS:</span>
+                <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '30px', color: '#be66e3', fontWeight: 'bold' }}>
+                    <span>GALLONS:</span>
                     <strong>{Number(cfg.gallons) >= 1000000 ? fmtLargeUnits(cfg.gallons) : `${fmt(cfg.gallons)}`}</strong>
                 </div>
 
                 {/* Sub Row 3: Amount Metric */}
                 {type === 'OTS' && (
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '20px', color: '#e0e6ed', fontWeight:'bold' }}>
-                        <span>Million AMOUNT:</span>
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '30px', color: '#e0e6ed', fontWeight: 'bold' }}>
+                        <span>AMOUNT:</span>
                         <strong>{Number(cfg.amount) >= 1000000 ? `${fmtLargeUnits(cfg.amount)}` : `${fmt(cfg.amount)}`}</strong>
                     </div>
                 )}
@@ -213,38 +225,47 @@ const HydrantKPIDashboard = () => {
             {/* ==================== GLOBAL TODAY SECTION ==================== */}
             <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch', position: 'relative' }}>
                 
-                {/* Border-anchored Yellow Title + Custom Date Filter Toolbar Layer */}
-                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '15px', width: '35%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span>TODAY ORDERS</span>
-                        
-                        <div className="kpi-date-filter-inline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginLeft: '20px', padding: '2px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
-                            <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>From:</label>
+                {/* Border-anchored Dynamic Title + Scaled Date Filter Toolbar Layer */}
+                <div className="hmp-group-label hmp-lbl-today" style={{ color: '#FFF200', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'flex-start', gap: isMobile ? '12px' : '24px', width: '100%', marginBottom: '4px' }}>
+                    
+                    {/* Increased size of dynamic heading */}
+                    <span style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                        {activeFilters.startDate && activeFilters.endDate ? 'CUSTOM ORDERS' : 'TODAY ORDERS'}
+                    </span>
+                    
+                    {/* Filter Inline Row: Expanded text, inputs, and padding heights for crisp readability */}
+                    <div className="kpi-date-filter-inline" style={{ display: isMobile ? 'flex' : 'inline-flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: '12px', padding: '8px 14px', background: 'rgba(0,0,0,0.5)', borderRadius: '6px', border: '1px solid #555', width: isMobile ? '100%' : 'auto' }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                            <label style={{ fontSize: '16px', color: '#ccc', fontWeight: 'bold' }}>From:</label>
                             <input  
                                 type="date" 
                                 value={startDate} 
                                 onChange={(e) => setStartDate(e.target.value)}
-                                style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
+                                style={{ background: '#222', color: '#fff', border: '1px solid #666', borderRadius: '4px', padding: '6px 8px', fontSize: '15px', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
                             />
-                            
-                            <label style={{ fontSize: '15px', color: '#aaa', fontWeight: 'bold' }}>To:</label>
+                        </div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                            <label style={{ fontSize: '16px', color: '#ccc', fontWeight: 'bold' }}>To:</label>
                             <input 
                                 type="date" 
                                 value={endDate} 
                                 onChange={(e) => setEndDate(e.target.value)}
-                                style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '3px', padding: '1px 4px', fontSize: '13px', cursor: 'pointer' }}
+                                style={{ background: '#222', color: '#fff', border: '1px solid #666', borderRadius: '4px', padding: '6px 8px', fontSize: '15px', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
                             />
-                            
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '8px', marginTop: isMobile ? '4px' : '0px' }}>
                             <button 
                                 onClick={handleApplyFilter}
-                                style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                                style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '4px', padding: '6px 14px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
                             >
                                 FILTER
                             </button>
                             
                             <button 
                                 onClick={handleResetFilter}
-                                style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '13px', cursor: 'pointer' }}
+                                style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 14px', fontSize: '14px', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
                             >
                                 RESET
                             </button>
@@ -260,15 +281,17 @@ const HydrantKPIDashboard = () => {
                         <div 
                             style={{ 
                                 position: 'absolute', 
-                                left: 'calc(33.333% - 4px)', // Dynamically targets the 3rd and 4th columns space out of 6
-                                width: 'calc(33.333% + 8px)',
+                                // Recalculated to perfectly align around columns 3 & 4 within the new 7-column layout (0.5fr label box + 6 cards)
+                                left: 'calc((100% / 6.5) * 0.5 + ((100% / 6.5) * 2) - 4px)', 
+                                width: 'calc((100% / 6.5) * 2 + 8px)',
                                 top: '-6px', 
                                 bottom: '-6px', 
                                 border: '1px solid rgba(191, 84, 46, 0.99)', 
                                 backgroundColor: 'rgba(255, 255, 255, 0.03)', 
                                 borderRadius: '8px', 
                                 zIndex: 1, 
-                                pointerEvents: 'none' // Ensures users can still click interactions inside cards
+                                pointerEvents: 'none', // Ensures users can still click interactions inside cards
+                                display: isMobile ? 'none' : 'block' // Clean up absolute alignments on stacked view layouts
                             }}
                         >
                             {/* Unified Top-Middle Heading */}
@@ -279,7 +302,7 @@ const HydrantKPIDashboard = () => {
                                     left: '50%', 
                                     transform: 'translateX(-50%)', 
                                     padding: '0 12px', 
-                                    fontSize: '15px', 
+                                    fontSize: '20px', 
                                     backgroundColor: '#111622',
                                     fontWeight: 'bold', 
                                     color: '#ff4d4f', 
@@ -290,22 +313,30 @@ const HydrantKPIDashboard = () => {
                             </div>
                         </div>
 
-                        {/* 1. OTS ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
+                        {/* 1. OTS ROW (Converted to a 7-column grid layout to include the type indicator badge) */}
+                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '0.5fr repeat(6, minmax(0, 1fr))', gap: '8px', position: 'relative', zIndex: 2 }}>
+                            {/* Type Identifier Label Box */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 242, 255, 0.05)', border: '1px solid rgba(0, 242, 255, 0.3)', borderRadius: '6px', padding: '10px' }}>
+                                <span style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', letterSpacing: '1px', writingMode: 'horizontal-tb' }}>online</span>
+                            </div>
                             <div>{renderSingleCard('daily_ots', 'OTS', 'created')}</div>
                             <div>{renderSingleCard('daily_ots', 'OTS', 'completed')}</div>
-                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_ots', 'OTS', 'dispatched')}</div>
-                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_ots', 'OTS', 'pending')}</div>
+                            <div style={{ padding: isMobile ? '0' : '4px 0' }}>{renderSingleCard('daily_ots', 'OTS', 'dispatched')}</div>
+                            <div style={{ padding: isMobile ? '0' : '4px 0' }}>{renderSingleCard('daily_ots', 'OTS', 'pending')}</div>
                             <div>{renderSingleCard('daily_ots', 'OTS', 'cancelled')}</div>
                             <div>{renderSingleCard('daily_ots', 'OTS', 'tat')}</div>
                         </div>
                         
-                        {/* 2. HMP ROW */}
-                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '8px', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
+                        {/* 2. HMP ROW (Converted to a 7-column grid layout to include the type indicator badge) */}
+                        <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '0.5fr repeat(6, minmax(0, 1fr))', gap: '8px', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
+                            {/* Type Identifier Label Box */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(190, 102, 227, 0.05)', border: '1px solid rgba(190, 102, 227, 0.3)', borderRadius: '6px', padding: '10px' }}>
+                                <span style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', letterSpacing: '1px', writingMode: 'horizontal-tb' }}>hmp</span>
+                            </div>
                             <div>{renderSingleCard('daily_hmp', 'HMP', 'created')}</div>
                             <div>{renderSingleCard('daily_hmp', 'HMP', 'completed')}</div>
-                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_hmp', 'HMP', 'dispatched')}</div>
-                            <div style={{ padding: '4px 0' }}>{renderSingleCard('daily_hmp', 'HMP', 'pending')}</div>
+                            <div style={{ padding: isMobile ? '0' : '4px 0' }}>{renderSingleCard('daily_hmp', 'HMP', 'dispatched')}</div>
+                            <div style={{ padding: isMobile ? '0' : '4px 0' }}>{renderSingleCard('daily_hmp', 'HMP', 'pending')}</div>
                             <div>{renderSingleCard('daily_hmp', 'HMP', 'cancelled')}</div>
                             <div>{renderSingleCard('daily_hmp', 'HMP', 'tat')}</div>
                         </div>
