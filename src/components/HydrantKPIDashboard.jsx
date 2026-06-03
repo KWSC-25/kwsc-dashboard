@@ -158,7 +158,7 @@ const HydrantKPIDashboard = () => {
         const configurations = {
             created: { label: `CREATED`, grad: "hmp-grad-cyan", lblClass: "label-cyan", count: s.created, gallons: s.created_gallons, amount: s.created_amount, isTatCard: false },
             completed: { label: `COMPLETED`, grad: "hmp-grad-green", lblClass: "label-green", count: s.completed, gallons: s.completed_gallons, amount: s.completed_amount, isTatCard: false },
-            dispatched: { label: `DRIVER ASSIGNED`, grad: "hmp-grad-orange", lblClass: "label-orange", count: s.dispatched, gallons: s.dispatched_gallons, amount: s.dispatched_amount, isTatCard: false },
+            dispatched: { label: `DRIVER ASSIGNED `, grad: "hmp-grad-orange", lblClass: "label-orange", count: s.dispatched, gallons: s.dispatched_gallons, amount: s.dispatched_amount, isTatCard: false },
             pending: { label: `NOT ASSIGNED`, grad: "hmp-grad-red", lblClass: "label-red", count: s.pending, gallons: s.pending_gallons, amount: s.pending_amount, isTatCard: false },
             cancelled: { label: `CANCELLED`, grad: "hmp-grad-grey", lblClass: "", count: s.cancelled, gallons: s.cancelled_gallons, amount: s.cancelled_amount, isTatCard: false, isCancelledCard: true },
             tat: { label: `AVG TAT`, grad: "hmp-grad-golden", lblClass: "label-golden", count: s.avg_tat, isTatCard: true }
@@ -184,8 +184,8 @@ const HydrantKPIDashboard = () => {
                     <span className="hmp-total" style={{ fontSize: '45px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
                 </div>
                 {cfg.isCancelledCard && type === 'OTS' && (
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '25px', color: '#8a99a8' }}>
-                        <span style={{ color: 'white' }}>Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '35px', color: '#8a99a8' }}>
+                        <span style={{ color: 'white',  }}>Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
                         <span style={{ color: 'white' }}>Hydrant: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
                     </div>
                 )}
@@ -220,14 +220,71 @@ const HydrantKPIDashboard = () => {
                 display: 'flex', 
                 flexDirection: 'column', 
                 gap: '0px', 
-                width: '100%'
+                width: '100%',
+                position: 'relative' // Keeps absolute placement of filter panel stable inside dashboard scope
             }}
         >
+            {/* ==================== MOVED CONTROL BOX (ABSOLUTE RIGHT HIGHLIGHTED ZONE) ==================== */}
+            {/* Placed perfectly to render exactly adjacent left to the Back/Logout buttons from header file */}
+            <div 
+                className="kpi-date-filter-inline" 
+                style={{ 
+                    position: isMobile ? 'static' : 'absolute',
+                    top: '-99px', 
+                    right: '310px', // Adjusted to expand layout boundary gap effectively 
+                    display: isMobile ? 'flex' : 'inline-flex', 
+                    flexDirection: isMobile ? 'column' : 'row', 
+                    alignItems: isMobile ? 'stretch' : 'center', 
+                    gap: '24px', // Expanded space between internal controls 
+                    padding: '4px 12px', // Side padding added to support expanded box background width
+                    background: 'black', 
+                    width: isMobile ? '100%' : 'auto',
+                    zIndex: 1000
+                }} 
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: '20px', color: '#fff', fontWeight: 'bold' }}>From:</label>
+                    <input  
+                        type="date" 
+                        value={startDate} 
+                        onChange={(e) => setStartDate(e.target.value)}
+                        style={{ background: '#222', color: '#fff', border: '1px solid #777', borderRadius: '4px', padding: '12px 20px', fontSize: '28px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none', width: isMobile ? 'auto' : '260px', colorScheme: 'dark' }}
+                    />
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: '20px', color: '#fff', fontWeight: 'bold' }}>To:</label>
+                    <input 
+                        type="date" 
+                        value={endDate} 
+                        onChange={(e) => setEndDate(e.target.value)}
+                        style={{ background: '#222', color: '#fff', border: '1px solid #777', borderRadius: '4px', padding: '12px 20px', fontSize: '28px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none', width: isMobile ? 'auto' : '260px', colorScheme: 'dark' }}
+                    />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '10px', marginTop: isMobile ? '4px' : '0px' }}>
+                    <button 
+                        onClick={handleApplyFilter}
+                        style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '4px', padding: '12px 26px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
+                    >
+                        FILTER
+                    </button>
+                    
+                    <button 
+                        onClick={handleResetFilter}
+                        style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '4px', padding: '12px 26px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
+                    >
+                        RESET
+                    </button>
+                </div>
+            </div>
+
             {/* ==================== GLOBAL CONTROL SECTION ==================== */}
             <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch', position: 'relative' }}>
                 
                 {/* Header Control Panel Bar */}
-                <div className="hmp-group-label hmp-lbl-today" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'flex-start', gap: '16px', width: '32%', marginBottom: '4px' }}>
+                <div className="hmp-group-label hmp-lbl-today" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: isMobile ? 'flex-start' : 'space-between', gap: '16px', width: '100%', marginBottom: '4px' }}>
                     
                     {/* Integrated Slider Header Title */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -251,45 +308,6 @@ const HydrantKPIDashboard = () => {
                             &#8594;
                         </button>
                     </div>
-                    
-                    {/* Date Pickers Inline controls row panel */}
-                    <div className="kpi-date-filter-inline" style={{ display: isMobile ? 'flex' : 'inline-flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: '12px', padding: '8px 14px', background: 'rgba(0,0,0,0.5)', borderRadius: '6px', border: '1px solid #555', width: isMobile ? '100%' : 'auto'}} onClick={(e) => e.stopPropagation()}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
-                            <label style={{ fontSize: '16px', color: '#ccc', fontWeight: 'bold' }}>From:</label>
-                            <input  
-                                type="date" 
-                                value={startDate} 
-                                onChange={(e) => setStartDate(e.target.value)}
-                                style={{ background: '#222', color: '#fff', border: '1px solid #666', borderRadius: '4px', padding: '6px 8px', fontSize: '15px', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
-                            />
-                        </div>
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
-                            <label style={{ fontSize: '16px', color: '#ccc', fontWeight: 'bold' }}>To:</label>
-                            <input 
-                                type="date" 
-                                value={endDate} 
-                                onChange={(e) => setEndDate(e.target.value)}
-                                style={{ background: '#222', color: '#fff', border: '1px solid #666', borderRadius: '4px', padding: '6px 8px', fontSize: '15px', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
-                            />
-                        </div>
-                        
-                        <div style={{ display: 'flex', gap: '8px', marginTop: isMobile ? '4px' : '0px' }}>
-                            <button 
-                                onClick={handleApplyFilter}
-                                style={{ background: 'var(--accent-cyan, #00f2ff)', color: '#000', border: 'none', borderRadius: '4px', padding: '6px 14px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
-                            >
-                                FILTER
-                            </button>
-                            
-                            <button 
-                                onClick={handleResetFilter}
-                                style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 14px', fontSize: '14px', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
-                            >
-                                RESET
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Top Row: Cards Grid System Wrapper with adjusted margin top spacing */}
@@ -302,7 +320,7 @@ const HydrantKPIDashboard = () => {
                                 position: 'absolute', 
                                 left: 'calc((100% / 6.5) * 0.5 + ((100% / 6.5) * 2) - 4px)', 
                                 width: 'calc((100% / 6.5) * 2 + 8px)',
-                                top: '-18px', 
+                                top: '-38px', 
                                 bottom: '-9px', 
                                 border: '1px solid rgba(191, 84, 46, 0.99)', 
                                 backgroundColor: 'rgba(255, 255, 255, 0.03)', 
@@ -319,7 +337,7 @@ const HydrantKPIDashboard = () => {
                                     left: '50%', 
                                     transform: 'translateX(-50%)', 
                                     padding: '0 12px', 
-                                    fontSize: '25px', 
+                                    fontSize: '35px', 
                                     backgroundColor: '#111622',
                                     fontWeight: 'bold', 
                                     color: '#ff4d4f', 
@@ -364,17 +382,16 @@ const HydrantKPIDashboard = () => {
                     <HydrantPercentageStats activeFilters={activeFilters} />
                 </div>
 
+                <div style={{ width: '100%', marginTop: '20px' }}>
+                    <HydrantPercentageStats2 activeFilters={activeFilters} />
+                </div>
+                
                 <div style={{ width: '100%', marginTop: '14px' }}>
                     <HydrantCategoryTable 
                         activeFilters={activeFilters} 
                         onDataCalculated={handleTableDataCalculated}
                     />
                 </div>
-
-                <div style={{ width: '100%', marginTop: '20px' }}>
-                    <HydrantPercentageStats2 activeFilters={activeFilters} />
-                </div>
-                
             </div>
         </div>
     );

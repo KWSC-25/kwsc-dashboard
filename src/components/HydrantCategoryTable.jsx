@@ -183,7 +183,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                         </td>
 
                                         {/* New Row-Wise Created Cumulative Column Values */}
-                                        <td style={{ padding: '10px 4px', fontWeight: '800', color: '#00f2ff', background: 'rgba(0, 242, 255, 0.05)', borderRight: '2px solid #00f2ff' }}>
+                                        <td style={{ padding: '10px 4px', fontWeight: '800', color: '#00f2ff', background: 'rgba(0, 242, 255, 0.05)', borderRight: '2px solid #00f2ff', fontSize:'23px' }}>
                                             {fmt(rowCreatedTotal)}
                                         </td>
 
@@ -224,7 +224,7 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                     TOTALS
                                 </td>
                                 {/* Bottom cross-section summary for row-wise created totals */}
-                                <td style={{ padding: '12px 4px', color: '#00f2ff', background: 'rgba(0, 242, 255, 0.15)', borderRight: '2px solid #00f2ff', fontSize: '14px' }}>
+                                <td style={{ padding: '12px 4px', color: '#00f2ff', background: 'rgba(0, 242, 255, 0.15)', borderRight: '2px solid #00f2ff', fontSize: '23px' }}>
                                     {fmt(totals.grand_created_total)}
                                 </td>
                                 {categories.map((cat, cIdx) => (

@@ -115,8 +115,8 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                             <tr style={{ background: 'rgba(34, 41, 56, 0.7)', borderBottom: '2px solid #4a5568' }}>
                                 {performanceData.map((_, idx) => (
                                     <React.Fragment key={`sub-th-${idx}`}>
-                                        <th style={{ padding: '8px 4px', fontSize: '16px', fontWeight: '700', color: 'white', borderRight: '1px solid #2e3748', textAlign:'center' }}>SELF</th>
-                                        <th style={{ padding: '8px 4px', fontSize: '16px', fontWeight: '700', color: 'white', borderRight: '2px solid #4a5568' ,  textAlign:'center'}}>TOTAL</th>
+                                        <th style={{ padding: '8px 4px', fontSize: '25px', fontWeight: '700', color: 'white', borderRight: '1px solid #2e3748', textAlign:'center' }}>SELF</th>
+                                        <th style={{ padding: '8px 4px', fontSize: '25px', fontWeight: '700', color: 'white', borderRight: '2px solid #4a5568' ,  textAlign:'center'}}>TOTAL</th>
                                     </React.Fragment>
                                 ))}
                             </tr>
@@ -193,7 +193,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                                     <td 
                                                         style={{ 
                                                             padding: '14px 4px', 
-                                                            fontSize: '32px', 
+                                                            fontSize: '36px', 
                                                             fontWeight: '600',
                                                             color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
                                                             borderRight: '1px solid #2e3748'
@@ -205,7 +205,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                                     <td 
                                                         style={{ 
                                                             padding: '14px 4px', 
-                                                            fontSize: '32px', 
+                                                            fontSize: '36px', 
                                                             fontWeight: '600',
                                                             color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
                                                             borderRight: '2px solid #4a5568',

@@ -31,7 +31,7 @@ const HmpKpiHeader = ({ children }) => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '1.2rem',
+                        fontSize: '2rem',
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.background = '#d3d3d380'}
@@ -55,7 +55,7 @@ const HmpKpiHeader = ({ children }) => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '1.5rem',
+                        fontSize: '2rem',
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.background = '#ef444444'}
