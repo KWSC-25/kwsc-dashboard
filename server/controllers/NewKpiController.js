@@ -545,7 +545,6 @@ export const HydrantPerformanceGridToday = async (req, res) => {
 
             return {
                 hydrant_name: row.combined_hydrant_name,
-                running_hours: formattedRunningHours,
                 hmp: {
                     total_created: hmpTotalCreated,
                     completed_percentage: `${hmpCompletedPct}%`,
@@ -581,7 +580,9 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                     completed_percentage_total: `${completedOverallPct}%`,
                     pending_percentage_total: `${pendingOverallPct}%`,
                     driver_assigned_percentage_total: `${assignedOverallPct}%`,
-                    cancelled_percentage_total: `${cancelledOverallPct}%`
+                    cancelled_percentage_total: `${cancelledOverallPct}%`,
+                    running_hours: formattedRunningHours,
+
                 }
             };
         });
