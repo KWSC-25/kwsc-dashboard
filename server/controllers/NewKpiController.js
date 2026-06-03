@@ -33,11 +33,11 @@ export const TodayStats = async (req, res) => {
             SUM(CASE WHEN status IN ('cancelled', 'failed') THEN gallon ELSE 0 END) AS ots_cancelled_gallons_today,
 
             -- Today Financial Amounts Matrix
-            SUM(tanker_amount) AS ots_created_amount_today,
-            SUM(CASE WHEN status IN ('pending_alignment','pending') THEN tanker_amount ELSE 0 END) AS ots_pending_amount_today,
-            SUM(CASE WHEN status IN ('dispatched') THEN tanker_amount ELSE 0 END) AS ots_dispatched_amount_today,
-            SUM(CASE WHEN status IN ('completed','self_closed') THEN tanker_amount ELSE 0 END) AS ots_completed_amount_today,
-            SUM(CASE WHEN status IN ('cancelled', 'failed') THEN tanker_amount ELSE 0 END) AS ots_cancelled_amount_today,
+            SUM(total_amount) AS ots_created_amount_today,
+            SUM(CASE WHEN status IN ('pending_alignment','pending') THEN total_amount ELSE 0 END) AS ots_pending_amount_today,
+            SUM(CASE WHEN status IN ('dispatched') THEN total_amount ELSE 0 END) AS ots_dispatched_amount_today,
+            SUM(CASE WHEN status IN ('completed','self_closed') THEN total_amount ELSE 0 END) AS ots_completed_amount_today,
+            SUM(CASE WHEN status IN ('cancelled', 'failed') THEN total_amount ELSE 0 END) AS ots_cancelled_amount_today,
 
             -- Turnaround Time Average
             AVG(CASE WHEN status IN ('completed','self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today
