@@ -162,8 +162,8 @@ const HydrantKPIDashboard = () => {
         const configurations = {
             created: { label: `CREATED`, grad: "hmp-grad-cyan", lblClass: "label-cyan", count: s.created, gallons: s.created_gallons, amount: s.created_amount, isTatCard: false },
             completed: { label: `COMPLETED`, grad: "hmp-grad-green", lblClass: "label-green", count: s.completed, gallons: s.completed_gallons, amount: s.completed_amount, isTatCard: false },
-            dispatched: { label: `DRIVER ASSIGNED `, grad: "hmp-grad-orange", lblClass: "label-orange", count: s.dispatched, gallons: s.dispatched_gallons, amount: s.dispatched_amount, isTatCard: false },
-            pending: { label: `NOT ASSIGNED`, grad: "hmp-grad-red", lblClass: "label-red", count: s.pending, gallons: s.pending_gallons, amount: s.pending_amount, isTatCard: false },
+            dispatched: { label: `DRIVER ASSIGNED ${s.assigned_max_aging ? `(${s.assigned_max_aging})` : ''}`, grad: "hmp-grad-orange", lblClass: "label-orange", count: s.dispatched, gallons: s.dispatched_gallons, amount: s.dispatched_amount, isTatCard: false },
+            pending: { label: `NOT ASSIGNED ${s.pending_max_aging ? `(${s.pending_max_aging})` : ''}`, grad: "hmp-grad-red", lblClass: "label-red", count: s.pending, gallons: s.pending_gallons, amount: s.pending_amount, isTatCard: false },
             cancelled: { label: `CANCELLED`, grad: "hmp-grad-grey", lblClass: "", count: s.cancelled, gallons: s.cancelled_gallons, amount: s.cancelled_amount, isTatCard: false, isCancelledCard: true },
             tat: { label: `AVG TAT`, grad: "hmp-grad-golden", lblClass: "label-golden", count: s.avg_tat, isTatCard: true }
         };
@@ -174,7 +174,7 @@ const HydrantKPIDashboard = () => {
             return (
                 <div className={`hmp-card ${cfg.grad}`} style={{ height: '100%' }}>
                     <div className="hmp-main-row">
-                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '32px' }}>{cfg.label}</span>
+                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '40px' }}>{cfg.label}</span>
                         <span className="hmp-total" style={{ fontSize: '35px', textTransform: 'none' }}>{cfg.count}</span>
                     </div>
                 </div>
@@ -184,7 +184,7 @@ const HydrantKPIDashboard = () => {
         return (
             <div className={`hmp-card ${cfg.grad}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center', padding: '10px 12px', height: '100%' }}>
                 <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '25px' }}>{cfg.label}</span>
+                    <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '35px' }}>{cfg.label}</span>
                     <span className="hmp-total" style={{ fontSize: '45px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
                 </div>
                 {cfg.isCancelledCard && type === 'OTS' && (
@@ -291,7 +291,7 @@ const HydrantKPIDashboard = () => {
                 <div className="hmp-group-label hmp-lbl-today" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: isMobile ? 'flex-start' : 'space-between', gap: '16px', width: '100%', marginBottom: '4px' }}>
                     
                     {/* Integrated Slider Header Title */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', marginTop:'-10px' }}>
                         <button 
                             onClick={handleNavigateLeft}
                             title="Switch to Today Orders"
@@ -300,7 +300,7 @@ const HydrantKPIDashboard = () => {
                             &#8592;
                         </button>
                         
-                        <span style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '0.5px', whiteSpace: 'nowrap', minWidth: '190px', textAlign: 'center', color: themeColor, transition: 'color 0.4s ease' }}>
+                        <span style={{ fontSize: '40px', fontWeight: 'bold', letterSpacing: '0.5px', whiteSpace: 'nowrap', minWidth: '190px', textAlign: 'center', color: themeColor, transition: 'color 0.4s ease' }}>
                             {getHeaderTitle()}
                         </span>
 
@@ -354,7 +354,7 @@ const HydrantKPIDashboard = () => {
 
                         {/* 1. OTS ROW */}
                         <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '0.5fr repeat(6, minmax(0, 1fr))', gap: '8px', position: 'relative', zIndex: 2 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 242, 255, 0.05)', border: '1px solid rgba(0, 242, 255, 0.3)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 242, 255, 0.05)', border: '1px solid rgba(0, 242, 255, 0.3)', borderRadius: '6px', padding: '2px' }}>
                                 <span style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>online</span>
                             </div>
                             <div>{renderSingleCard('daily_ots', 'OTS', 'created')}</div>
