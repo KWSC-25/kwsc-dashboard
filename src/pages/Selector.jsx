@@ -1,13 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Droplets, LogOut, Construction, BarChart3, Users, Scale } from 'lucide-react';
+import { handleGlobalLogout } from '../utils/authService';
 
 const Selector = () => {
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        sessionStorage.removeItem('token');
-        navigate('/');
-    };
+  
 
     const dashboardOptions = [
         {
@@ -95,7 +93,7 @@ const Selector = () => {
 
             {/* Added display: flex, align-items: center, and gap to keep icon and text on one line */}
             <button
-                onClick={handleLogout}
+                onClick={() => handleGlobalLogout(navigate)}
                 className="selector-logout"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Gavel, ArrowLeft } from 'lucide-react';
+import { handleGlobalLogout } from '../utils/authService';
 
 const LcmsHeader = ({ children }) => {
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ const LcmsHeader = ({ children }) => {
                 </button>
                 
                 <button 
-                    onClick={handleLogout}
+                    onClick={() => handleGlobalLogout(navigate)}
                     className="logout-btn-styled" // Use your existing styles or the inline one from HmpHeader
                     style={{
                         display: 'flex', alignItems: 'center', gap: '8px', background: '#ef444422',

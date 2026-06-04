@@ -3,7 +3,7 @@ import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { 
     UserPlus, Trash2, Edit, ArrowLeft, LogOut, 
-    Mail, User, Shield, X, Loader2, Search 
+    Mail, User, Shield, X, Loader2, Search, Monitor, Sliders
 } from 'lucide-react';
 
 const ManageUsers = () => {
@@ -14,7 +14,7 @@ const ManageUsers = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
-    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer' });
+    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2 });
 
     const fetchUsers = async () => {
         try {
@@ -36,10 +36,16 @@ const ManageUsers = () => {
         if (user) {
             setEditMode(true);
             setSelectedUserId(user.id);
-            setFormData({ username: user.username, email: user.email, password: '', role: user.role });
+            setFormData({ 
+                username: user.username, 
+                email: user.email, 
+                password: '', 
+                role: user.role,
+                max_sessions: user.max_sessions || 2 
+            });
         } else {
             setEditMode(false);
-            setFormData({ username: '', email: '', password: '', role: 'viewer' });
+            setFormData({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2 });
         }
         setShowModal(true);
     };
@@ -64,6 +70,18 @@ const ManageUsers = () => {
         }
     };
 
+    const handleLogoutClick = async () => {
+        try {
+            await api.post('/auth/logout');
+        } catch (err) {
+            console.error("Backend clean logout signal skipped:", err);
+        } finally {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('role');
+            navigate('/');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-100 p-6 text-slate-900">
             {/* Top Navigation Bar */}
@@ -79,6 +97,12 @@ const ManageUsers = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <button 
+                        onClick={() => navigate('/admin/users/sessions')} 
+                        className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 font-semibold shadow-md transition-all active:scale-95"
+                    >
+                        <Monitor size={18} /> View Session Logs
+                    </button>
                     <div className="relative hidden md:block">
                         <Search className="absolute left-3 top-2.5 text-slate-500" size={18} />
                         <input 
@@ -91,7 +115,7 @@ const ManageUsers = () => {
                     <button onClick={() => handleOpenModal()} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-semibold shadow-lg transition-all active:scale-95">
                         <UserPlus size={20} /> Add User
                     </button>
-                    <button onClick={() => { sessionStorage.removeItem('token'); navigate('/'); }} className="p-2.5 text-red-600 hover:bg-red-100 rounded-xl transition-colors border border-red-200">
+                    <button onClick={handleLogoutClick} className="p-2.5 text-red-600 hover:bg-red-100 rounded-xl transition-colors border border-red-200">
                         <LogOut size={20} />
                     </button>
                 </div>
@@ -105,6 +129,7 @@ const ManageUsers = () => {
                             <tr className="bg-slate-200 border-b border-slate-300">
                                 <th className="p-5 text-slate-700 font-bold text-sm uppercase tracking-wider">User Details</th>
                                 <th className="p-5 text-slate-700 font-bold text-sm uppercase tracking-wider">Access Level</th>
+                                <th className="p-5 text-slate-700 font-bold text-sm uppercase tracking-wider text-center">Session Limit</th>
                                 <th className="p-5 text-slate-700 font-bold text-sm uppercase tracking-wider">Registration Date</th>
                                 <th className="p-5 text-slate-700 font-bold text-sm uppercase tracking-wider text-center">Actions</th>
                             </tr>
@@ -112,7 +137,7 @@ const ManageUsers = () => {
                         <tbody className="divide-y divide-slate-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="p-20 text-center">
+                                    <td colSpan="5" className="p-20 text-center">
                                         <Loader2 className="animate-spin mx-auto text-blue-600 mb-2" size={32} />
                                         <span className="text-slate-600 font-medium">Syncing database...</span>
                                     </td>
@@ -139,7 +164,10 @@ const ManageUsers = () => {
                                             {user.role}
                                         </span>
                                     </td>
-                                    <td className="registrationDate">
+                                    <td className="p-5 text-center font-bold text-red">
+                                        {user.max_sessions || 2} Active Devices
+                                    </td>
+                                    <td className="p-5 text-red font-medium">
                                         {new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </td>
                                     <td className="p-5">
@@ -226,6 +254,21 @@ const ManageUsers = () => {
                                     <option value="viewer">Viewer (Read Only)</option>
                                     <option value="admin">Admin (Full Control)</option>
                                 </select>
+                            </div>
+
+                            {/* New Max Sessions Configuration Field */}
+                            <div className="space-y-1">
+                                <label className="text-sm font-black text-slate-800 ml-1">Concurrent Device Capacity</label>
+                                <div className="relative">
+                                    <Sliders className="absolute left-4 top-3 text-slate-600" size={18} />
+                                    <input 
+                                        type="number" min="1" max="10" required 
+                                        className="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-300 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600 text-slate-900 font-medium transition-all"
+                                        placeholder="Allowed active sessions (e.g., 2)"
+                                        value={formData.max_sessions} 
+                                        onChange={(e) => setFormData({...formData, max_sessions: parseInt(e.target.value, 10) || 2})}
+                                    />
+                                </div>
                             </div>
 
                             <button type="submit" className="w-full bg-blue-700 hover:bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-200 transition-all mt-4 transform active:scale-[0.98]">

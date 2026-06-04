@@ -5,7 +5,7 @@ import Selector from './pages/Selector';
 import ManageUsers from './components/ManageUsers';
 import AdminPanel from './pages/AdminPanel';
 import LcmsAdmin from './pages/LcmsAdmin';
-
+import ManageSessions from './components/ManageSessions';
 
 const getRole = () => {
     const token = sessionStorage.getItem('token');
@@ -60,6 +60,12 @@ function App() {
                 <Route path="/admin/users" element={
                     <PrivateRoute adminOnly={true}>
                         <ManageUsers />
+                    </PrivateRoute>
+                } />
+
+                <Route path="/admin/users/sessions" element={
+                    <PrivateRoute adminOnly={true}>
+                        <ManageSessions />
                     </PrivateRoute>
                 } />
 

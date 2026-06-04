@@ -4,7 +4,9 @@ import bcrypt from 'bcryptjs';
 export const getAllUsers = async (req, res) => {
     try {
         const result = await authDb.query(
-            'SELECT id, username, email, role, created_at, updated_at FROM dashboard_users ORDER BY created_at DESC'
+            `SELECT id, username, email, role, max_sessions, created_at, updated_at 
+             FROM dashboard_users 
+             ORDER BY created_at DESC`
         );
         res.json({ success: true, data: result.rows });
     } catch (error) {
@@ -14,14 +16,15 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, max_sessions } = req.body;
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         await authDb.query(
-            'INSERT INTO dashboard_users (username, email, password, role) VALUES ($1, $2, $3, $4)',
-            [username, email, hashedPassword, role || 'viewer']
+            `INSERT INTO dashboard_users (username, email, password, role, max_sessions) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [username, email, hashedPassword, role || 'viewer', parseInt(max_sessions, 10) || 2]
         );
 
         res.json({ success: true, message: "User created successfully" });
@@ -31,42 +34,31 @@ export const createUser = async (req, res) => {
     }
 };
 
-export const deleteUser = async (req, res) => {
-    const { id } = req.params;
-    try {
-        await authDb.query('DELETE FROM dashboard_users WHERE id = $1', [id]);
-        res.json({ success: true, message: "User deleted" });
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ success: false, message: "Delete failed" });
-    }
-};
 export const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, max_sessions } = req.body;
 
     try {
         let query;
         let values;
+        const sessionLimit = parseInt(max_sessions, 10) || 2;
 
         if (password && password.trim() !== "") {
-            // Case 1: Updating password along with other details
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
             query = `
                 UPDATE dashboard_users 
-                SET username = $1, email = $2, password = $3, role = $4, updated_at = NOW() 
-                WHERE id = $5
+                SET username = $1, email = $2, password = $3, role = $4, max_sessions = $5, updated_at = NOW() 
+                WHERE id = $6
             `;
-            values = [username, email, hashedPassword, role, id];
+            values = [username, email, hashedPassword, role, sessionLimit, id];
         } else {
-            // Case 2: Keeping existing password
             query = `
                 UPDATE dashboard_users 
-                SET username = $1, email = $2, role = $3, updated_at = NOW() 
-                WHERE id = $4
+                SET username = $1, email = $2, role = $3, max_sessions = $4, updated_at = NOW() 
+                WHERE id = $5
             `;
-            values = [username, email, role, id];
+            values = [username, email, role, sessionLimit, id];
         }
 
         const result = await authDb.query(query, values);
@@ -79,5 +71,31 @@ export const updateUser = async (req, res) => {
     } catch (error) {
         console.error("Error updating user:", error);
         res.status(500).json({ success: false, message: "Update failed. Email may already be in use." });
+    }
+};
+
+export const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await authDb.query('DELETE FROM dashboard_users WHERE id = $1', [id]);
+        res.json({ success: true, message: "User deleted" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Delete failed" });
+    }
+};
+
+export const getSessionLogs = async (req, res) => {
+    try {
+        const result = await authDb.query(
+            `SELECT id, email, ip_address, user_agent, login_at, last_activity_at, logout_at, is_revoked 
+             FROM user_sessions 
+             ORDER BY login_at DESC 
+             LIMIT 150`
+        );
+        res.json({ success: true, data: result.rows });
+    } catch (error) {
+        console.error("Fetch Sessions Error:", error);
+        res.status(500).json({ success: false, message: "Server Error loading session logs" });
     }
 };

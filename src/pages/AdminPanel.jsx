@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, LayoutDashboard, Scale, ShieldCheck, LogOut } from 'lucide-react';
+import { Users, LayoutDashboard, Scale, ShieldCheck, LogOut , Activity} from 'lucide-react';
 
 const AdminPanel = () => {
     const navigate = useNavigate();
@@ -12,6 +12,7 @@ const AdminPanel = () => {
             path: "/admin/users",
             color: "bg-blue-600"
         },
+
         { 
             title: "View Dashboards", 
             desc: "Access live KW&SC monitoring", 

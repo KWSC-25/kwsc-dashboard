@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ArrowLeft } from 'lucide-react';
 import IntelCards from './IntelCards';
-
+import { handleGlobalLogout } from '../utils/authService';
 const Header = ({ selector }) => {
     const navigate = useNavigate();
 
@@ -47,7 +47,7 @@ const Header = ({ selector }) => {
 
                         {/* Compact Logout for CEO Header */}
                         <button 
-                            onClick={handleLogout}
+                            onClick={() => handleGlobalLogout(navigate)}
                             style={{
                                 background: '#ef444422',
                                 border: '1px solid #f8717144',

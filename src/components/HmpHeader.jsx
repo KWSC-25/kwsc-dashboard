@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ArrowLeft } from 'lucide-react'; // Added icon
+import { handleGlobalLogout } from '../utils/authService';
 
 const HmpHeader = ({ children }) => {
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ const HmpHeader = ({ children }) => {
 
                 {/* Logout Button */}
                 <button 
-                    onClick={handleLogout}
+                    onClick={() => handleGlobalLogout(navigate)}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
