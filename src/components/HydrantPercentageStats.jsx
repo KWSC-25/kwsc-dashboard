@@ -15,7 +15,6 @@ const HydrantPercentageStats = ({ activeFilters }) => {
 
         { label: '% OTS', key: 'created_ots_percentage', color: '#38bdf8' },
         { label: '% HMP', key: 'created_hmp_percentage', color: '#a78bfa' },
-        { label: 'Hydrant Running Hours', key: 'running_hours', color: '#FFF200' }
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
