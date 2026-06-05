@@ -416,7 +416,19 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             SUM(COALESCE(ord.assigned_count, 0)) AS hmp_assigned_count, 
             SUM(COALESCE(ots.ots_driver_assigned, 0)) AS ots_assigned_count,
             SUM(COALESCE(ord.total_completed_seconds, 0)) AS hmp_total_seconds,
-            SUM(COALESCE(ots.total_completed_seconds, 0)) AS ots_total_seconds
+            SUM(COALESCE(ots.total_completed_seconds, 0)) AS ots_total_seconds,
+
+            -- HMP Open Aging Buckets (Pending + Dispatched combined)
+            SUM(COALESCE(ord.hmp_open_under_24h, 0)) AS hmp_open_under_24h,
+            SUM(COALESCE(ord.hmp_open_24h_48h, 0)) AS hmp_open_24h_48h,
+            SUM(COALESCE(ord.hmp_open_48h_72h, 0)) AS hmp_open_48h_72h,
+            SUM(COALESCE(ord.hmp_open_above_72h, 0)) AS hmp_open_above_72h,
+
+            -- OTS Open Aging Buckets (Pending Alignment + Pending + Dispatched combined)
+            SUM(COALESCE(ots.ots_open_under_24h, 0)) AS ots_open_under_24h,
+            SUM(COALESCE(ots.ots_open_24h_48h, 0)) AS ots_open_24h_48h,
+            SUM(COALESCE(ots.ots_open_48h_72h, 0)) AS ots_open_48h_72h,
+            SUM(COALESCE(ots.ots_open_above_72h, 0)) AS ots_open_above_72h
         FROM hydrants h
         LEFT JOIN (
             SELECT 
@@ -426,7 +438,13 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 SUM(CASE WHEN b.latest_status = 0 THEN 1 ELSE 0 END) AS pending_count,
                 SUM(CASE WHEN b.latest_status = 2 THEN 1 ELSE 0 END) AS assigned_count,
                 SUM(CASE WHEN b.latest_status IN (3,4) THEN 1 ELSE 0 END) AS cancelled_count,
-                SUM(CASE WHEN b.latest_status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS total_completed_seconds
+                SUM(CASE WHEN b.latest_status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS total_completed_seconds,
+                
+                -- Dynamic Hourly Conditions for Open HMP Orders
+                SUM(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) < 24 THEN 1 ELSE 0 END) AS hmp_open_under_24h,
+                SUM(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) >= 24 AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) < 48 THEN 1 ELSE 0 END) AS hmp_open_24h_48h,
+                SUM(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) >= 48 AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) < 72 THEN 1 ELSE 0 END) AS hmp_open_48h_72h,
+                SUM(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) >= 72 THEN 1 ELSE 0 END) AS hmp_open_above_72h
             FROM orders o
             LEFT JOIN (
                 SELECT 
@@ -451,7 +469,13 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                 SUM(CASE WHEN status IN ('completed', 'self_closed') THEN 1 ELSE 0 END) AS ots_completed,
                 SUM(CASE WHEN status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS ots_pending,
                 SUM(CASE WHEN status IN ('failed', 'cancelled') THEN 1 ELSE 0 END) AS ots_cancelled,
-                SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS total_completed_seconds
+                SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS total_completed_seconds,
+
+                -- Dynamic Hourly Conditions for Open OTS Orders
+                SUM(CASE WHEN status IN ('pending_alignment', 'pending', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) < 24 THEN 1 ELSE 0 END) AS ots_open_under_24h,
+                SUM(CASE WHEN status IN ('pending_alignment', 'pending', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) >= 24 AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) < 48 THEN 1 ELSE 0 END) AS ots_open_24h_48h,
+                SUM(CASE WHEN status IN ('pending_alignment', 'pending', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) >= 48 AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) < 72 THEN 1 ELSE 0 END) AS ots_open_48h_72h,
+                SUM(CASE WHEN status IN ('pending_alignment', 'pending', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) >= 72 THEN 1 ELSE 0 END) AS ots_open_above_72h
             FROM ots_order
             WHERE api_created_at BETWEEN ? AND ?
             GROUP BY hydrant_id
@@ -487,6 +511,9 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             globalTotalAssigned += (Number(row.hmp_assigned_count) + Number(row.ots_assigned_count));
             globalTotalCancelled += (Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count));
         });
+
+        // Pre-calculate your global dynamic baseline denominator for the aging metrics
+        const globalOpenDenominator = globalTotalPending + globalTotalAssigned;
 
         // ========================================================
         // RANGE-BASED LOG EVALUATION ACROSS FILTERS
@@ -557,6 +584,18 @@ export const HydrantPerformanceGridToday = async (req, res) => {
             const assignedOverallPct = globalTotalAssigned > 0 ? ((totalAssignedCount / globalTotalAssigned) * 100).toFixed(2) : "0.00";
             const cancelledOverallPct = globalTotalCancelled > 0 ? ((totalCancelledCount / globalTotalCancelled) * 100).toFixed(2) : "0.00";
 
+            // Aggregate counts of running open orders per time range for this specific hydrant
+            const hydrantOpenUnder24h = Number(row.hmp_open_under_24h) + Number(row.ots_open_under_24h);
+            const hydrantOpen24h48h = Number(row.hmp_open_24h_48h) + Number(row.ots_open_24h_48h);
+            const hydrantOpen48h72h = Number(row.hmp_open_48h_72h) + Number(row.ots_open_48h_72h);
+            const hydrantOpenAbove72h = Number(row.hmp_open_above_72h) + Number(row.ots_open_above_72h);
+
+            // Compute percentage representations against the unified global pool mapping target constraints
+            const pendingUnder24hPct = globalOpenDenominator > 0 ? ((hydrantOpenUnder24h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+            const pending24h48hPct = globalOpenDenominator > 0 ? ((hydrantOpen24h48h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+            const pending48h72hPct = globalOpenDenominator > 0 ? ((hydrantOpen48h72h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+            const pendingAbove72hPct = globalOpenDenominator > 0 ? ((hydrantOpenAbove72h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+
             // Process collected array logs across the chosen filter boundaries
             const hydrantLogEntriesArray = logsMap[row.hydrant_id] || [];
             const formattedRunningHours = aggregateHydrantRunningHours(hydrantLogEntriesArray);
@@ -601,6 +640,11 @@ export const HydrantPerformanceGridToday = async (req, res) => {
                     cancelled_percentage_total: `${cancelledOverallPct}%`,
                     running_hours: formattedRunningHours,
 
+                    // New Global-Weighted Breakdown Aging Metric Percentages
+                    pending_under_24h_percentage: `${pendingUnder24hPct}%`,
+                    pending_24h_48h_percentage: `${pending24h48hPct}%`,
+                    pending_48h_72h_percentage: `${pending48h72hPct}%`,
+                    pending_above_72h_percentage: `${pendingAbove72hPct}%`
                 }
             };
         });

@@ -15,6 +15,12 @@ const HydrantPercentageStats = ({ activeFilters }) => {
 
         { label: '% OTS', key: 'created_ots_percentage', color: '#38bdf8' },
         { label: '% HMP', key: 'created_hmp_percentage', color: '#a78bfa' },
+
+        // New Open Pending Orders Aging Rows
+        { label: 'PENDING < 24H', key: 'pending_under_24h_percentage', color: '#4caf50', isAgingRow: true },
+        { label: '24H < PENDING < 48H', key: 'pending_24h_48h_percentage', color: '#ff9800', isAgingRow: true },
+        { label: '48H < PENDING < 72H', key: 'pending_48h_72h_percentage', color: '#f44336', isAgingRow: true },
+        { label: 'PENDING > 72H', key: 'pending_above_72h_percentage', color: '#b71c1c', isAgingRow: true },
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
@@ -134,14 +140,19 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                             metricRows.map((metric, mIdx) => {
                                 const isCompletedRow = metric.label === '% COMPLETED';
                                 const isCancelledRow = metric.label === '% CANCELLED';
+                                const isHmpRow = metric.label === '% HMP';
                                 const isRunningHoursRow = metric.label === 'Hydrant Running Hours';
+                                
+                                // Identify if this row belongs to the new undivided single-column aging block
+                                const isSingleColumnBlock = isRunningHoursRow || metric.isAgingRow;
 
                                 return (
                                     <tr 
                                         key={mIdx}
                                         style={{ 
                                             borderBottom: isCancelledRow ? '4px solid #67676e' : '1px solid #2e3748',
-                                            borderTop: (isCompletedRow || isRunningHoursRow) ? '4px solid #67676e' : 'none',
+                                            // Adds a prominent separating line right after % HMP (or at the top of the first aging row)
+                                            borderTop: (isCompletedRow || isRunningHoursRow || metric.label === 'PENDING < 24H') ? '4px solid #67676e' : 'none',
                                             background: mIdx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent'
                                         }}
                                         className="hmp-table-row-hover"
@@ -162,11 +173,11 @@ const HydrantPercentageStats = ({ activeFilters }) => {
 
                                         {/* Data Value Output Cells */}
                                         {performanceData.map((row, rIdx) => {
-                                            // Handle the un-divided bottom running hours row condition
-                                            if (isRunningHoursRow) {
+                                            // Handle undivided metric rows condition (Running hours & custom Aging percentages)
+                                            if (isSingleColumnBlock) {
                                                 return (
                                                     <td 
-                                                        key={`cell-running-${mIdx}-${rIdx}`}
+                                                        key={`cell-single-${mIdx}-${rIdx}`}
                                                         colSpan={2}
                                                         style={{ 
                                                             padding: '14px 4px', 
@@ -174,7 +185,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                                             fontWeight: '700',
                                                             color: metric.color || '#e2e8f0',
                                                             borderRight: '2px solid #4a5568',
-                                                            background: 'rgba(255, 242, 0, 0.04)'
+                                                            background: metric.isAgingRow ? 'transparent' : 'rgba(255, 242, 0, 0.04)'
                                                         }}
                                                     >
                                                         {row.total[metric.key]}
