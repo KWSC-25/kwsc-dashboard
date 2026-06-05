@@ -164,8 +164,8 @@ const ManageUsers = () => {
                                             {user.role}
                                         </span>
                                     </td>
-                                    <td className="p-5 text-center font-bold text-red">
-                                        {user.max_sessions || 2} Active Devices
+                                    <td className="p-5  font-bold text-red">
+                                        {user.max_sessions || 2} Sessions Allowed
                                     </td>
                                     <td className="p-5 text-red font-medium">
                                         {new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}

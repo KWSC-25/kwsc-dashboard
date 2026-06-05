@@ -119,7 +119,7 @@ const ManageSessions = () => {
 
                                 return (
                                     <tr key={session.id} className="hover:bg-slate-50 transition-colors text-sm">
-                                        <td className="p-4 text-slate-500 font-bold text-center">{index + 1}</td>
+                                        <td className="p-4 text-red font-bold text-center">{index + 1}</td>
                                         <td className="p-4">
                                             <div className="font-bold text-slate-800">{session.email}</div>
                                             <div className="text-xs text-slate-400 font-mono select-all tracking-tight">{session.id}</div>
