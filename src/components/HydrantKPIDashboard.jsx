@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import HydrantCategoryTable from './HydrantCategoryTable'; 
 import CategorySlider from './CategorySlider';
@@ -207,10 +207,23 @@ const HydrantKPIDashboard = () => {
             );
         }
 
+        // Percentage calculations relative to 'created'
+        const shouldShowPercentage = ['completed', 'dispatched', 'pending', 'cancelled'].includes(cardType);
+        const totalCreated = Number(s.created) || 0;
+        const currentCount = Number(cfg.count) || 0;
+        const percentageStr = totalCreated > 0 ? ((currentCount / totalCreated) * 100).toFixed(2) : "0.00";
+
         return (
             <div className={`hmp-card ${cfg.grad}`} style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center', padding: '10px 12px', height: '100%' }}>
                 <div className="hmp-main-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '35px' }}>{cfg.label}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '35px' }}>{cfg.label}</span>
+                        {shouldShowPercentage && (
+                            <span className={cfg.lblClass} style={{ fontSize: '35px', fontWeight: 'bold', marginTop: '2px' }}>
+                                {percentageStr}%
+                            </span>
+                        )}
+                    </div>
                     <span className="hmp-total" style={{ fontSize: '45px', fontWeight: 'bold' }}>{fmt(cfg.count)}</span>
                 </div>
                 {cfg.isCancelledCard && type === 'OTS' && (
@@ -223,12 +236,7 @@ const HydrantKPIDashboard = () => {
                     <span>GALLONS:</span>
                     <strong>{Number(cfg.gallons) >= 1000000 ? fmtLargeUnits(cfg.gallons) : `${fmt(cfg.gallons)}`}</strong>
                 </div>
-                {type === 'OTS' && (
-                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '1px', fontSize: '30px', color: '#e0e6ed', fontWeight: 'bold' }}>
-                        <span>AMOUNT:</span>
-                        <strong>{Number(cfg.amount) >= 1000000 ? `${fmtLargeUnits(cfg.amount)}` : `${fmt(cfg.amount)}`}</strong>
-                    </div>
-                )}
+       
             </div>
         );
     };
