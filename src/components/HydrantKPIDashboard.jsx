@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../utils/api';
 import HydrantCategoryTable from './HydrantCategoryTable'; 
 import CategorySlider from './CategorySlider';
@@ -15,6 +15,9 @@ const HydrantKPIDashboard = () => {
     // Modes: 'TODAY' | 'TODATE' | 'CUSTOM'
     const [dashboardMode, setDashboardMode] = useState('TODAY');
     const [activeFilters, setActiveFilters] = useState({ startDate: '', endDate: '' });
+
+    // Tracks how many 30-second ticks have passed in the current mode
+    const [ticksElapsed, setTicksElapsed] = useState(0);
 
     // Responsive state tracker for dynamic styling adjustments
     const [isMobile, setIsMobile] = useState(false);
@@ -47,27 +50,47 @@ const HydrantKPIDashboard = () => {
         fetchTodayStats();
     }, [fetchTodayStats]);
 
-    // Interval system ONLY updates state flags to prevent filter race conditions
+    // Single source of truth interval loop (Runs every 30 seconds)
     useEffect(() => {
         const interval = setInterval(() => {
-            setDashboardMode((prevMode) => {
-                if (prevMode === 'TODAY') {
+            // 1. Always refresh database statistics for the active view
+            fetchTodayStats();
+
+            // 2. Handle rotation logic if not in CUSTOM mode
+            setDashboardMode((currentMode) => {
+                if (currentMode === 'CUSTOM') return currentMode;
+
+                let nextTicks = 0;
+                setTicksElapsed((prevTicks) => {
+                    nextTicks = prevTicks + 1;
+                    return nextTicks;
+                });
+
+                // 5 minutes = 300,000ms / 30,000ms = 10 ticks
+                if (currentMode === 'TODAY' && nextTicks >= 10) {
                     setStartDate('2026-02-01');
                     setEndDate(todayStr);
                     setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
+                    setTicksElapsed(0); // Reset ticker for next mode
                     return 'TODATE';
-                } else if (prevMode === 'TODATE') {
+                }
+
+                // 15 minutes = 900,000ms / 30,000ms = 30 ticks
+                if (currentMode === 'TODATE' && nextTicks >= 30) {
                     setStartDate(todayStr);
                     setEndDate(todayStr);
                     setActiveFilters({ startDate: '', endDate: '' });
+                    setTicksElapsed(0); // Reset ticker for next mode
                     return 'TODAY';
                 }
-                return prevMode; // If CUSTOM, do not auto-rotate away
+
+                return currentMode;
             });
+
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [todayStr]);
+    }, [todayStr, fetchTodayStats]);
 
     // Manual Form Filter submissions
     const handleApplyFilter = () => {
@@ -80,6 +103,7 @@ const HydrantKPIDashboard = () => {
         setEndDate(todayStr);
         setDashboardMode('TODAY');
         setActiveFilters({ startDate: '', endDate: '' });
+        setTicksElapsed(0);
     };
 
     // Manual navigation controls using the header arrow triggers
@@ -88,6 +112,7 @@ const HydrantKPIDashboard = () => {
         setStartDate(todayStr);
         setEndDate(todayStr);
         setActiveFilters({ startDate: '', endDate: '' });
+        setTicksElapsed(0);
     };
 
     const handleNavigateRight = () => {
@@ -95,6 +120,7 @@ const HydrantKPIDashboard = () => {
         setStartDate('2026-02-01');
         setEndDate(todayStr);
         setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
+        setTicksElapsed(0);
     };
 
     const handleTableDataCalculated = useCallback(() => {}, []);
@@ -225,22 +251,21 @@ const HydrantKPIDashboard = () => {
                 flexDirection: 'column', 
                 gap: '0px', 
                 width: '100%',
-                position: 'relative' // Keeps absolute placement of filter panel stable inside dashboard scope
+                position: 'relative' 
             }}
         >
-            {/* ==================== MOVED CONTROL BOX (ABSOLUTE RIGHT HIGHLIGHTED ZONE) ==================== */}
-            {/* Placed perfectly to render exactly adjacent left to the Back/Logout buttons from header file */}
+            {/* ==================== CONTROL BOX (ABSOLUTE RIGHT HIGHLIGHTED ZONE) ==================== */}
             <div 
                 className="kpi-date-filter-inline" 
                 style={{ 
                     position: isMobile ? 'static' : 'absolute',
                     top: '-99px', 
-                    right: '310px', // Adjusted to expand layout boundary gap effectively 
+                    right: '310px', 
                     display: isMobile ? 'flex' : 'inline-flex', 
                     flexDirection: isMobile ? 'column' : 'row', 
                     alignItems: isMobile ? 'stretch' : 'center', 
-                    gap: '24px', // Expanded space between internal controls 
-                    padding: '4px 12px', // Side padding added to support expanded box background width
+                    gap: '24px', 
+                    padding: '4px 12px', 
                     background: 'black', 
                     width: isMobile ? '100%' : 'auto',
                     zIndex: 1000
@@ -314,7 +339,7 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-                {/* Top Row: Cards Grid System Wrapper with adjusted margin top spacing */}
+                {/* Top Row: Cards Grid System Wrapper */}
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginTop: '30px', position: 'relative' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
                         
