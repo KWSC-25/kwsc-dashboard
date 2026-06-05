@@ -10,7 +10,7 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // --- NEW LOGIC: Attach Database Context ---
+  // --- Attach Database Context ---
   const activeDashboard = sessionStorage.getItem('activeDashboard');
   if (activeDashboard) {
     config.headers['x-dashboard-context'] = activeDashboard;
@@ -25,11 +25,17 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !window.location.pathname.includes('/')) {
+    // FIX: Catch 401 response and redirect them cleanly if they aren't on the root login screen
+    if (error.response?.status === 401) {
       sessionStorage.removeItem('token');
-      // Clean up dashboard context on logout too
       sessionStorage.removeItem('activeDashboard'); 
-      window.location.href = '/'; 
+      sessionStorage.removeItem('role'); // Also drop user role details if stored
+
+      // Avoid infinite redirect loops if they are already at the login root screen
+      if (window.location.pathname !== '/') {
+        alert("Your session has been terminated because this account was logged in from another device.");
+        window.location.href = '/'; 
+      }
     }
     return Promise.reject(error);
   }

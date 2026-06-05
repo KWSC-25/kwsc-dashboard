@@ -7,7 +7,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 1. Fetch user including max_sessions tracking column
+        // 1. Fetch user profile matching identity
         const result = await authDb.query('SELECT * FROM dashboard_users WHERE email = $1', [email]);
         
         if (result.rows.length === 0) {
@@ -23,12 +23,17 @@ export const login = async (req, res) => {
         }
 
         // 3. Dynamic Session Cap Handling Layer (FIFO Eviction Strategy)
-        const allowedSessions = user.max_sessions || 2;
+        // NOTE: Since max_sessions isn't a column in your table yet, this defaults to 2.
+        // Change the fallback number below if you want the default limit to be 3!
+        const allowedSessions = user.max_sessions || 2; 
 
         // Fetch all active sessions ordered oldest first
+        // Strict match: session must not be logged out AND must not be revoked
         const activeSessionsRes = await authDb.query(
             `SELECT id FROM user_sessions
-             WHERE email = $1 AND logout_at IS NULL
+             WHERE email = $1 
+               AND logout_at IS NULL 
+               AND (is_revoked IS FALSE OR is_revoked IS NULL)
              ORDER BY login_at ASC`,
             [user.email]
         );
@@ -43,11 +48,12 @@ export const login = async (req, res) => {
             
             const kickIds = sessionsToKick.map(s => s.id);
             if (kickIds.length > 0) {
-                // FIX: Cast type matching to text[] or uuid[] instead of int[]
+                // Force update both logout_at and is_revoked to ensure absolute termination
                 await authDb.query(
                     `UPDATE user_sessions
-                     SET logout_at = NOW(), is_revoked = true
-                     WHERE id = ANY($1::text[])`, 
+                     SET logout_at = NOW(), 
+                         is_revoked = true
+                     WHERE id = ANY($1::uuid[])`, 
                     [kickIds]
                 );
             }
@@ -58,8 +64,8 @@ export const login = async (req, res) => {
         const userAgent = req.headers['user-agent'] || 'Unknown Browser';
 
         const sessionResult = await authDb.query(
-            `INSERT INTO user_sessions (email, ip_address, user_agent)
-             VALUES ($1, $2, $3)
+            `INSERT INTO user_sessions (email, ip_address, user_agent, is_revoked)
+             VALUES ($1, $2, $3, false)
              RETURNING id`,
             [user.email, ipAddress, userAgent]
         );
@@ -74,7 +80,7 @@ export const login = async (req, res) => {
                 role: user.role
             },
             process.env.JWT_SECRET,
-            { expiresIn: '30d' }
+            { expiresIn: '24h' }
         );
 
         return res.json({ success: true, token, role: user.role });
@@ -93,8 +99,8 @@ export const logout = async (req, res) => {
         
         await authDb.query(
             `UPDATE user_sessions
-             SET logout_at = NOW()
-             WHERE id = $1`,
+             SET logout_at = NOW(), is_revoked = true
+             WHERE id = $1::uuid`,
             [sessionId]
         );
 
