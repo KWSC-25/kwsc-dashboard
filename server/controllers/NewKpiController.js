@@ -779,3 +779,124 @@ export const getPendingAgingDonutData = async (req, res) => {
         });
     }
 };
+
+export const getTatLineChartData = async (req, res) => {
+    try {
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        // 1. Handle Dynamic Date Filters
+        const { startDate, endDate } = req.query;
+        const finalStart = startDate ? `${startDate.split(' ')[0]} 00:00:00` : '2026-02-01 00:00:00';
+        const finalEnd = endDate ? `${endDate.split(' ')[0]} 23:59:59` : `${todayStr} 23:59:59`;
+
+        // 2. Programmatically Generate 15-Day Milestone Intervals in JavaScript
+        const start = new Date(finalStart.split(' ')[0]);
+        const end = new Date(finalEnd.split(' ')[0]);
+        const milestones = [];
+        
+        let current = new Date(start);
+        while (current < end) {
+            milestones.push(current.toISOString().split('T')[0]);
+            current.setDate(current.getDate() + 15);
+        }
+        
+        // Force include the exact last date if it isn't already captured
+        const lastDateStr = end.toISOString().split('T')[0];
+        if (!milestones.includes(lastDateStr)) {
+            milestones.push(lastDateStr);
+        }
+
+        if (milestones.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        // 3. Construct a Dynamic Union Query for each Milestone Block
+        // Each sub-block calculates total completed seconds from baseline start to that specific milestone date
+        const queryBlocks = milestones.map(() => `
+            SELECT 
+                ? AS milestone_date,
+                -- Total Completed Orders Across Both Streams (Unified Denominator)
+                (COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)) AS combined_total_completed,
+                
+                -- Raw TAT Seconds Accumulations
+                COALESCE(hmp.hmp_total_seconds, 0) AS hmp_total_seconds,
+                COALESCE(ots.ots_total_seconds, 0) AS ots_total_seconds,
+
+                -- Weighted TAT Calculation: Stream Seconds / Combined Completed Denominator
+                IF((COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)) > 0,
+                    ROUND(COALESCE(hmp.hmp_total_seconds, 0) / (COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)), 2),
+                    0.00
+                ) AS hmp_avg_tat_seconds,
+
+                IF((COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)) > 0,
+                    ROUND(COALESCE(ots.ots_total_seconds, 0) / (COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)), 2),
+                    0.00
+                ) AS ots_avg_tat_seconds
+            FROM (
+                -- HMP Aggregate Engine up to Milestone
+                SELECT 
+                    COUNT(CASE WHEN b.latest_status = 1 THEN 1 END) AS hmp_completed_count,
+                    SUM(CASE WHEN b.latest_status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS hmp_total_seconds
+                FROM orders o
+                INNER JOIN (
+                    SELECT tbl_b.order_id, tbl_b.status AS latest_status, tbl_b.updated_at AS latest_updated
+                    FROM billings tbl_b
+                    INNER JOIN (
+                        SELECT MAX(id) AS max_id FROM billings GROUP BY order_id
+                    ) latest ON tbl_b.id = latest.max_id
+                ) b ON o.id = b.order_id
+                WHERE o.order_type != 'OTS'
+                  AND o.created_at BETWEEN ? AND CONCAT(?, ' 23:59:59')
+            ) hmp,
+            (
+                -- OTS Aggregate Engine up to Milestone
+                SELECT 
+                    COUNT(CASE WHEN status IN ('completed', 'self_closed') THEN 1 END) AS ots_completed_count,
+                    SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_total_seconds
+                FROM ots_order
+                WHERE api_created_at BETWEEN ? AND CONCAT(?, ' 23:59:59')
+            ) ots
+        `);
+
+        const lineChartQuery = queryBlocks.join(' UNION ALL ') + ' ORDER BY milestone_date ASC;';
+
+        // 4. Flatten Parameters Matrix to Match the Dynamic SQL Structure
+        const queryParams = [];
+        milestones.forEach(dateStr => {
+            queryParams.push(
+                dateStr,              // Parameter for selector alias string
+                finalStart, dateStr,  // Parameters for HMP subquery range bounds
+                finalStart, dateStr   // Parameters for OTS subquery range bounds
+            );
+        });
+
+        const [rows] = await req.db.execute(lineChartQuery, queryParams);
+
+        // 5. Convert TAT Seconds into Hours for Frontend Chart Readability
+        const formattedChartData = rows.map(row => ({
+            date: row.milestone_date,
+            combinedTotalCompleted: Number(row.combined_total_completed),
+            // Convert seconds to hours (seconds / 3600) rounded cleanly to 2 decimal places
+            hmpAvgTatHours: row.combined_total_completed > 0 ? Number((Number(row.hmp_total_seconds) / 3600 / Number(row.combined_total_completed)).toFixed(2)) : 0,
+            otsAvgTatHours: row.combined_total_completed > 0 ? Number((Number(row.ots_total_seconds) / 3600 / Number(row.combined_total_completed)).toFixed(2)) : 0
+        }));
+
+        res.status(200).json({
+            success: true,
+            meta: {
+                rangeStart: finalStart,
+                rangeEnd: finalEnd,
+                intervalsCalculated: milestones.length
+            },
+            data: formattedChartData
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to generate dynamic interval TAT chart performance metrics.",
+            error: error.message
+        });
+    }
+};
