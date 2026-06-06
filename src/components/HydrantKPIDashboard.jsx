@@ -188,8 +188,8 @@ const HydrantKPIDashboard = () => {
         const configurations = {
             created: { label: `CREATED`, grad: "hmp-grad-cyan", lblClass: "label-cyan", count: s.created, gallons: s.created_gallons, amount: s.created_amount, isTatCard: false },
             completed: { label: `COMPLETED`, grad: "hmp-grad-green", lblClass: "label-green", count: s.completed, gallons: s.completed_gallons, amount: s.completed_amount, isTatCard: false },
-            dispatched: { label: `DRIVER ASSIGNED ${s.assigned_max_aging ? `(${s.assigned_max_aging})` : ''}`, grad: "hmp-grad-orange", lblClass: "label-orange", count: s.dispatched, gallons: s.dispatched_gallons, amount: s.dispatched_amount, isTatCard: false },
-            pending: { label: `NOT ASSIGNED ${s.pending_max_aging ? `(${s.pending_max_aging})` : ''}`, grad: "hmp-grad-red", lblClass: "label-red", count: s.pending, gallons: s.pending_gallons, amount: s.pending_amount, isTatCard: false },
+            dispatched: { label: `DRIVER ASSIGNED`, grad: "hmp-grad-orange", lblClass: "label-orange", count: s.dispatched, gallons: s.dispatched_gallons, amount: s.dispatched_amount, isTatCard: false, aging: s.assigned_max_aging },
+            pending: { label: `NOT ASSIGNED`, grad: "hmp-grad-red", lblClass: "label-red", count: s.pending, gallons: s.pending_gallons, amount: s.pending_amount, isTatCard: false, aging: s.pending_max_aging },
             cancelled: { label: `CANCELLED`, grad: "hmp-grad-grey", lblClass: "", count: s.cancelled, gallons: s.cancelled_gallons, amount: s.cancelled_amount, isTatCard: false, isCancelledCard: true },
             tat: { label: `AVG TAT`, grad: "hmp-grad-golden", lblClass: "label-golden", count: s.avg_tat, isTatCard: true }
         };
@@ -236,7 +236,11 @@ const HydrantKPIDashboard = () => {
                     <span>GALLONS:</span>
                     <strong>{Number(cfg.gallons) >= 1000000 ? fmtLargeUnits(cfg.gallons) : `${fmt(cfg.gallons)}`}</strong>
                 </div>
-       
+                {cfg.aging && (
+                    <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'flex-start', border: 'none', paddingTop: '1px' }}>
+                        <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '30px' }}>Max Aging: {cfg.aging}</span>
+                    </div>
+                )}
             </div>
         );
     };
