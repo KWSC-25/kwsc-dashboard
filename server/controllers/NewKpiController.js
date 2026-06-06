@@ -657,3 +657,125 @@ export const HydrantPerformanceGridToday = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getPendingAgingDonutData = async (req, res) => {
+    try {
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        // 1. Handle Dynamic Date Formatting & Filters
+        const { startDate, endDate } = req.query;
+        
+        // Default to your system's baseline tracking range if parameters are missing
+        const finalStart = startDate ? (startDate.includes(':') ? startDate : `${startDate} 00:00:00`) : '2026-02-01 00:00:00';
+        const finalEnd = endDate ? (endDate.includes(':') ? endDate : `${endDate} 23:59:59`) : `${todayStr} 23:59:59`;
+
+        // 2. Main Analytics Query
+        const agingQuery = `
+        SELECT
+            -- Formatted Percentage Calculations using IF validation blocks
+            IF((hmp.hmp_total_open + ots.ots_total_open) > 0, 
+                ROUND(((hmp.hmp_under_24h + ots.ots_under_24h) / (hmp.hmp_total_open + ots.ots_total_open)) * 100, 2), 0.00
+            ) AS pending_under_24h_percentage,
+            IF((hmp.hmp_total_open + ots.ots_total_open) > 0, 
+                ROUND(((hmp.hmp_24h_48h + ots.ots_24h_48h) / (hmp.hmp_total_open + ots.ots_total_open)) * 100, 2), 0.00
+            ) AS pending_24h_48h_percentage,
+            IF((hmp.hmp_total_open + ots.ots_total_open) > 0, 
+                ROUND(((hmp.hmp_48h_72h + ots.ots_48h_72h) / (hmp.hmp_total_open + ots.ots_total_open)) * 100, 2), 0.00
+            ) AS pending_48h_72h_percentage,
+            IF((hmp.hmp_total_open + ots.ots_total_open) > 0, 
+                ROUND(((hmp.hmp_above_72h + ots.ots_above_72h) / (hmp.hmp_total_open + ots.ots_total_open)) * 100, 2), 0.00
+            ) AS pending_above_72h_percentage
+        FROM (
+            -- Subquery A: Standard HMP Order Pipeline (Linked via latest billings entries)
+            SELECT 
+                COUNT(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) < 24 THEN 1 END) AS hmp_under_24h,
+                COUNT(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) >= 24 AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) < 48 THEN 1 END) AS hmp_24h_48h,
+                COUNT(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) >= 48 AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) < 72 THEN 1 END) AS hmp_48h_72h,
+                COUNT(CASE WHEN b.latest_status IN (0, 2) AND TIMESTAMPDIFF(HOUR, o.created_at, NOW()) >= 72 THEN 1 END) AS hmp_above_72h,
+                COUNT(CASE WHEN b.latest_status IN (0, 2) THEN 1 END) AS hmp_total_open
+            FROM orders o
+            LEFT JOIN (
+                SELECT 
+                    tbl_b.order_id, 
+                    tbl_b.status AS latest_status
+                FROM billings tbl_b
+                INNER JOIN (
+                    SELECT MAX(id) AS max_id 
+                    FROM billings 
+                    GROUP BY order_id
+                ) latest ON tbl_b.id = latest.max_id
+            ) b ON o.id = b.order_id
+            WHERE o.order_type != 'OTS' 
+              AND o.created_at BETWEEN ? AND ?
+        ) hmp,
+        (
+            -- Subquery B: OTS Separate Dataset Platform
+            SELECT 
+                COUNT(CASE WHEN status IN ('pending', 'pending_alignment', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) < 24 THEN 1 END) AS ots_under_24h,
+                COUNT(CASE WHEN status IN ('pending', 'pending_alignment', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) >= 24 AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) < 48 THEN 1 END) AS ots_24h_48h,
+                COUNT(CASE WHEN status IN ('pending', 'pending_alignment', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) >= 48 AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) < 72 THEN 1 END) AS ots_48h_72h,
+                COUNT(CASE WHEN status IN ('pending', 'pending_alignment', 'dispatched') AND TIMESTAMPDIFF(HOUR, api_created_at, NOW()) >= 72 THEN 1 END) AS ots_above_72h,
+                COUNT(CASE WHEN status IN ('pending', 'pending_alignment', 'dispatched') THEN 1 END) AS ots_total_open
+            FROM ots_order
+            WHERE api_created_at BETWEEN ? AND ?
+        ) ots;`;
+
+        // 3. Bind Positional Arguments Safely
+        const queryParams = [
+            finalStart, finalEnd,  // Placeholders for Subquery A (HMP)
+            finalStart, finalEnd   // Placeholders for Subquery B (OTS)
+        ];
+
+        const [rows] = await req.db.execute(agingQuery, queryParams);
+
+        // Fallback layout initialization if data matrix yields empty records
+        const resultData = rows[0] || {
+            pending_under_24h_percentage: 0.00,
+            pending_24h_48h_percentage: 0.00,
+            pending_48h_72h_percentage: 0.00,
+            pending_above_72h_percentage: 0.00
+        };
+
+        // 4. Return Normalized Corporate Response Structure
+        res.status(200).json({
+            success: true,
+            meta: {
+                rangeStart: finalStart,
+                rangeEnd: finalEnd
+            },
+            data: {
+                totalPending: Number(resultData.total_pending_count),
+                breakdown: [
+                    {
+                        range: "< 24 Hours",
+                        count: Number(resultData.pending_under_24h_count),
+                        percentage: Number(resultData.pending_under_24h_percentage)
+                    },
+                    {
+                        range: "24 Hours - 48 Hours",
+                        count: Number(resultData.pending_24h_48h_count),
+                        percentage: Number(resultData.pending_24h_48h_percentage)
+                    },
+                    {
+                        range: "48 Hours - 72 Hours",
+                        count: Number(resultData.pending_48h_72h_count),
+                        percentage: Number(resultData.pending_48h_72h_percentage)
+                    },
+                    {
+                        range: "> 72 Hours",
+                        count: Number(resultData.pending_above_72h_count),
+                        percentage: Number(resultData.pending_above_72h_percentage)
+                    }
+                ]
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to generate donut chart metrics tracking.",
+            error: error.message
+        });
+    }
+};
