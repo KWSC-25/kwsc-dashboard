@@ -129,11 +129,11 @@ const HydrantCharts = ({ activeFilters }) => {
       const itemData = payload[0].payload;
       return (
         <div className="bg-[#0B0F19] border border-[#1E293B] p-4 rounded-lg shadow-xl">
-          <p className="text-white text-sm font-semibold mb-1">{itemData.name}</p>
-          <p className="text-sm font-medium" style={{ color: itemData.color }}>
+          <p className="text-white text-xl font-semibold mb-1">{itemData.name}</p>
+          <p className="text-xl font-medium" style={{ color: itemData.color }}>
             Share: {itemData.value.toFixed(2)}%
           </p>
-          <p className="text-[#94A3B8] text-xs">
+          <p className="text-[#94A3B8] text-xl">
             Volume: {itemData.count} Orders
           </p>
         </div>
@@ -147,7 +147,7 @@ const HydrantCharts = ({ activeFilters }) => {
     return (
       <div className="w-full min-h-[450px] flex items-center justify-center bg-[#03050C] rounded-xl border border-[#111625]">
         <div className="text-lg font-bold tracking-widest text-cyan-400 animate-pulse">
-          STREAMING REAL-TIME METRICS ROUTER...
+        Loading...        
         </div>
       </div>
     );
@@ -171,7 +171,7 @@ const HydrantCharts = ({ activeFilters }) => {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h3 className="font-bold tracking-wide text-white uppercase" style={{ fontSize: '32px'}}>
-              Turnaround Time (TAT) Operational Velocity
+              Avgerage Turnaround Time (TAT) Operational Velocity
             </h3>
           
           </div>
@@ -254,13 +254,15 @@ const HydrantCharts = ({ activeFilters }) => {
                   data={donutData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={85}   // Highly enlarged footprint layout
-                  outerRadius={125}  // Substantially upgraded external chart diameter
+                  innerRadius={115}   // Highly enlarged footprint layout
+                  outerRadius={190}   // Substantially upgraded external chart diameter
                   paddingAngle={4}
                   dataKey="value"
+                  stroke="none"        // Removes the default sector line outlines
+                  strokeWidth={0}      // Fully collapses outline space definition
                 >
                   {donutData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: 'none' }} />
+                    <Cell key={`cell-${index}`} fill={entry.color}  />
                   ))}
                 </Pie>
               </PieChart>
@@ -268,9 +270,9 @@ const HydrantCharts = ({ activeFilters }) => {
 
             {/* Central Metrics Overlay Indicator Block */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
-              <span className="text-4xl font-black tracking-tight text-white">{totalPending.toLocaleString()}</span>
-              <span className="text-xs font-bold tracking-widest text-[#64748B] uppercase mt-1">
-                Open Orders
+              <span className="text-5xl font-black tracking-tight text-white">{totalPending.toLocaleString()}</span>
+              <span className="text-sm font-bold tracking-widest text-[#64748B] uppercase mt-1">
+                Pending Orders
               </span>
             </div>
           </div>

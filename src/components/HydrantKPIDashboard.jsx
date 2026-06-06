@@ -422,15 +422,16 @@ const HydrantKPIDashboard = () => {
                 <div style={{ width: '100%', marginTop: '20px' }}>
                     <HydrantPercentageStats activeFilters={activeFilters} />
                 </div>
-
+                {/* VISUAL ANALYTICS CHARTS SECTION (Synchronized with Global Filter State) */}
+                <div style={{ width: '100%', marginTop: '24px' }}>
+                    
+                    <HydrantCharts activeFilters={activeFilters} />
+                </div>
                 <div style={{ width: '100%', marginTop: '20px' }}>
                     <HydrantPercentageStats2 activeFilters={activeFilters} />
                 </div>
 
-                {/* VISUAL ANALYTICS CHARTS SECTION (Synchronized with Global Filter State) */}
-                <div style={{ width: '100%', marginTop: '24px' }}>
-                    <HydrantCharts activeFilters={activeFilters} />
-                </div>
+
                 
                 <div style={{ width: '100%', marginTop: '24px' }}>
                     <HydrantCategoryTable 
