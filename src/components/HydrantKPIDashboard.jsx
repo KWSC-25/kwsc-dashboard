@@ -4,6 +4,7 @@ import HydrantCategoryTable from './HydrantCategoryTable';
 import CategorySlider from './CategorySlider';
 import HydrantPercentageStats from './HydrantPercentageStats'; 
 import HydrantPercentageStats2 from './HydrantPercentageStats2';
+import HydrantCharts from './HydrantCharts'; // <-- New Chart Component imported safely
 
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
@@ -207,7 +208,6 @@ const HydrantKPIDashboard = () => {
             );
         }
 
-        // Percentage calculations relative to 'created'
         const shouldShowPercentage = ['completed', 'dispatched', 'pending', 'cancelled'].includes(cardType);
         const totalCreated = Number(s.created) || 0;
         const currentCount = Number(cfg.count) || 0;
@@ -418,7 +418,7 @@ const HydrantKPIDashboard = () => {
                     </div>
                 </div>
 
-                {/* Sub-component tables pipeline blocks */}
+                {/* Sub-component analytics systems pipeline blocks */}
                 <div style={{ width: '100%', marginTop: '20px' }}>
                     <HydrantPercentageStats activeFilters={activeFilters} />
                 </div>
@@ -426,8 +426,13 @@ const HydrantKPIDashboard = () => {
                 <div style={{ width: '100%', marginTop: '20px' }}>
                     <HydrantPercentageStats2 activeFilters={activeFilters} />
                 </div>
+
+                {/* VISUAL ANALYTICS CHARTS SECTION (Synchronized with Global Filter State) */}
+                <div style={{ width: '100%', marginTop: '24px' }}>
+                    <HydrantCharts activeFilters={activeFilters} />
+                </div>
                 
-                <div style={{ width: '100%', marginTop: '14px' }}>
+                <div style={{ width: '100%', marginTop: '24px' }}>
                     <HydrantCategoryTable 
                         activeFilters={activeFilters} 
                         onDataCalculated={handleTableDataCalculated}

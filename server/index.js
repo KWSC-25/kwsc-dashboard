@@ -29,6 +29,7 @@ import operationalHoursRoutes from './routes/operationalHoursRoutes.js';
 import lcmsRoutes from './routes/lcmsRoutes.js';
 import LcmsDashboardRoutes from './routes/lcmsDashboardRoutes.js';
 import newKpiRoutes from './routes/NewKpiRoutes.js';
+import hydrantChartsRoutes from './routes/HydrantChartsRoutes.js';
 
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, 
@@ -67,6 +68,8 @@ app.use('/api/hydrants', protect, dbSelector, operationalHoursRoutes);
 app.use('/api/admin/lcms', protect, dbSelector, lcmsRoutes);
 app.use('/api/lcmsDashboard', protect, dbSelector, LcmsDashboardRoutes);
 app.use('/api/newkpis', protect, dbSelector, newKpiRoutes);
+app.use('/api/hydrantCharts', protect, dbSelector, hydrantChartsRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
