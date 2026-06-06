@@ -673,6 +673,8 @@ export const getPendingAgingDonutData = async (req, res) => {
         // 2. Main Analytics Query
         const agingQuery = `
         SELECT
+        -- Unified Denominator Count 
+            (hmp.hmp_total_open + ots.ots_total_open) AS total_pending,
             -- Formatted Percentage Calculations using IF validation blocks
             IF((hmp.hmp_total_open + ots.ots_total_open) > 0, 
                 ROUND(((hmp.hmp_under_24h + ots.ots_under_24h) / (hmp.hmp_total_open + ots.ots_total_open)) * 100, 2), 0.00
@@ -731,6 +733,7 @@ export const getPendingAgingDonutData = async (req, res) => {
 
         // Fallback layout initialization if data matrix yields empty records
         const resultData = rows[0] || {
+            total_pending_count: 0,
             pending_under_24h_percentage: 0.00,
             pending_24h_48h_percentage: 0.00,
             pending_48h_72h_percentage: 0.00,
