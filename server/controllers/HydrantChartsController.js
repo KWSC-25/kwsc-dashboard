@@ -138,38 +138,59 @@ export const getTatLineChartData = async (req, res) => {
         // 1. Handle Dynamic Date Filters cleanly from incoming query
         const { startDate, endDate } = req.query;
         
-        // FIX: Fixed fallback constraints identical to the logic above to isolate TODAY metrics correctly
+        // Retaining your explicit validation layout
         const finalStart = startDate && startDate !== '' ? `${startDate.split(' ')[0]} 00:00:00` : '2026-02-01 00:00:00';
         const finalEnd = endDate && endDate !== '' ? `${endDate.split(' ')[0]} 23:59:59` : `${todayStr} 23:59:59`;
 
-        // 2. Programmatically Generate 15-Day Milestone Intervals in Node.js
-        const start = new Date(finalStart.split(' ')[0]);
-        const end = new Date(finalEnd.split(' ')[0]);
-        const milestones = [];
+        // 2. Programmatically Generate Isolated 15-Day Interval Ranges in Node.js
+        const startLimit = new Date(finalStart.split(' ')[0]);
+        const endLimit = new Date(finalEnd.split(' ')[0]);
         
-        let current = new Date(start);
-        while (current < end) {
-            milestones.push(current.toISOString().split('T')[0]);
-            current.setDate(current.getDate() + 15);
-        }
-        
-        const lastDateStr = end.toISOString().split('T')[0];
-        if (!milestones.includes(lastDateStr)) {
-            milestones.push(lastDateStr);
+        const intervals = [];
+        let currentStart = new Date(startLimit);
+
+        while (currentStart < endLimit) {
+            // Build a strict 15-day inclusive bucket (current day + 14 days)
+            let currentEnd = new Date(currentStart);
+            currentEnd.setDate(currentEnd.getDate() + 14);
+
+            // Restrict upper bound overflow beyond user filters
+            if (currentEnd >= endLimit) {
+                currentEnd = new Date(endLimit);
+            }
+
+            intervals.push({
+                displayDate: currentEnd.toISOString().split('T')[0], // Exact milestone plot point
+                queryStart: `${currentStart.toISOString().split('T')[0]} 00:00:00`,
+                queryEnd: `${currentEnd.toISOString().split('T')[0]} 23:59:59`
+            });
+
+            // Advance cursor to the next non-overlapping day
+            currentStart = new Date(currentEnd);
+            currentStart.setDate(currentStart.getDate() + 1);
         }
 
-        if (milestones.length === 0) {
+        // Snap constraint edge case check for the final data window
+        const lastInterval = intervals[intervals.length - 1];
+        const strictMaxEndStr = endLimit.toISOString().split('T')[0];
+        if (lastInterval && lastInterval.displayDate !== strictMaxEndStr) {
+            lastInterval.displayDate = strictMaxEndStr;
+            lastInterval.queryEnd = `${strictMaxEndStr} 23:59:59`;
+        }
+
+        if (intervals.length === 0) {
             return res.status(200).json({ success: true, data: [] });
         }
 
-        // 3. Construct a Dynamic Union Query for each Milestone Block
-        const queryBlocks = milestones.map(() => `
+        // 3. Construct a Dynamic Union Query for each Isolated Interval Block
+        const queryBlocks = intervals.map(() => `
             SELECT 
                 ? AS milestone_date,
                 (COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)) AS combined_total_completed,
                 COALESCE(hmp.hmp_total_seconds, 0) AS hmp_total_seconds,
                 COALESCE(ots.ots_total_seconds, 0) AS ots_total_seconds
             FROM (
+                -- HMP Isolated Aggregate Matrix
                 SELECT 
                     COUNT(CASE WHEN b.latest_status = 1 THEN 1 END) AS hmp_completed_count,
                     SUM(CASE WHEN b.latest_status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS hmp_total_seconds
@@ -182,26 +203,27 @@ export const getTatLineChartData = async (req, res) => {
                     ) latest ON tbl_b.id = latest.max_id
                 ) b ON o.id = b.order_id
                 WHERE o.order_type != 'OTS'
-                  AND o.created_at BETWEEN ? AND CONCAT(?, ' 23:59:59')
+                  AND o.created_at BETWEEN ? AND ?
             ) hmp,
             (
+                -- OTS Isolated Aggregate Matrix
                 SELECT 
                     COUNT(CASE WHEN status IN ('completed', 'self_closed') THEN 1 END) AS ots_completed_count,
                     SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_total_seconds
                 FROM ots_order
-                WHERE api_created_at BETWEEN ? AND CONCAT(?, ' 23:59:59')
+                WHERE api_created_at BETWEEN ? AND ?
             ) ots
         `);
 
         const lineChartQuery = queryBlocks.join(' UNION ALL ') + ' ORDER BY milestone_date ASC;';
 
-        // 4. Flatten Parameters Array Matrix to align dynamically with query architecture
+        // 4. Flatten Parameters Array Matrix to align dynamically with isolated date intervals
         const queryParams = [];
-        milestones.forEach(dateStr => {
+        intervals.forEach(block => {
             queryParams.push(
-                dateStr,
-                finalStart, dateStr,
-                finalStart, dateStr
+                block.displayDate,
+                block.queryStart, block.queryEnd, // Bounds for HMP
+                block.queryStart, block.queryEnd  // Bounds for OTS
             );
         });
 
@@ -220,11 +242,19 @@ export const getTatLineChartData = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            meta: { rangeStart: finalStart, rangeEnd: finalEnd, intervalsCalculated: milestones.length },
+            meta: { 
+                rangeStart: finalStart, 
+                rangeEnd: finalEnd, 
+                intervalsCalculated: intervals.length 
+            },
             data: formattedChartData
         });
 
     } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to generate dynamic interval TAT chart performance metrics.", error: error.message });
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to generate dynamic interval TAT chart performance metrics.", 
+            error: error.message 
+        });
     }
 };
