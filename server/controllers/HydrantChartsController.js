@@ -130,6 +130,23 @@ export const getPendingAgingDonutData = async (req, res) => {
     }
 };
 
+const formatDaysToDHMs = (fractionalDays) => {
+    if (!fractionalDays || fractionalDays === 0) return "0m";
+
+    // 1440 minutes total in a full 24-hour day loop
+    const totalMinutes = Math.round(fractionalDays * 1440); 
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+
+    const output = [];
+    if (days > 0) output.push(`${days}d`);
+    if (hours > 0) output.push(`${hours}h`);
+    if (minutes > 0) output.push(`${minutes}m`);
+
+    return output.join(' ');
+};
+
 export const getTatLineChartData = async (req, res) => {
     try {
         const now = new Date();
@@ -229,14 +246,15 @@ export const getTatLineChartData = async (req, res) => {
 
         const [rows] = await req.db.execute(lineChartQuery, queryParams);
 
-        // 5. Convert TAT Seconds into Hours for Frontend Chart Readability
+        // 5. Convert TAT Seconds into FRACTIONAL DAYS while retaining your frontend property keys
         const formattedChartData = rows.map(row => {
             const denom = Number(row.combined_total_completed || 0);
             return {
                 date: row.milestone_date,
                 combinedTotalCompleted: denom,
-                hmpAvgTatHours: denom > 0 ? Number((Number(row.hmp_total_seconds) / 3600 / denom).toFixed(2)) : 0,
-                otsAvgTatHours: denom > 0 ? Number((Number(row.ots_total_seconds) / 3600 / denom).toFixed(2)) : 0
+                // Changed 3600 to 86400 to change value scale to Days completely
+                hmpAvgTatHours: denom > 0 ? Number((Number(row.hmp_total_seconds) / 86400 / denom).toFixed(4)) : 0,
+                otsAvgTatHours: denom > 0 ? Number((Number(row.ots_total_seconds) / 86400 / denom).toFixed(4)) : 0
             };
         });
 

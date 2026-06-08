@@ -107,6 +107,23 @@ const HydrantCharts = ({ activeFilters }) => {
     };
   }, [startDate, endDate]); // Fires dynamically whenever the dashboard switches context views
 
+  // --- Utility Parser: Conversional Breakdown from Fractional Days to Days, Hours, and Minutes ---
+  const formatDaysToDHMs = (fractionalDays) => {
+    if (!fractionalDays || fractionalDays === 0) return "0m";
+
+    const totalMinutes = Math.round(fractionalDays * 1440); // 1440 minutes in a full day (24 * 60)
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+
+    const output = [];
+    if (days > 0) output.push(`${days}d`);
+    if (hours > 0) output.push(`${hours}h`);
+    if (minutes > 0) output.push(`${minutes}m`);
+
+    return output.join(' ');
+  };
+
   // --- Custom Tooltip Components ---
   const CustomLineTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -115,7 +132,7 @@ const HydrantCharts = ({ activeFilters }) => {
           <p className="text-white text-xl font-semibold mb-2">{label}</p>
           {payload.map((entry, idx) => (
             <p key={idx} className="text-xl font-medium" style={{ color: entry.color }}>
-              {entry.name === 'hmpAvgTatHours' ? 'HMP Order Average TAT' : 'OTS Order Average TAT'}: {entry.value.toFixed(2)} Hours
+              {entry.name === 'hmpAvgTatHours' ? 'HMP Order Average TAT' : 'OTS Order Average TAT'}: {formatDaysToDHMs(entry.value)}
             </p>
           ))}
         </div>
@@ -173,8 +190,6 @@ const HydrantCharts = ({ activeFilters }) => {
             <h3 className="font-bold tracking-wide text-white uppercase" style={{ fontSize: '32px'}}>
               Avgerage Turnaround Time (TAT) Operational Velocity
             </h3>
-          
-          
           </div>
           
           <div className="flex items-center gap-6 text-sm font-semibold">
@@ -207,7 +222,7 @@ const HydrantCharts = ({ activeFilters }) => {
                 style={{ fontSize: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
-                label={{ value: 'Hours', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 20, fontWeight: 'bold', offset: 0 }}
+                label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 20, fontWeight: 'bold', offset: 0 }}
               />
               <Tooltip content={<CustomLineTooltip />} cursor={{ stroke: '#1E293B', strokeWidth: 2 }} />
               <Line 
