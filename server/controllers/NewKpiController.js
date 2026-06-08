@@ -168,101 +168,149 @@ export const OrderSummaryToday = async (req, res) => {
 
         const summaryQuery = `
         SELECT 
-            h.name AS hydrant_name,
-            -- ========================================================
-            -- 1. COMMERCIAL ('Commercial', 'Commercial Offline')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') THEN o.id END) AS commercial_created,
-            COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status = 2 THEN o.id END) AS commercial_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status = 1 THEN o.id END) AS commercial_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status IN (3, 4) THEN o.id END) AS commercial_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status = 0 THEN o.id END) AS commercial_pending,
-            -- ========================================================
-            -- 2. OTS (From separate ots_order source subquery)
-            -- ========================================================
-            COALESCE(ots.ots_created, 0) AS gps_ots_created,
-            COALESCE(ots.ots_driver_assigned, 0) AS gps_ots_driver_assigned,
-            COALESCE(ots.ots_completed, 0) AS gps_ots_completed,
-            COALESCE(ots.ots_cancelled, 0) AS gps_ots_cancelled,
-            COALESCE(ots.ots_pending, 0) AS gps_ots_pending,
-            -- ========================================================
-            -- 3. GPS ONLINE ('Online (GPS)')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' THEN o.id END) AS gps_online_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status = 2 THEN o.id END) AS gps_online_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status = 1 THEN o.id END) AS gps_online_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status IN (3, 4) THEN o.id END) AS gps_online_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status = 0 THEN o.id END) AS gps_online_pending,
-            -- ========================================================
-            -- 4. DC QUOTA ('Dc quota')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' THEN o.id END) AS dc_quota_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status = 2 THEN o.id END) AS dc_quota_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status = 1 THEN o.id END) AS dc_quota_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status IN (3, 4) THEN o.id END) AS dc_quota_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status = 0 THEN o.id END) AS dc_quota_pending,
-            -- ========================================================
-            -- 5. GPS BILLING ('Gps(billing)')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' THEN o.id END) AS gps_billing_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status = 2 THEN o.id END) AS gps_billing_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status = 1 THEN o.id END) AS gps_billing_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status IN (3, 4) THEN o.id END) AS gps_billing_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status = 0 THEN o.id END) AS gps_billing_pending,
-            -- ========================================================
-            -- 6. GPS CARE OFF ('Gps(careoff)')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' THEN o.id END) AS gps_careoff_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status = 2 THEN o.id END) AS gps_careoff_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status = 1 THEN o.id END) AS gps_careoff_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status IN (3, 4) THEN o.id END) AS gps_careoff_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status = 0 THEN o.id END) AS gps_careoff_pending,
-            -- ========================================================
-            -- 7. GOVT VEHICLE ('Govt. vehicle')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' THEN o.id END) AS govt_vehicle_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status = 2 THEN o.id END) AS govt_vehicle_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status = 1 THEN o.id END) AS govt_vehicle_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status IN (3, 4) THEN o.id END) AS govt_vehicle_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status = 0 THEN o.id END) AS govt_vehicle_pending,
-            -- ========================================================
-            -- 8. P.A.F ('P.A.F korangi creek')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' THEN o.id END) AS paf_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status = 2 THEN o.id END) AS paf_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status = 1 THEN o.id END) AS paf_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status IN (3, 4) THEN o.id END) AS paf_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status = 0 THEN o.id END) AS paf_pending,
-            -- ========================================================
-            -- 9. PAK RANGER ('Pak rangers')
-            -- ========================================================
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' THEN o.id END) AS pak_ranger_created,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status = 2 THEN o.id END) AS pak_ranger_driver_assigned,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status = 1 THEN o.id END) AS pak_ranger_completed,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status IN (3, 4) THEN o.id END) AS pak_ranger_cancelled,
-            COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status = 0 THEN o.id END) AS pak_ranger_pending,
-            -- ========================================================
-            -- OVERALL RAW VOLUME TRACKER (Used by HAVING to skip all-zero lines)
-            -- ========================================================
-            (COUNT(DISTINCT CASE WHEN o.created_at BETWEEN ? AND ? THEN o.id END) + COALESCE(ots.ots_created, 0)) AS total
-        FROM hydrants h
-        LEFT JOIN orders o ON h.id = o.hydrant_id AND o.created_at BETWEEN ? AND ?
-        LEFT JOIN billings b ON o.id = b.order_id
-        LEFT JOIN (
+            CASE 
+                WHEN raw_summary.hydrant_id IN (5, 15) THEN 'NIPA'
+                WHEN raw_summary.hydrant_id IN (2, 13) THEN 'SAFOORA'
+                ELSE raw_summary.original_name 
+            END AS hydrant_name,
+            SUM(commercial_created) AS commercial_created,
+            SUM(commercial_driver_assigned) AS commercial_driver_assigned,
+            SUM(commercial_completed) AS commercial_completed,
+            SUM(commercial_cancelled) AS commercial_cancelled,
+            SUM(commercial_pending) AS commercial_pending,
+            
+            SUM(gps_ots_created) AS gps_ots_created,
+            SUM(gps_ots_driver_assigned) AS gps_ots_driver_assigned,
+            SUM(gps_ots_completed) AS gps_ots_completed,
+            SUM(gps_ots_cancelled) AS gps_ots_cancelled,
+            SUM(gps_ots_pending) AS gps_ots_pending,
+            
+            SUM(gps_online_created) AS gps_online_created,
+            SUM(gps_online_driver_assigned) AS gps_online_driver_assigned,
+            SUM(gps_online_completed) AS gps_online_completed,
+            SUM(gps_online_cancelled) AS gps_online_cancelled,
+            SUM(gps_online_pending) AS gps_online_pending,
+            
+            SUM(dc_quota_created) AS dc_quota_created,
+            SUM(dc_quota_driver_assigned) AS dc_quota_driver_assigned,
+            SUM(dc_quota_completed) AS dc_quota_completed,
+            SUM(dc_quota_cancelled) AS dc_quota_cancelled,
+            SUM(dc_quota_pending) AS dc_quota_pending,
+            
+            SUM(gps_billing_created) AS gps_billing_created,
+            SUM(gps_billing_driver_assigned) AS gps_billing_driver_assigned,
+            SUM(gps_billing_completed) AS gps_billing_completed,
+            SUM(gps_billing_cancelled) AS gps_billing_cancelled,
+            SUM(gps_billing_pending) AS gps_billing_pending,
+            
+            SUM(gps_careoff_created) AS gps_careoff_created,
+            SUM(gps_careoff_driver_assigned) AS gps_careoff_driver_assigned,
+            SUM(gps_careoff_completed) AS gps_careoff_completed,
+            SUM(gps_careoff_cancelled) AS gps_careoff_cancelled,
+            SUM(gps_careoff_pending) AS gps_careoff_pending,
+            
+            SUM(govt_vehicle_created) AS govt_vehicle_created,
+            SUM(govt_vehicle_driver_assigned) AS govt_vehicle_driver_assigned,
+            SUM(govt_vehicle_completed) AS govt_vehicle_completed,
+            SUM(govt_vehicle_cancelled) AS govt_vehicle_cancelled,
+            SUM(govt_vehicle_pending) AS govt_vehicle_pending,
+            
+            SUM(paf_created) AS paf_created,
+            SUM(paf_driver_assigned) AS paf_driver_assigned,
+            SUM(paf_completed) AS paf_completed,
+            SUM(paf_cancelled) AS paf_cancelled,
+            SUM(paf_pending) AS paf_pending,
+            
+            SUM(pak_ranger_created) AS pak_ranger_created,
+            SUM(pak_ranger_driver_assigned) AS pak_ranger_driver_assigned,
+            SUM(pak_ranger_completed) AS pak_ranger_completed,
+            SUM(pak_ranger_cancelled) AS pak_ranger_cancelled,
+            SUM(pak_ranger_pending) AS pak_ranger_pending,
+            SUM(total) AS total
+        FROM (
             SELECT 
-                hydrant_id, 
-                COUNT(*) AS ots_created,
-                SUM(CASE WHEN status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_driver_assigned,
-                SUM(CASE WHEN status IN ('completed', 'self_closed') THEN 1 ELSE 0 END) AS ots_completed,
-                SUM(CASE WHEN status IN ('cancelled', 'failed') THEN 1 ELSE 0 END) AS ots_cancelled,
-                SUM(CASE WHEN status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS ots_pending
-            FROM ots_order
-            WHERE api_created_at BETWEEN ? AND ?
-            GROUP BY hydrant_id
-        ) ots ON h.ots_hydrant = ots.hydrant_id
-        GROUP BY h.id, h.name
-        HAVING total > 0
-        ORDER BY h.name ASC;`;
+                h.id AS hydrant_id,
+                h.name AS original_name,
+                COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') THEN o.id END) AS commercial_created,
+                COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status = 2 THEN o.id END) AS commercial_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status = 1 THEN o.id END) AS commercial_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status IN (3, 4) THEN o.id END) AS commercial_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type IN ('Commercial', 'Commercial Offline') AND b.status = 0 THEN o.id END) AS commercial_pending,
+                
+                COALESCE(ots.ots_created, 0) AS gps_ots_created,
+                COALESCE(ots.ots_driver_assigned, 0) AS gps_ots_driver_assigned,
+                COALESCE(ots.ots_completed, 0) AS gps_ots_completed,
+                COALESCE(ots.ots_cancelled, 0) AS gps_ots_cancelled,
+                COALESCE(ots.ots_pending, 0) AS gps_ots_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' THEN o.id END) AS gps_online_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status = 2 THEN o.id END) AS gps_online_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status = 1 THEN o.id END) AS gps_online_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status IN (3, 4) THEN o.id END) AS gps_online_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Online (GPS)' AND b.status = 0 THEN o.id END) AS gps_online_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' THEN o.id END) AS dc_quota_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status = 2 THEN o.id END) AS dc_quota_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status = 1 THEN o.id END) AS dc_quota_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status IN (3, 4) THEN o.id END) AS dc_quota_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Dc quota' AND b.status = 0 THEN o.id END) AS dc_quota_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' THEN o.id END) AS gps_billing_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status = 2 THEN o.id END) AS gps_billing_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status = 1 THEN o.id END) AS gps_billing_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status IN (3, 4) THEN o.id END) AS gps_billing_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(billing)' AND b.status = 0 THEN o.id END) AS gps_billing_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' THEN o.id END) AS gps_careoff_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status = 2 THEN o.id END) AS gps_careoff_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status = 1 THEN o.id END) AS gps_careoff_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status IN (3, 4) THEN o.id END) AS gps_careoff_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Gps(careoff)' AND b.status = 0 THEN o.id END) AS gps_careoff_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' THEN o.id END) AS govt_vehicle_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status = 2 THEN o.id END) AS govt_vehicle_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status = 1 THEN o.id END) AS govt_vehicle_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status IN (3, 4) THEN o.id END) AS govt_vehicle_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Govt. vehicle' AND b.status = 0 THEN o.id END) AS govt_vehicle_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' THEN o.id END) AS paf_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status = 2 THEN o.id END) AS paf_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status = 1 THEN o.id END) AS paf_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status IN (3, 4) THEN o.id END) AS paf_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'P.A.F korangi creek' AND b.status = 0 THEN o.id END) AS paf_pending,
+                
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' THEN o.id END) AS pak_ranger_created,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status = 2 THEN o.id END) AS pak_ranger_driver_assigned,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status = 1 THEN o.id END) AS pak_ranger_completed,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status IN (3, 4) THEN o.id END) AS pak_ranger_cancelled,
+                COUNT(DISTINCT CASE WHEN o.order_type = 'Pak rangers' AND b.status = 0 THEN o.id END) AS pak_ranger_pending,
+                
+                (COUNT(DISTINCT CASE WHEN o.created_at BETWEEN ? AND ? THEN o.id END) + COALESCE(ots.ots_created, 0)) AS total
+            FROM hydrants h
+            LEFT JOIN orders o ON h.id = o.hydrant_id AND o.created_at BETWEEN ? AND ?
+            LEFT JOIN billings b ON o.id = b.order_id
+            LEFT JOIN (
+                SELECT 
+                    hydrant_id, 
+                    COUNT(*) AS ots_created,
+                    SUM(CASE WHEN status IN ('dispatched') THEN 1 ELSE 0 END) AS ots_driver_assigned,
+                    SUM(CASE WHEN status IN ('completed', 'self_closed') THEN 1 ELSE 0 END) AS ots_completed,
+                    SUM(CASE WHEN status IN ('cancelled', 'failed') THEN 1 ELSE 0 END) AS ots_cancelled,
+                    SUM(CASE WHEN status IN ('pending', 'pending_alignment') THEN 1 ELSE 0 END) AS ots_pending
+                FROM ots_order
+                WHERE api_created_at BETWEEN ? AND ?
+                GROUP BY hydrant_id
+            ) ots ON h.ots_hydrant = ots.hydrant_id
+            GROUP BY h.id, h.name
+        ) AS raw_summary
+        WHERE total > 0
+        GROUP BY 
+            CASE 
+                WHEN raw_summary.hydrant_id IN (5, 15) THEN 'NIPA'
+                WHEN raw_summary.hydrant_id IN (2, 13) THEN 'SAFOORA'
+                ELSE raw_summary.original_name 
+            END
+        ORDER BY hydrant_name ASC;`;
 
         // Bind dynamic dates into query parameters mapping placeholder positions
         const summaryParams = [

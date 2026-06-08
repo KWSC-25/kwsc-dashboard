@@ -137,7 +137,8 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                                 color: status.color,
                                                 background: status.isPrimary ? 'rgba(0, 242, 255, 0.12)' : 'transparent',
                                                 borderRight: (sIdx === statuses.length - 1 && cIdx !== categories.length - 1) ? '1px solid #4a5568' : 'none',
-                                                width: '45px'
+                                                width: '45px',
+                                                textAlign: 'center'
                                             }}
                                             title={status.label}
                                         >
@@ -179,7 +180,9 @@ const HydrantCategoryTable = ({ activeFilters, onDataCalculated }) => {
                                     >
                                         {/* Hydrant Identity Column */}
                                         <td style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '800', color: '#ffffff', background: 'rgba(26, 32, 44, 0.2)', borderRight: '2px solid #2e3748', whiteSpace: 'nowrap', fontSize:'20px' }}>
-                                            {row.hydrant_name}
+                                            {row.hydrant_name === 'CRUSH PLANT WEST' || row.hydrant_name === 'CRUSH PLANT KEAMARI'
+                                                ? row.hydrant_name.replace('CRUSH PLANT', 'CP')
+                                                : row.hydrant_name}
                                         </td>
 
                                         {/* New Row-Wise Created Cumulative Column Values */}
