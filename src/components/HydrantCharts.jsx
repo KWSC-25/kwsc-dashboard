@@ -112,10 +112,10 @@ const HydrantCharts = ({ activeFilters }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-[#0B0F19] border border-[#1E293B] p-4 rounded-lg shadow-xl">
-          <p className="text-white text-xl font-semibold mb-2">Milestone: {label}</p>
+          <p className="text-white text-xl font-semibold mb-2">{label}</p>
           {payload.map((entry, idx) => (
             <p key={idx} className="text-xl font-medium" style={{ color: entry.color }}>
-              {entry.name === 'hmpAvgTatHours' ? 'HMP Order Average' : 'OTS Order Average'}: {entry.value.toFixed(2)} Hours
+              {entry.name === 'hmpAvgTatHours' ? 'HMP Order Average TAT' : 'OTS Order Average TAT'}: {entry.value.toFixed(2)} Hours
             </p>
           ))}
         </div>
@@ -174,6 +174,7 @@ const HydrantCharts = ({ activeFilters }) => {
               Avgerage Turnaround Time (TAT) Operational Velocity
             </h3>
           
+          
           </div>
           
           <div className="flex items-center gap-6 text-sm font-semibold">
@@ -190,7 +191,7 @@ const HydrantCharts = ({ activeFilters }) => {
 
         <div className="w-full h-[490px] mt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={lineChartData} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
+            <LineChart data={lineChartData} margin={{ top: 10, right: 40, left: 30, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
               <XAxis 
                 dataKey="date" 
@@ -206,7 +207,7 @@ const HydrantCharts = ({ activeFilters }) => {
                 style={{ fontSize: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
-                label={{ value: 'Hours', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 14, fontWeight: 'bold', offset: 0 }}
+                label={{ value: 'Hours', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 20, fontWeight: 'bold', offset: 0 }}
               />
               <Tooltip content={<CustomLineTooltip />} cursor={{ stroke: '#1E293B', strokeWidth: 2 }} />
               <Line 
