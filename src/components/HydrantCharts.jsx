@@ -146,7 +146,7 @@ const HydrantCharts = ({ activeFilters }) => {
   if (loading && donutData.length === 0 && lineChartData.length === 0) {
     return (
       <div className="w-full min-h-[450px] flex items-center justify-center bg-[#03050C] rounded-xl border border-[#111625]">
-        <div className="text-lg font-bold tracking-widest text-cyan-400 animate-pulse">
+        <div className="text-2xl font-bold tracking-widest text-cyan-400 animate-pulse">
         Loading...        
         </div>
       </div>
