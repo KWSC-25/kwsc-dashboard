@@ -310,7 +310,7 @@ export const OrderSummaryToday = async (req, res) => {
                 WHEN raw_summary.hydrant_id IN (2, 13) THEN 'SAFOORA'
                 ELSE raw_summary.original_name 
             END
-        ORDER BY hydrant_name ASC;`;
+        ORDER BY hydrant_name DESC;`;
 
         // Bind dynamic dates into query parameters mapping placeholder positions
         const summaryParams = [
