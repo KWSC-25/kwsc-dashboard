@@ -69,7 +69,12 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                             ) : performanceData.length === 0 ? (
                                 <th colSpan={24} style={{ color: '#718096', fontStyle: 'italic' }}>No active hydrants matched filter parameters</th>
                             ) : (
-                                performanceData.map((row, idx) => (
+                                performanceData.map((row, idx) => {
+                                    const displayedName = row.hydrant_name 
+                                        ? row.hydrant_name.replace('CRUSH PLANT', 'CP') 
+                                        : '';
+
+                                    return (
                                     <th 
                                         key={idx} 
                                         colSpan={3} 
@@ -84,9 +89,10 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                             background: 'rgba(255, 255, 255, 0.02)'
                                         }}
                                     >
-                                        {row.hydrant_name}
-                                    </th>
-                                ))
+                                        {displayedName}
+                                        </th>
+                                    );
+                                })
                             )}
                         </tr>
                         {/* Secondary Header Row: Source Breakdown Subcolumns */}

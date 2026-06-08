@@ -19,8 +19,8 @@ const HydrantPercentageStats = ({ activeFilters }) => {
         // New Open Pending Orders Aging Rows
         { label: 'PENDING < 24H', key: 'pending_under_24h_percentage', color: '#4caf50', isAgingRow: true },
         { label: '24H < PENDING < 48H', key: 'pending_24h_48h_percentage', color: '#ff9800', isAgingRow: true },
-        { label: '48H < PENDING < 72H', key: 'pending_48h_72h_percentage', color: '#f44336', isAgingRow: true },
-        { label: 'PENDING > 72H', key: 'pending_above_72h_percentage', color: '#b71c1c', isAgingRow: true },
+        { label: '48H < PENDING < 72H', key: 'pending_48h_72h_percentage', color: '#facc15', isAgingRow: true },
+        { label: 'PENDING > 72H', key: 'pending_above_72h_percentage', color: '#f44336', isAgingRow: true },
     ], []);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
@@ -181,7 +181,7 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                                                         colSpan={2}
                                                         style={{ 
                                                             padding: '14px 4px', 
-                                                            fontSize: '30px', 
+                                                            fontSize: '40px', 
                                                             fontWeight: '700',
                                                             color: metric.color || '#e2e8f0',
                                                             borderRight: '2px solid #4a5568',

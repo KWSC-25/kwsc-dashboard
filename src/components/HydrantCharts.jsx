@@ -30,7 +30,7 @@ const HydrantCharts = ({ activeFilters }) => {
     under24: '#4caf50',     // Green
     between48: '#ff9800',   // Orange
     between72: '#facc15',   // Vivid Yellow (Updated to differentiate from Red)
-    above72: '#b71c1c',     // Dark Crimson Red
+    above72: '#f44336',     // Dark Crimson Red
     hmpLine: '#a78bfa',     // HMP Purple Accent
     otsLine: '#38bdf8',     // OTS Cyan Accent
     gridStroke: '#1E293B',   // Slate Dark Border
