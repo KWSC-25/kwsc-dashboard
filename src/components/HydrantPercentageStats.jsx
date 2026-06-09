@@ -1,27 +1,38 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../utils/api';
 
-const HydrantPercentageStats = ({ activeFilters }) => {
+const HydrantPercentageStats = ({ activeFilters, dashboardMode }) => {
     const [performanceData, setPerformanceData] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Metric rows definition config 
-    const metricRows = useMemo(() => [
-        { label: 'AVERAGE ORDER TAT', key: 'avg_tat', isTat: true },
-        { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
-        { label: '% PENDING (Not Assigned)', key: 'pending_percentage', color: '#f44336' },
-        { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
-        { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
+    // Metric rows definition config - filtered based on dashboardMode
+    const metricRows = useMemo(() => {
+        const baseRows = [
+            { label: 'AVERAGE ORDER TAT', key: 'avg_tat', isTat: true },
+            { label: '% COMPLETED', key: 'completed_percentage', color: '#4caf50' },
+            { label: '% PENDING (Not Assigned)', key: 'pending_percentage', color: '#f44336' },
+            { label: '% DRIVER ASSIGNED', key: 'driver_assigned_percentage', color: '#ff9800' },
+            { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
 
-        { label: '% OTS', key: 'created_ots_percentage', color: '#38bdf8' },
-        { label: '% HMP', key: 'created_hmp_percentage', color: '#a78bfa' },
+            { label: '% OTS', key: 'created_ots_percentage', color: '#38bdf8' },
+            { label: '% HMP', key: 'created_hmp_percentage', color: '#a78bfa' },
+        ];
 
-        // New Open Pending Orders Aging Rows
-        { label: 'PENDING < 24H', key: 'pending_under_24h_percentage', color: '#4caf50', isAgingRow: true },
-        { label: '24H < PENDING < 48H', key: 'pending_24h_48h_percentage', color: '#ff9800', isAgingRow: true },
-        { label: '48H < PENDING < 72H', key: 'pending_48h_72h_percentage', color: '#facc15', isAgingRow: true },
-        { label: 'PENDING > 72H', key: 'pending_above_72h_percentage', color: '#f44336', isAgingRow: true },
-    ], []);
+        const agingRows = [
+            // New Open Pending Orders Aging Rows
+            { label: 'PENDING < 24H', key: 'pending_under_24h_percentage', color: '#4caf50', isAgingRow: true },
+            { label: '24H < PENDING < 48H', key: 'pending_24h_48h_percentage', color: '#ff9800', isAgingRow: true },
+            { label: '48H < PENDING < 72H', key: 'pending_48h_72h_percentage', color: '#facc15', isAgingRow: true },
+            { label: 'PENDING > 72H', key: 'pending_above_72h_percentage', color: '#f44336', isAgingRow: true },
+        ];
+
+        // Hide aging rows when dashboard mode is TODAY
+        if (dashboardMode === 'TODAY') {
+            return baseRows;
+        }
+
+        return [...baseRows, ...agingRows];
+    }, [dashboardMode]);
 
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
         try {
@@ -140,7 +151,6 @@ const HydrantPercentageStats = ({ activeFilters }) => {
                             metricRows.map((metric, mIdx) => {
                                 const isCompletedRow = metric.label === '% COMPLETED';
                                 const isCancelledRow = metric.label === '% CANCELLED';
-                                const isHmpRow = metric.label === '% HMP';
                                 const isRunningHoursRow = metric.label === 'Hydrant Running Hours';
                                 
                                 // Identify if this row belongs to the new undivided single-column aging block
