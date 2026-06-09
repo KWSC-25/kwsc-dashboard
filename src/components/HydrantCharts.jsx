@@ -207,7 +207,7 @@ const HydrantCharts = ({ activeFilters }) => {
         <div className="w-full h-[490px] mt-2">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={lineChartData} margin={{ top: 10, right: 40, left: 30, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={true} />
               <XAxis 
                 dataKey="date" 
                 stroke={colors.textMuted} 
@@ -222,7 +222,7 @@ const HydrantCharts = ({ activeFilters }) => {
                 style={{ fontSize: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
-                label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 20, fontWeight: 'bold', offset: 0 }}
+                label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 32, fontWeight: 'bold', offset: 0 }}
               />
               <Tooltip content={<CustomLineTooltip />} cursor={{ stroke: '#1E293B', strokeWidth: 2 }} />
               <Line 
