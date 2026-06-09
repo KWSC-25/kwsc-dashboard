@@ -10,12 +10,10 @@ const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
     
     const todayStr = new Date().toISOString().split('T')[0];
-    const [startDate, setStartDate] = useState(todayStr);
+    const [dashboardMode, setDashboardMode] = useState('TODATE');
+    const [startDate, setStartDate] = useState('2026-02-01');
     const [endDate, setEndDate] = useState(todayStr);
-    
-    // Modes: 'TODAY' | 'TODATE' | 'CUSTOM'
-    const [dashboardMode, setDashboardMode] = useState('TODAY');
-    const [activeFilters, setActiveFilters] = useState({ startDate: '', endDate: '' });
+    const [activeFilters, setActiveFilters] = useState({ startDate: '2026-02-01', endDate: todayStr });
 
     // Tracks how many 30-second ticks have passed in the current mode
     const [ticksElapsed, setTicksElapsed] = useState(0);
@@ -53,45 +51,40 @@ const HydrantKPIDashboard = () => {
 
     // Single source of truth interval loop (Runs every 30 seconds)
     useEffect(() => {
+        if (dashboardMode === 'CUSTOM') return;
+
         const interval = setInterval(() => {
             // 1. Always refresh database statistics for the active view
             fetchTodayStats();
 
-            // 2. Handle rotation logic if not in CUSTOM mode
-            setDashboardMode((currentMode) => {
-                if (currentMode === 'CUSTOM') return currentMode;
-
-                let nextTicks = 0;
-                setTicksElapsed((prevTicks) => {
-                    nextTicks = prevTicks + 1;
-                    return nextTicks;
-                });
-
-                // 5 minutes = 300,000ms / 30,000ms = 10 ticks
-                if (currentMode === 'TODAY' && nextTicks >= 10) {
-                    setStartDate('2026-02-01');
-                    setEndDate(todayStr);
-                    setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
-                    setTicksElapsed(0); // Reset ticker for next mode
-                    return 'TODATE';
-                }
-
-                // 15 minutes = 900,000ms / 30,000ms = 30 ticks
-                if (currentMode === 'TODATE' && nextTicks >= 30) {
-                    setStartDate(todayStr);
-                    setEndDate(todayStr);
-                    setActiveFilters({ startDate: '', endDate: '' });
-                    setTicksElapsed(0); // Reset ticker for next mode
-                    return 'TODAY';
-                }
-
-                return currentMode;
-            });
-
-        }, 30000);
+            // 2. Increment ticks cleanly
+            setTicksElapsed((prev) => prev + 1);
+        }, 30000); // 30 seconds per tick
 
         return () => clearInterval(interval);
-    }, [todayStr, fetchTodayStats]);
+    }, [fetchTodayStats, dashboardMode]);
+
+    // Separate Side Effect: Watch ticks elapsed and shift modes purely
+    useEffect(() => {
+        if (dashboardMode === 'CUSTOM') return;
+
+        // TODATE -> TODAY (15 mins = 30 ticks)
+        if (dashboardMode === 'TODATE' && ticksElapsed >= 30) {
+            setStartDate(todayStr);
+            setEndDate(todayStr);
+            setActiveFilters({ startDate: '', endDate: '' });
+            setTicksElapsed(0);
+            setDashboardMode('TODAY');
+        } 
+        // TODAY -> TODATE (5 mins = 10 ticks)
+        else if (dashboardMode === 'TODAY' && ticksElapsed >= 10) {
+            setStartDate('2026-02-01');
+            setEndDate(todayStr);
+            setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
+            setTicksElapsed(0);
+            setDashboardMode('TODATE');
+        }
+    }, [ticksElapsed, dashboardMode, todayStr]);
 
     // Manual Form Filter submissions
     const handleApplyFilter = () => {
@@ -100,15 +93,15 @@ const HydrantKPIDashboard = () => {
     };
 
     const handleResetFilter = () => {
-        setStartDate(todayStr);
+        setDashboardMode('TODATE');
+        setStartDate('2026-02-01');
         setEndDate(todayStr);
-        setDashboardMode('TODAY');
-        setActiveFilters({ startDate: '', endDate: '' });
+        setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
         setTicksElapsed(0);
     };
 
     // Manual navigation controls using the header arrow triggers
-    const handleNavigateLeft = () => {
+    const handleNavigateRight = () => {
         setDashboardMode('TODAY');
         setStartDate(todayStr);
         setEndDate(todayStr);
@@ -116,7 +109,7 @@ const HydrantKPIDashboard = () => {
         setTicksElapsed(0);
     };
 
-    const handleNavigateRight = () => {
+    const handleNavigateLeft = () => {
         setDashboardMode('TODATE');
         setStartDate('2026-02-01');
         setEndDate(todayStr);
