@@ -219,7 +219,7 @@ const HydrantCharts = ({ activeFilters }) => {
               <YAxis 
                 stroke={colors.textMuted} 
                 className="font-bold"
-                style={{ fontSize: '14px', sm: '22px', fill: '#94A3B8' }}
+                style={{ fontSize: '22px', sm: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
                 label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 34, sm: 32, fontWeight: 'bold', offset: 0 }}
