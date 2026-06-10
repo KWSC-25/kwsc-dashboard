@@ -14,6 +14,24 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
         { label: '% CANCELLED', key: 'cancelled_percentage', color: 'white' },
     ], []);
 
+    // Extract the third highest total avg_tat value to find the top 3 threshold
+    const topTatThreshold = useMemo(() => {
+        if (!performanceData || performanceData.length === 0) return null;
+        
+        const tatValues = performanceData
+            .map(row => {
+                const val = parseFloat(row?.total?.avg_tat);
+                return isNaN(val) ? -1 : val;
+            })
+            .filter(val => val >= 0)
+            .sort((a, b) => b - a); // Sort descending
+
+        // Get the 3rd value (or the last one if fewer than 3 elements exist)
+        if (tatValues.length === 0) return null;
+        const targetIndex = Math.min(2, tatValues.length - 1);
+        return tatValues[targetIndex];
+    }, [performanceData]);
+
     const fetchPerformanceGrid = useCallback(async (filters = activeFilters) => {
         try {
             let url = 'newkpis/hydrant-performance';
@@ -50,6 +68,20 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
 
     return (
         <div className="hydrant-performance-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.85)', borderRadius: '6px', padding: '16px', border: '1px solid #2e3748', width: '100%' }}>
+            {/* Inject keyframe animations safely for executive dashboard alerting */}
+            <style>
+                {`
+                    @keyframes redBlinkBackground {
+                        0% { background-color: rgba(244, 67, 54, 0.15); }
+                        50% { background-color: rgba(244, 67, 54, 0.65); }
+                        100% { background-color: rgba(244, 67, 54, 0.15); }
+                    }
+                    .top-tat-blink-cell {
+                        animation: redBlinkBackground 1s infinite ease-in-out !important;
+                    }
+                `}
+            </style>
+
             {/* Component Section Header */}
             <h3 style={{ margin: '0 0 14px 0', fontSize: '30px', fontWeight: '600', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Hydrant Wise Performance (OTS & HMP)
@@ -145,6 +177,14 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                         const hmpValue = row.hmp[metric.key];
                                         const totalValue = row.total[metric.key];
 
+                                        // Condition checking if current row is avg_tat and meets top 3 threshold criteria
+                                        const parsedTotalValue = parseFloat(totalValue);
+                                        const isTopTat = metric.isTat && 
+                                            topTatThreshold !== null && 
+                                            !isNaN(parsedTotalValue) && 
+                                            parsedTotalValue >= topTatThreshold && 
+                                            parsedTotalValue > 0;
+
                                         return (
                                             <React.Fragment key={`cell-${mIdx}-${rIdx}`}>
                                                 {/* OTS Column */}
@@ -167,14 +207,17 @@ const HydrantPercentageStats2 = ({ activeFilters }) => {
                                                     {hmpValue}
                                                 </td>
                                                 {/* Combined Total Column */}
-                                                <td style={{ 
-                                                    padding: '10px 4px', 
-                                                    fontSize: '19px', 
-                                                    fontWeight: '700',
-                                                    color: metric.isTat ? '#FFF200' : (metric.color || '#ffffff'),
-                                                    borderRight: '2px solid #4a5568',
-                                                    background: 'rgba(255, 242, 0, 0.02)'
-                                                }}>
+                                                <td 
+                                                    className={isTopTat ? "top-tat-blink-cell" : ""}
+                                                    style={{ 
+                                                        padding: '10px 4px', 
+                                                        fontSize: '19px', 
+                                                        fontWeight: '700',
+                                                        color: metric.isTat ? '#FFF200' : (metric.color || '#ffffff'),
+                                                        borderRight: '2px solid #4a5568',
+                                                        background: isTopTat ? undefined : 'rgba(255, 242, 0, 0.02)'
+                                                    }}
+                                                >
                                                     {totalValue}
                                                 </td>
                                             </React.Fragment>

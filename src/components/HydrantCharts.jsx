@@ -182,47 +182,47 @@ const HydrantCharts = ({ activeFilters }) => {
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 bg-[#03050C] p-2">
       
       {/* LEFT COLUMN: TAT LINE CHART */}
-      <div className="lg:col-span-7 bg-[#060814] rounded-xl p-6 border border-[#111625] shadow-2xl relative overflow-hidden flex flex-col justify-between">
+      <div className="lg:col-span-7 bg-[#060814] rounded-xl p-4 sm:p-6 border border-[#111625] shadow-2xl relative overflow-hidden flex flex-col justify-between">
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-purple-500 to-cyan-500 opacity-90" />
         
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="font-bold tracking-wide text-white uppercase" style={{ fontSize: '32px'}}>
+            <h3 className="font-bold tracking-wide text-white uppercase text-2xl sm:text-3xl lg:text-[32px] lg:leading-tight">
               Avgerage Turnaround Time (TAT) Operational Velocity
             </h3>
           </div>
           
-          <div className="flex items-center gap-6 text-sm font-semibold">
+          <div className="flex items-center gap-6 text-sm font-semibold whitespace-nowrap">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full" style={{ backgroundColor: colors.hmpLine }} />
-              <span className="text-white text-xl" style={{ fontSize: '32px'}}>HMP</span>
+              <span className="text-white text-xl sm:text-2xl lg:text-[32px]">HMP</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full" style={{ backgroundColor: colors.otsLine }} />
-              <span className="text-white text-xl" style={{ fontSize: '32px'}}>OTS</span>
+              <span className="text-white text-xl sm:text-2xl lg:text-[32px]">OTS</span>
             </div>
           </div>
         </div>
 
-        <div className="w-full h-[490px] mt-2">
+        <div className="w-full h-[300px] sm:h-[400px] lg:h-[490px] mt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={lineChartData} margin={{ top: 10, right: 40, left: 30, bottom: 20 }}>
+            <LineChart data={lineChartData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={true} />
               <XAxis 
                 dataKey="date" 
                 stroke={colors.textMuted} 
                 className="font-bold"
-                style={{ fontSize: '22px', fill: '#94A3B8' }}
+                style={{ fontSize: '14px', sm: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dy={12}
               />
               <YAxis 
                 stroke={colors.textMuted} 
                 className="font-bold"
-                style={{ fontSize: '22px', fill: '#94A3B8' }}
+                style={{ fontSize: '14px', sm: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
-                label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 32, fontWeight: 'bold', offset: 0 }}
+                label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 34, sm: 32, fontWeight: 'bold', offset: 0 }}
               />
               <Tooltip content={<CustomLineTooltip />} cursor={{ stroke: '#1E293B', strokeWidth: 2 }} />
               <Line 
@@ -231,8 +231,8 @@ const HydrantCharts = ({ activeFilters }) => {
                 name="hmpAvgTatHours"
                 stroke={colors.hmpLine} 
                 strokeWidth={3.5}
-                dot={{ r: 5, strokeWidth: 2, fill: '#060814' }}
-                activeDot={{ r: 8 }}
+                dot={{ r: 4, strokeWidth: 2, fill: '#060814' }}
+                activeDot={{ r: 7 }}
               />
               <Line 
                 type="monotone" 
@@ -240,8 +240,8 @@ const HydrantCharts = ({ activeFilters }) => {
                 name="otsAvgTatHours"
                 stroke={colors.otsLine} 
                 strokeWidth={3.5}
-                dot={{ r: 5, strokeWidth: 2, fill: '#060814' }}
-                activeDot={{ r: 8 }}
+                dot={{ r: 4, strokeWidth: 2, fill: '#060814' }}
+                activeDot={{ r: 7 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -249,20 +249,20 @@ const HydrantCharts = ({ activeFilters }) => {
       </div>
 
       {/* RIGHT COLUMN: PENDING AGING DONUT CHART */}
-      <div className="lg:col-span-5 bg-[#060814] rounded-xl p-6 border border-[#111625] shadow-2xl relative overflow-hidden flex flex-col justify-between">
+      <div className="lg:col-span-5 bg-[#060814] rounded-xl p-4 sm:p-6 border border-[#111625] shadow-2xl relative overflow-hidden flex flex-col justify-between">
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 to-emerald-500 opacity-90" />
         
         <div className="mb-4">
-          <h3 className="font-bold tracking-wide text-white uppercase" style={{ fontSize: '32px'}}>
+          <h3 className="font-bold tracking-wide text-white uppercase text-2xl sm:text-3xl lg:text-[32px]">
             Pending Orders Aging
           </h3>
         </div>
 
-        {/* Layout Wrapper optimized for LED dashboard walls */}
-        <div className="flex flex-row items-center justify-between gap-6 w-full my-auto py-4">
+        {/* Layout Wrapper optimized for mobile structural cascading and desktop walls */}
+        <div className="flex flex-col sm:flex-row lg:flex-row items-center justify-between gap-6 w-full my-auto py-4">
           
-          {/* Expanded Donut Display Area */}
-          <div className="w-120.5 h-150.5 relative flex items-center justify-center">
+          {/* Expanded Donut Display Area - Made completely aspect-ratio fluid */}
+          <div className="w-full aspect-square max-w-[320px] sm:max-w-[400px] relative flex items-center justify-center mx-auto">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip content={<CustomDonutTooltip />} />
@@ -270,8 +270,8 @@ const HydrantCharts = ({ activeFilters }) => {
                   data={donutData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={115}   // Highly enlarged footprint layout
-                  outerRadius={190}   // Substantially upgraded external chart diameter
+                  innerRadius="60%"   // Fluid percentage layouts matching original footprint ratio
+                  outerRadius="95%"   
                   paddingAngle={4}
                   dataKey="value"
                   stroke="none"        // Removes the default sector line outlines
@@ -286,25 +286,25 @@ const HydrantCharts = ({ activeFilters }) => {
 
             {/* Central Metrics Overlay Indicator Block */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
-              <span className="text-5xl font-black tracking-tight text-white">{totalPending.toLocaleString()}</span>
-              <span className="text-sm font-bold tracking-widest text-[#64748B] uppercase mt-1">
+              <span className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">{totalPending.toLocaleString()}</span>
+              <span className="text-[10px] sm:text-xs lg:text-sm font-bold tracking-widest text-[#64748B] uppercase mt-1">
                 Pending Orders
               </span>
             </div>
           </div>
 
           {/* Compressed Dynamic High-Contrast Labels Array */}
-          <div className="w-1/2 flex flex-col gap-4 pr-1">
+          <div className="w-full sm:w-1/2 flex flex-col gap-4 pr-1">
             {donutData.map((item, index) => (
               <div key={index} className="flex flex-col p-3 rounded-lg bg-[#0B0F19]/80 border border-[#111625]">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-base font-bold text-white tracking-wide truncate" style={{ fontSize:'35px' }}>
+                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-base sm:text-xl lg:text-[24px] font-bold text-white tracking-wide truncate">
                     {item.name}
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between gap-2 pl-5">
-                  <span className="text-5xl font-black tracking-tight" style={{ color: item.color }}>
+                  <span className="text-2xl sm:text-3xl lg:text-[40px] font-black tracking-tight leading-none" style={{ color: item.color }}>
                     {item.value.toFixed(2)}%
                   </span>
                 </div>

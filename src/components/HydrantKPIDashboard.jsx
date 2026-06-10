@@ -330,8 +330,17 @@ const HydrantKPIDashboard = () => {
                             &#8592;
                         </button>
                         
-                        <span style={{ fontSize: '40px', fontWeight: 'bold', letterSpacing: '0.5px', whiteSpace: 'nowrap', minWidth: '190px', textAlign: 'center', color: themeColor, transition: 'color 0.4s ease' }}>
-                            {getHeaderTitle()}
+                        <span style={{ 
+                                fontSize: isMobile ? '22px' : '40px', // Dynamically scales down from 40px to 22px on mobile
+                                fontWeight: 'bold', 
+                                letterSpacing: '0.5px', 
+                                whiteSpace: 'nowrap', 
+                                minWidth: isMobile ? 'auto' : '190px', // Drops the high minimum layout constraint on mobile
+                                textAlign: 'center', 
+                                color: themeColor, 
+                                transition: 'color 0.4s ease' 
+                            }}>
+                                {getHeaderTitle()}
                         </span>
 
                         <button 

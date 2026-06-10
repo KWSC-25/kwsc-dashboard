@@ -68,8 +68,57 @@ const HydrantPercentageStats = ({ activeFilters, dashboardMode }) => {
         };
     }, [fetchPerformanceGrid]);
 
+    // Helper function to parse human-readable TAT duration strings into total minutes
+    const parseTatToMinutes = (tatStr) => {
+        if (!tatStr || typeof tatStr !== 'string') return 0;
+        
+        let totalMinutes = 0;
+        
+        // Regular expression matchers for days, hours, and minutes
+        const daysMatch = tatStr.match(/(\d+)\s*d/);
+        const hoursMatch = tatStr.match(/(\d+)\s*h/);
+        const minutesMatch = tatStr.match(/(\d+)\s*m/);
+        
+        if (daysMatch) totalMinutes += parseInt(daysMatch[1], 10) * 24 * 60;
+        if (hoursMatch) totalMinutes += parseInt(hoursMatch[1], 10) * 60;
+        if (minutesMatch) totalMinutes += parseInt(minutesMatch[1], 10);
+        
+        // Fallback just in case the backend sends a raw number string
+        if (!daysMatch && !hoursMatch && !minutesMatch) {
+            const rawNum = parseFloat(tatStr);
+            return isNaN(rawNum) ? 0 : rawNum;
+        }
+        
+        return totalMinutes;
+    };
+
+    // Compute the threshold value for the top 3 highest TOTAL avg_tat values
+    const topTatThreshold = useMemo(() => {
+        if (!performanceData || performanceData.length === 0) return 0;
+        
+        const values = performanceData
+            .map(row => parseTatToMinutes(row.total?.avg_tat_total))
+            .sort((a, b) => b - a);
+
+        // Get the 3rd highest value (or the lowest if less than 3 items exist)
+        const targetIdx = Math.min(2, values.length - 1);
+        return values[targetIdx] || 0;
+    }, [performanceData]);
+
     return (
         <div className="hydrant-performance-table-wrapper" style={{ background: 'rgba(20, 24, 33, 0.95)', borderRadius: '6px', padding: '20px', border: '1px solid #2e3748', width: '100%' }}>
+            {/* Embedded keyframe styling for the alert animation */}
+            <style>{`
+                @keyframes subtle-red-blink {
+                    0% { background-color: rgba(244, 67, 54, 0.15); }
+                    50% { background-color: rgba(244, 67, 54, 0.45); }
+                    100% { background-color: rgba(244, 67, 54, 0.15); }
+                }
+                .top-tat-blink-alert {
+                    animation: subtle-red-blink 1s infinite ease-in-out;
+                }
+            `}</style>
+
             {/* Component Section Header */}
             <h3 style={{ margin: '0 0 18px 0', fontSize: '32px', fontWeight: '700', color: '#FFF200', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Hydrant Wise Performance (Overall Average)
@@ -207,6 +256,11 @@ const HydrantPercentageStats = ({ activeFilters, dashboardMode }) => {
                                             const selfValue = row.total[metric.key];
                                             const totalValue = row.total[`${metric.key}_total`];
 
+                                            // Determine if this unique TOTAL cell is one of the top 3 highest values
+                                            // FIXED: Parse the string to absolute minutes for the threshold comparison
+                                            const parsedTotalMinutes = parseTatToMinutes(totalValue);
+                                            const isTopAlertTat = metric.isTat && parsedTotalMinutes >= topTatThreshold && parsedTotalMinutes > 0;
+
                                             return (
                                                 <React.Fragment key={`cell-group-${mIdx}-${rIdx}`}>
                                                     {/* Self Column Value */}
@@ -223,13 +277,14 @@ const HydrantPercentageStats = ({ activeFilters, dashboardMode }) => {
                                                     </td>
                                                     {/* Total Column Value */}
                                                     <td 
+                                                        className={isTopAlertTat ? 'top-tat-blink-alert' : ''}
                                                         style={{ 
                                                             padding: '14px 4px', 
                                                             fontSize: '36px', 
                                                             fontWeight: '600',
                                                             color: metric.isTat ? '#FFF200' : (metric.color || '#e2e8f0'),
                                                             borderRight: '2px solid #4a5568',
-                                                            background: 'rgba(255, 255, 255, 0.01)'
+                                                            background: isTopAlertTat ? undefined : 'rgba(255, 255, 255, 0.01)'
                                                         }}
                                                     >
                                                         {totalValue}
