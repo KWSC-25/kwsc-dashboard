@@ -338,25 +338,6 @@ export const OrderSummaryToday = async (req, res) => {
 // ==========================================================
 // NEW CONTROLLER: HYDRANT METRIC GRID WITH SUB-COLUMN METRICS
 // ==========================================================
-const formatSecondsToDHm = (totalSeconds, completedCount) => {
-    if (!completedCount || completedCount <= 0 || !totalSeconds || totalSeconds <= 0) {
-        return "0m";
-    }
-
-    const avgSeconds = Math.floor(totalSeconds / completedCount);
-    
-    const days = Math.floor(avgSeconds / 86400);
-    const hours = Math.floor((avgSeconds % 86400) / 3600);
-    const minutes = Math.floor((avgSeconds % 3600) / 60);
-
-    const parts = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (hours > 0 || days > 0) parts.push(`${hours}h`); 
-    parts.push(`${minutes}m`);
-
-    return parts.join(' ');
-};
-
 // Formats absolute running decimal hours as a decimal string suffixed with 'h' (e.g., 7.5h)
 const formatRunningHoursToDecimalStr = (runningHoursDecimal) => {
     if (!runningHoursDecimal || runningHoursDecimal <= 0) {
@@ -431,6 +412,25 @@ const aggregateHydrantRunningHours = (logsArray) => {
     });
 
     return formatRunningHoursToDecimalStr(cumulativeHoursDecimal);
+};
+
+const formatSecondsToDHm = (totalSeconds, completedCount) => {
+    if (!completedCount || completedCount <= 0 || !totalSeconds || totalSeconds <= 0) {
+        return "0m";
+    }
+
+    const avgSeconds = Math.floor(totalSeconds / completedCount);
+    
+    const days = Math.floor(avgSeconds / 86400);
+    const hours = Math.floor((avgSeconds % 86400) / 3600);
+    const minutes = Math.floor((avgSeconds % 3600) / 60);
+
+    const parts = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0 || days > 0) parts.push(`${hours}h`); 
+    parts.push(`${minutes}m`);
+
+    return parts.join(' ');
 };
 
 export const HydrantPerformanceGridToday = async (req, res) => {
@@ -596,61 +596,72 @@ export const HydrantPerformanceGridToday = async (req, res) => {
         // DYNAMIC ROW RESPONSE SYNCHRONIZATION
         // ========================================================
         const processedRows = rows.map(row => {
-            const hmpTotalCreated = Number(row.hmp_total_created);
-            const otsTotalCreated = Number(row.ots_total_created);
-            const totalCreated = hmpTotalCreated + otsTotalCreated;
-            
-            const hmpCompletedCount = Number(row.hmp_completed_count);
-            const otsCompletedCount = Number(row.ots_completed_count);
-            const totalCompletedCount = hmpCompletedCount + otsCompletedCount;
+    const hmpTotalCreated = Number(row.hmp_total_created);
+    const otsTotalCreated = Number(row.ots_total_created);
+    const totalCreated = hmpTotalCreated + otsTotalCreated;
+    
+    const hmpCompletedCount = Number(row.hmp_completed_count);
+    const otsCompletedCount = Number(row.ots_completed_count);
+    const totalCompletedCount = hmpCompletedCount + otsCompletedCount;
 
-            const totalPendingCount = Number(row.hmp_pending_count) + Number(row.ots_pending_count);
-            const totalCancelledCount = Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count);
-            const totalAssignedCount = Number(row.hmp_assigned_count) + Number(row.ots_assigned_count);
+    const totalPendingCount = Number(row.hmp_pending_count) + Number(row.ots_pending_count);
+    const totalCancelledCount = Number(row.hmp_cancelled_count) + Number(row.ots_cancelled_count);
+    const totalAssignedCount = Number(row.hmp_assigned_count) + Number(row.ots_assigned_count);
 
-            const hmpCompletedPct = hmpTotalCreated > 0 ? ((hmpCompletedCount * 100) / hmpTotalCreated).toFixed(2) : "0.00";
-            const otsCompletedPct = otsTotalCreated > 0 ? ((otsCompletedCount * 100) / otsTotalCreated).toFixed(2) : "0.00";
+    const hmpCompletedPct = hmpTotalCreated > 0 ? ((hmpCompletedCount * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+    const otsCompletedPct = otsTotalCreated > 0 ? ((otsCompletedCount * 100) / otsTotalCreated).toFixed(2) : "0.00";
 
-            const hmpPendingPct = hmpTotalCreated > 0 ? ((Number(row.hmp_pending_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
-            const otsPendingPct = otsTotalCreated > 0 ? ((Number(row.ots_pending_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
+    const hmpPendingPct = hmpTotalCreated > 0 ? ((Number(row.hmp_pending_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+    const otsPendingPct = otsTotalCreated > 0 ? ((Number(row.ots_pending_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
 
-            const hmpCancelledPct = hmpTotalCreated > 0 ? ((Number(row.hmp_cancelled_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
-            const otsCancelledPct = otsTotalCreated > 0 ? ((Number(row.ots_cancelled_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
+    const hmpCancelledPct = hmpTotalCreated > 0 ? ((Number(row.hmp_cancelled_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+    const otsCancelledPct = otsTotalCreated > 0 ? ((Number(row.ots_cancelled_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
 
-            const hmpAssignedPct = hmpTotalCreated > 0 ? ((Number(row.hmp_assigned_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
-            const otsAssignedPct = otsTotalCreated > 0 ? ((Number(row.ots_assigned_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
+    const hmpAssignedPct = hmpTotalCreated > 0 ? ((Number(row.hmp_assigned_count) * 100) / hmpTotalCreated).toFixed(2) : "0.00";
+    const otsAssignedPct = otsTotalCreated > 0 ? ((Number(row.ots_assigned_count) * 100) / otsTotalCreated).toFixed(2) : "0.00";
 
-            const hmpAvgTat = formatSecondsToDHm(Number(row.hmp_total_seconds), hmpCompletedCount);
-            const otsAvgTat = formatSecondsToDHm(Number(row.ots_total_seconds), otsCompletedCount);
-            
-            const totalSecondsCombined = Number(row.hmp_total_seconds) + Number(row.ots_total_seconds);
-            const totalAvgTat = formatSecondsToDHm(totalSecondsCombined, totalCompletedCount);
-            const overallAvgTat = formatSecondsToDHm(totalSecondsCombined, globalTotalCompleted);
+    const hmpAvgTat = formatSecondsToDHm(Number(row.hmp_total_seconds), hmpCompletedCount);
+    const otsAvgTat = formatSecondsToDHm(Number(row.ots_total_seconds), otsCompletedCount);
+    
+    // 1. totalAvgTat: The hydrant's pure local operational performance rate
+    const totalSecondsCombined = Number(row.hmp_total_seconds) + Number(row.ots_total_seconds);
+    const totalAvgTat = formatSecondsToDHm(totalSecondsCombined, totalCompletedCount);
+    
+    // 2. overallAvgTat: Option B (Balanced Stream Average to mirror KPI cards)
+    const hmpAvgRaw = hmpCompletedCount > 0 ? (Number(row.hmp_total_seconds) / hmpCompletedCount) : 0;
+    const otsAvgRaw = otsCompletedCount > 0 ? (Number(row.ots_total_seconds) / otsCompletedCount) : 0;
+    
+    let balancedSeconds = 0;
+    if (hmpCompletedCount > 0 && otsCompletedCount > 0) {
+        balancedSeconds = (hmpAvgRaw + otsAvgRaw) / 2;
+    } else {
+        balancedSeconds = hmpAvgRaw + otsAvgRaw; // Fallback to whichever stream is active
+    }
+    const overallAvgTat = formatSecondsToDHm(balancedSeconds, 1);
 
-            const hydrantHmpPercentage = totalCreated > 0 ? ((hmpTotalCreated / totalCreated) * 100).toFixed(2) : "0.00";
-            const hydrantOtsPercentage = totalCreated > 0 ? ((otsTotalCreated / totalCreated) * 100).toFixed(2) : "0.00";
+    const hydrantHmpPercentage = totalCreated > 0 ? ((hmpTotalCreated / totalCreated) * 100).toFixed(2) : "0.00";
+    const hydrantOtsPercentage = totalCreated > 0 ? ((otsTotalCreated / totalCreated) * 100).toFixed(2) : "0.00";
 
-            const completedOverallPct = globalTotalCompleted > 0 ? ((totalCompletedCount / globalTotalCompleted) * 100).toFixed(2) : "0.00";
-            const pendingOverallPct = globalTotalPending > 0 ? ((totalPendingCount / globalTotalPending) * 100).toFixed(2) : "0.00";
-            const assignedOverallPct = globalTotalAssigned > 0 ? ((totalAssignedCount / globalTotalAssigned) * 100).toFixed(2) : "0.00";
-            const cancelledOverallPct = globalTotalCancelled > 0 ? ((totalCancelledCount / globalTotalCancelled) * 100).toFixed(2) : "0.00";
+    const completedOverallPct = globalTotalCompleted > 0 ? ((totalCompletedCount / globalTotalCompleted) * 100).toFixed(2) : "0.00";
+    const pendingOverallPct = globalTotalPending > 0 ? ((totalPendingCount / globalTotalPending) * 100).toFixed(2) : "0.00";
+    const assignedOverallPct = globalTotalAssigned > 0 ? ((totalAssignedCount / globalTotalAssigned) * 100).toFixed(2) : "0.00";
+    const cancelledOverallPct = globalTotalCancelled > 0 ? ((totalCancelledCount / globalTotalCancelled) * 100).toFixed(2) : "0.00";
 
-            // Aggregate counts of running open orders per time range for this specific hydrant
-            const hydrantOpenUnder24h = Number(row.hmp_open_under_24h) + Number(row.ots_open_under_24h);
-            const hydrantOpen24h48h = Number(row.hmp_open_24h_48h) + Number(row.ots_open_24h_48h);
-            const hydrantOpen48h72h = Number(row.hmp_open_48h_72h) + Number(row.ots_open_48h_72h);
-            const hydrantOpenAbove72h = Number(row.hmp_open_above_72h) + Number(row.ots_open_above_72h);
+    // Aggregate counts of running open orders per time range for this specific hydrant
+    const hydrantOpenUnder24h = Number(row.hmp_open_under_24h) + Number(row.ots_open_under_24h);
+    const hydrantOpen24h48h = Number(row.hmp_open_24h_48h) + Number(row.ots_open_24h_48h);
+    const hydrantOpen48h72h = Number(row.hmp_open_48h_72h) + Number(row.ots_open_48h_72h);
+    const hydrantOpenAbove72h = Number(row.hmp_open_above_72h) + Number(row.ots_open_above_72h);
 
-            // Compute percentage representations against the unified global pool mapping target constraints
-            const pendingUnder24hPct = globalOpenDenominator > 0 ? ((hydrantOpenUnder24h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
-            const pending24h48hPct = globalOpenDenominator > 0 ? ((hydrantOpen24h48h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
-            const pending48h72hPct = globalOpenDenominator > 0 ? ((hydrantOpen48h72h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
-            const pendingAbove72hPct = globalOpenDenominator > 0 ? ((hydrantOpenAbove72h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+    // Compute percentage representations against the unified global pool mapping target constraints
+    const pendingUnder24hPct = globalOpenDenominator > 0 ? ((hydrantOpenUnder24h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+    const pending24h48hPct = globalOpenDenominator > 0 ? ((hydrantOpen24h48h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+    const pending48h72hPct = globalOpenDenominator > 0 ? ((hydrantOpen48h72h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
+    const pendingAbove72hPct = globalOpenDenominator > 0 ? ((hydrantOpenAbove72h * 100) / globalOpenDenominator).toFixed(2) : "0.00";
 
-            // Process collected array logs across the chosen filter boundaries
-            const hydrantLogEntriesArray = logsMap[row.hydrant_id] || [];
-            const formattedRunningHours = aggregateHydrantRunningHours(hydrantLogEntriesArray);
-
+    // Process collected array logs across the chosen filter boundaries
+    const hydrantLogEntriesArray = logsMap[row.hydrant_id] || [];
+    const formattedRunningHours = aggregateHydrantRunningHours(hydrantLogEntriesArray);
             return {
                 hydrant_name: row.combined_hydrant_name,
                 hmp: {
