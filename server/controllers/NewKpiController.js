@@ -39,8 +39,8 @@ export const TodayStats = async (req, res) => {
             SUM(CASE WHEN status IN ('completed','self_closed') THEN total_amount ELSE 0 END) AS ots_completed_amount_today,
             SUM(CASE WHEN status IN ('cancelled', 'failed') THEN total_amount ELSE 0 END) AS ots_cancelled_amount_today,
 
-            -- Turnaround Time Average
-            AVG(CASE WHEN status IN ('completed','self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today,
+            -- Turnaround Time Average (Now strictly constrained to completions inside range)
+            AVG(CASE WHEN status IN ('completed','self_closed') AND api_updated_at BETWEEN ? AND ? THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_avg_tat_seconds_today,
             
             -- Max Open Order Aging Metrics (Seconds from creation until NOW)
             MAX(CASE WHEN status IN ('pending_alignment','pending') THEN TIMESTAMPDIFF(SECOND, api_created_at, NOW()) END) AS ots_max_pending_aging_seconds,
@@ -48,7 +48,8 @@ export const TodayStats = async (req, res) => {
         FROM ots_order
         WHERE api_created_at BETWEEN ? AND ?`;
 
-        const otsParams = [todayStart, todayEnd];
+        // Passing window range twice: first for the AVG condition, second for the WHERE clause
+        const otsParams = [todayStart, todayEnd, todayStart, todayEnd];
 
         // ========================================================
         // 3. OPTIMIZED HMP ORDERS QUERY (Upfront filtering via inner select)
@@ -68,8 +69,8 @@ export const TodayStats = async (req, res) => {
             SUM(CASE WHEN status = 1 THEN capacity ELSE 0 END) AS hmp_completed_gallons_today,
             SUM(CASE WHEN status IN (3,4) THEN capacity ELSE 0 END) AS hmp_cancelled_gallons_today,
 
-            -- Turnaround Time Average
-            AVG(CASE WHEN status = 1 THEN seconds_duration END) AS hmp_avg_tat_seconds_today,
+            -- Turnaround Time Average (Now strictly constrained to completions inside range)
+            AVG(CASE WHEN status = 1 AND updated_at_raw BETWEEN ? AND ? THEN seconds_duration END) AS hmp_avg_tat_seconds_today,
             
             -- Max Open Order Aging Metrics (Seconds from creation until NOW)
             MAX(CASE WHEN status = 0 THEN seconds_aging_now END) AS hmp_max_pending_aging_seconds,
@@ -78,6 +79,7 @@ export const TodayStats = async (req, res) => {
             SELECT 
                 b.status,
                 tt.capacity,
+                b.updated_at AS updated_at_raw,
                 TIMESTAMPDIFF(SECOND, o.created_at, b.updated_at) AS seconds_duration,
                 TIMESTAMPDIFF(SECOND, o.created_at, NOW()) AS seconds_aging_now
             FROM orders o
@@ -86,7 +88,8 @@ export const TodayStats = async (req, res) => {
             WHERE o.order_type != 'OTS' AND o.created_at BETWEEN ? AND ?
         ) active_today`;
 
-        const orderParams = [todayStart, todayEnd];
+        // Passing window range twice: first for the AVG condition, second for the inner WHERE clause
+        const orderParams = [todayStart, todayEnd, todayStart, todayEnd];
 
         // Execute both optimized queries in parallel
         const [otsData] = await req.db.execute(otsQuery, otsParams);
