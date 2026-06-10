@@ -219,10 +219,12 @@ const HydrantCharts = ({ activeFilters }) => {
               <YAxis 
                 stroke={colors.textMuted} 
                 className="font-bold"
-                style={{ fontSize: '25px', sm: '22px', fill: '#94A3B8' }}
+                style={{ fontSize: '14px', sm: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
                 label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 34, sm: 32, fontWeight: 'bold', offset: 0 }}
+                domain={[0, 8]}
+                ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8]}
               />
               <Tooltip content={<CustomLineTooltip />} cursor={{ stroke: '#1E293B', strokeWidth: 2 }} />
               <Line 
