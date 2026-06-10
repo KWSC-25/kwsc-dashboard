@@ -159,7 +159,7 @@ export const getTatLineChartData = async (req, res) => {
         const finalStart = startDate && startDate !== '' ? `${startDate.split(' ')[0]} 00:00:00` : '2026-02-01 00:00:00';
         const finalEnd = endDate && endDate !== '' ? `${endDate.split(' ')[0]} 23:59:59` : `${todayStr} 23:59:59`;
 
-        // 2. Programmatically Generate Isolated 15-Day Interval Ranges in Node.js
+        // 2. Programmatically Generate Checkpoints Spaced 15 Days Apart
         const startLimit = new Date(finalStart.split(' ')[0]);
         const endLimit = new Date(finalEnd.split(' ')[0]);
         
@@ -167,32 +167,28 @@ export const getTatLineChartData = async (req, res) => {
         let currentStart = new Date(startLimit);
 
         while (currentStart < endLimit) {
-            // Build a strict 15-day inclusive bucket (current day + 14 days)
-            let currentEnd = new Date(currentStart);
-            currentEnd.setDate(currentEnd.getDate() + 14);
+            const currentDayStr = currentStart.toISOString().split('T')[0];
 
-            // Restrict upper bound overflow beyond user filters
-            if (currentEnd >= endLimit) {
-                currentEnd = new Date(endLimit);
-            }
-
+            // Notice: queryStart now maps strictly to finalStart to achieve the cumulative client requirement
             intervals.push({
-                displayDate: currentEnd.toISOString().split('T')[0], // Exact milestone plot point
-                queryStart: `${currentStart.toISOString().split('T')[0]} 00:00:00`,
-                queryEnd: `${currentEnd.toISOString().split('T')[0]} 23:59:59`
+                displayDate: currentDayStr, 
+                queryStart: finalStart,
+                queryEnd: `${currentDayStr} 23:59:59`
             });
 
-            // Advance cursor to the next non-overlapping day
-            currentStart = new Date(currentEnd);
-            currentStart.setDate(currentStart.getDate() + 1);
+            // Advance cursor to the next milestone date precisely 15 days later
+            currentStart.setDate(currentStart.getDate() + 15);
         }
 
-        // Snap constraint edge case check for the final data window
+        // Snap constraint edge case check to ensure today's current date is always included
         const lastInterval = intervals[intervals.length - 1];
         const strictMaxEndStr = endLimit.toISOString().split('T')[0];
         if (lastInterval && lastInterval.displayDate !== strictMaxEndStr) {
-            lastInterval.displayDate = strictMaxEndStr;
-            lastInterval.queryEnd = `${strictMaxEndStr} 23:59:59`;
+            intervals.push({
+                displayDate: strictMaxEndStr,
+                queryStart: finalStart,
+                queryEnd: `${strictMaxEndStr} 23:59:59`
+            });
         }
 
         if (intervals.length === 0) {
@@ -205,12 +201,14 @@ export const getTatLineChartData = async (req, res) => {
                 ? AS milestone_date,
                 (COALESCE(hmp.hmp_completed_count, 0) + COALESCE(ots.ots_completed_count, 0)) AS combined_total_completed,
                 COALESCE(hmp.hmp_total_seconds, 0) AS hmp_total_seconds,
-                COALESCE(ots.ots_total_seconds, 0) AS ots_total_seconds
+                COALESCE(ots.ots_total_seconds, 0) AS ots_total_seconds,
+                COALESCE(hmp.hmp_completed_count, 0) AS hmp_count,
+                COALESCE(ots.ots_completed_count, 0) AS ots_count
             FROM (
-                -- HMP Isolated Aggregate Matrix
+                -- HMP: Created AND Completed within the expanding milestone range window
                 SELECT 
-                    COUNT(CASE WHEN b.latest_status = 1 THEN 1 END) AS hmp_completed_count,
-                    SUM(CASE WHEN b.latest_status = 1 THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS hmp_total_seconds
+                    COUNT(CASE WHEN b.latest_status = 1 AND b.latest_updated BETWEEN ? AND ? THEN 1 END) AS hmp_completed_count,
+                    SUM(CASE WHEN b.latest_status = 1 AND b.latest_updated BETWEEN ? AND ? THEN TIMESTAMPDIFF(SECOND, o.created_at, b.latest_updated) END) AS hmp_total_seconds
                 FROM orders o
                 INNER JOIN (
                     SELECT tbl_b.order_id, tbl_b.status AS latest_status, tbl_b.updated_at AS latest_updated
@@ -223,10 +221,10 @@ export const getTatLineChartData = async (req, res) => {
                   AND o.created_at BETWEEN ? AND ?
             ) hmp,
             (
-                -- OTS Isolated Aggregate Matrix
+                -- OTS: Arrived AND Closed within the expanding milestone range window
                 SELECT 
-                    COUNT(CASE WHEN status IN ('completed', 'self_closed') THEN 1 END) AS ots_completed_count,
-                    SUM(CASE WHEN status IN ('completed', 'self_closed') THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_total_seconds
+                    COUNT(CASE WHEN status IN ('completed', 'self_closed') AND api_updated_at BETWEEN ? AND ? THEN 1 END) AS ots_completed_count,
+                    SUM(CASE WHEN status IN ('completed', 'self_closed') AND api_updated_at BETWEEN ? AND ? THEN TIMESTAMPDIFF(SECOND, api_created_at, api_updated_at) END) AS ots_total_seconds
                 FROM ots_order
                 WHERE api_created_at BETWEEN ? AND ?
             ) ots
@@ -239,8 +237,14 @@ export const getTatLineChartData = async (req, res) => {
         intervals.forEach(block => {
             queryParams.push(
                 block.displayDate,
-                block.queryStart, block.queryEnd, // Bounds for HMP
-                block.queryStart, block.queryEnd  // Bounds for OTS
+                // HMP subquery bindings (6 occurrences - tracking from filter start to current milestone cursor)
+                block.queryStart, block.queryEnd, // b.latest_updated bounds (COUNT)
+                block.queryStart, block.queryEnd, // b.latest_updated bounds (SUM)
+                block.queryStart, block.queryEnd, // o.created_at bounds
+                // OTS subquery bindings (6 occurrences - tracking from filter start to current milestone cursor)
+                block.queryStart, block.queryEnd, // api_updated_at bounds (COUNT)
+                block.queryStart, block.queryEnd, // api_updated_at bounds (SUM)
+                block.queryStart, block.queryEnd  // api_created_at bounds
             );
         });
 
@@ -248,13 +252,15 @@ export const getTatLineChartData = async (req, res) => {
 
         // 5. Convert TAT Seconds into FRACTIONAL DAYS while retaining your frontend property keys
         const formattedChartData = rows.map(row => {
-            const denom = Number(row.combined_total_completed || 0);
+            const hmpDenom = Number(row.hmp_count || 0);
+            const otsDenom = Number(row.ots_count || 0);
+            
             return {
                 date: row.milestone_date,
-                combinedTotalCompleted: denom,
-                // Changed 3600 to 86400 to change value scale to Days completely
-                hmpAvgTatHours: denom > 0 ? Number((Number(row.hmp_total_seconds) / 86400 / denom).toFixed(4)) : 0,
-                otsAvgTatHours: denom > 0 ? Number((Number(row.ots_total_seconds) / 86400 / denom).toFixed(4)) : 0
+                combinedTotalCompleted: Number(row.combined_total_completed || 0),
+                // Scaled back to 86400 (Days) as required for the cumulative timeline view
+                hmpAvgTatHours: hmpDenom > 0 ? Number((Number(row.hmp_total_seconds) / 86400 / hmpDenom).toFixed(4)) : 0,
+                otsAvgTatHours: otsDenom > 0 ? Number((Number(row.ots_total_seconds) / 86400 / otsDenom).toFixed(4)) : 0
             };
         });
 
