@@ -138,7 +138,7 @@ const HydrantPercentageStats = ({ activeFilters, dashboardMode }) => {
                                     borderRight: '3px solid #4a5568', 
                                     width: '280px', 
                                     color: '#fff', 
-                                    fontSize: '24px', 
+                                    fontSize: '29px', 
                                     fontWeight: 'bold' 
                                 }}
                             >
@@ -163,7 +163,7 @@ const HydrantPercentageStats = ({ activeFilters, dashboardMode }) => {
                                                 borderRight: '2px solid #4a5568', 
                                                 color: '#ffffff', 
                                                 fontWeight: '800', 
-                                                fontSize: '22px', 
+                                                fontSize: '30px', 
                                                 letterSpacing: '1px', 
                                                 textAlign: 'center',
                                                 background: 'rgba(255, 255, 255, 0.03)'

@@ -102,18 +102,36 @@ const HydrantKPIDashboard = () => {
 
     // Manual navigation controls using the header arrow triggers
     const handleNavigateRight = () => {
-        setDashboardMode('TODAY');
-        setStartDate(todayStr);
-        setEndDate(todayStr);
-        setActiveFilters({ startDate: '', endDate: '' });
+        if (dashboardMode === 'TODAY') {
+            // If on TODAY, go back to TO DATE
+            setDashboardMode('TODATE');
+            setStartDate('2026-02-01');
+            setEndDate(todayStr);
+            setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
+        } else {
+            // If on TO DATE (or CUSTOM), switch to TODAY
+            setDashboardMode('TODAY');
+            setStartDate(todayStr);
+            setEndDate(todayStr);
+            setActiveFilters({ startDate: '', endDate: '' });
+        }
         setTicksElapsed(0);
     };
 
     const handleNavigateLeft = () => {
-        setDashboardMode('TODATE');
-        setStartDate('2026-02-01');
-        setEndDate(todayStr);
-        setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
+        if (dashboardMode === 'TODATE') {
+            // If on TO DATE, go forward to TODAY
+            setDashboardMode('TODAY');
+            setStartDate(todayStr);
+            setEndDate(todayStr);
+            setActiveFilters({ startDate: '', endDate: '' });
+        } else {
+            // If on TODAY (or CUSTOM), switch to TO DATE
+            setDashboardMode('TODATE');
+            setStartDate('2026-02-01');
+            setEndDate(todayStr);
+            setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
+        }
         setTicksElapsed(0);
     };
 
@@ -324,7 +342,7 @@ const HydrantKPIDashboard = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', marginTop:'-10px' }}>
                         <button 
                             onClick={handleNavigateLeft}
-                            title="Switch to Today Orders"
+                            title="Toggle Dashboard Mode"
                             style={{ background: 'none', border: 'none', color: themeColor, fontSize: '22px', fontWeight: 'bold', cursor: 'pointer', padding: '0 5px' }}
                         >
                             &#8592;
@@ -345,7 +363,7 @@ const HydrantKPIDashboard = () => {
 
                         <button 
                             onClick={handleNavigateRight}
-                            title="Switch to To Date Orders"
+                            title="Toggle Dashboard Mode"
                             style={{ background: 'none', border: 'none', color: themeColor, fontSize: '22px', fontWeight: 'bold', cursor: 'pointer', padding: '0 5px' }}
                         >
                             &#8594;
@@ -438,8 +456,6 @@ const HydrantKPIDashboard = () => {
                     <HydrantPercentageStats2 activeFilters={activeFilters} />
                 </div>
 
-
-                
                 <div style={{ width: '100%', marginTop: '24px' }}>
                     <HydrantCategoryTable 
                         activeFilters={activeFilters} 

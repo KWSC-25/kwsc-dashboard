@@ -33,7 +33,7 @@ const HydrantCharts = ({ activeFilters }) => {
     above72: '#f44336',     // Dark Crimson Red
     hmpLine: '#a78bfa',     // HMP Purple Accent
     otsLine: '#38bdf8',     // OTS Cyan Accent
-    gridStroke: '#1E293B',   // Slate Dark Border
+    gridStroke: '#FFFFFF',   // Slate Dark Border
     textMuted: '#94A3B8'    // Muted Labels
   };
 
@@ -206,20 +206,20 @@ const HydrantCharts = ({ activeFilters }) => {
 
         <div className="w-full h-[300px] sm:h-[400px] lg:h-[490px] mt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={lineChartData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+            <LineChart data={lineChartData} margin={{ top: 10, right: 80, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={true} />
               <XAxis 
                 dataKey="date" 
                 stroke={colors.textMuted} 
                 className="font-bold"
-                style={{ fontSize: '14px', sm: '22px', fill: '#94A3B8' }}
+                style={{ fontSize: '25px', sm: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dy={12}
               />
               <YAxis 
                 stroke={colors.textMuted} 
                 className="font-bold"
-                style={{ fontSize: '14px', sm: '22px', fill: '#94A3B8' }}
+                style={{ fontSize: '25px', sm: '22px', fill: '#94A3B8' }}
                 tickLine={false} 
                 dx={-8}
                 label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#94A3B8', fontSize: 34, sm: 32, fontWeight: 'bold', offset: 0 }}
