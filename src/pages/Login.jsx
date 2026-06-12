@@ -39,6 +39,7 @@ const Login = () => {
                 const userRole = res.data.role; // Make sure your backend returns the 'role'
                 sessionStorage.setItem('token', res.data.token);
                 sessionStorage.setItem('role', userRole);
+                sessionStorage.setItem('allowedDashboards', JSON.stringify(res.data.allowedDashboards));
 
                 if (userRole === 'admin') {
                     navigate('/admin'); // Admins go to the new control center

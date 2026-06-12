@@ -14,7 +14,7 @@ const ManageUsers = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
-    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2 });
+    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: [] });
 
     const fetchUsers = async () => {
         try {
@@ -41,11 +41,12 @@ const ManageUsers = () => {
                 email: user.email, 
                 password: '', 
                 role: user.role,
-                max_sessions: user.max_sessions || 2 
+                max_sessions: user.max_sessions || 2,
+                allowed_dashboards: user.allowed_dashboards || [] // <-- Hydrate configuration array field
             });
         } else {
             setEditMode(false);
-            setFormData({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2 });
+            setFormData({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi'] }); // Default all checked on new user initialization
         }
         setShowModal(true);
     };
@@ -79,6 +80,21 @@ const ManageUsers = () => {
             sessionStorage.removeItem('token');
             sessionStorage.removeItem('role');
             navigate('/');
+        }
+    };
+
+    const handleDashboardCheckboxChange = (dashboardId) => {
+        const currentSelected = [...formData.allowed_dashboards];
+        if (currentSelected.includes(dashboardId)) {
+            setFormData({
+                ...formData,
+                allowed_dashboards: currentSelected.filter(id => id !== dashboardId)
+            });
+        } else {
+            setFormData({
+                ...formData,
+                allowed_dashboards: [...currentSelected, dashboardId]
+            });
         }
     };
 
@@ -190,16 +206,23 @@ const ManageUsers = () => {
             {/* POPUP MODAL */}
             {showModal && (
                 <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-300">
-                        <div className="bg-blue-700 p-6 flex justify-between items-center text-white">
+                    {/* Added flex flex-col and max-h constraint to the main container */}
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden border border-slate-300">
+                        
+                        {/* Pinned Header */}
+                        <div className="bg-blue-700 p-6 flex justify-between items-center text-white shrink-0">
                             <div>
                                 <h2 className="text-xl font-bold">{editMode ? 'Edit Account' : 'New Account'}</h2>
                                 <p className="text-blue-100 text-xs mt-1 font-medium">KW&SC Dashboard Credentials</p>
                             </div>
-                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/20 rounded-full transition-colors"><X size={24}/></button>
+                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+                                <X size={24}/>
+                            </button>
                         </div>
                         
-                        <form onSubmit={handleSubmit} className="p-8 space-y-5 bg-white">
+                        {/* Scrollable Form Body */}
+                        {/* Added overflow-y-auto and custom scrollbar behavior */}
+                        <form onSubmit={handleSubmit} className="p-8 space-y-5 bg-white overflow-y-auto flex-1 scrollbar-thin">
                             <div className="space-y-1">
                                 <label className="text-sm font-black text-slate-800 ml-1">Full Name</label>
                                 <div className="relative">
@@ -244,6 +267,27 @@ const ManageUsers = () => {
                                 </div>
                             </div>
 
+                            <div className="space-y-2 border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                                <label className="text-sm font-black text-slate-800 block mb-1">Dashboard Access Control</label>
+                                
+                                {[
+                                    { id: 'complaint', label: 'Complaint Management' },
+                                    { id: 'hydrant', label: 'Hydrant Management' },
+                                    { id: 'lcms', label: 'LCMS Dashboard' },
+                                    { id: 'hydrantkpi', label: 'Hydrant KPI Dashboard' }
+                                ].map((dash) => (
+                                    <label key={dash.id} className="flex items-center gap-3 cursor-pointer py-1 hover:bg-slate-100 px-2 rounded-lg transition-colors">
+                                        <input 
+                                            type="checkbox"
+                                            className="w-4 h-4 text-blue-600 border-2 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                                            checked={formData.allowed_dashboards.includes(dash.id)}
+                                            onChange={() => handleDashboardCheckboxChange(dash.id)}
+                                        />
+                                        <span className="text-sm font-semibold text-slate-700">{dash.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+
                             <div className="space-y-1">
                                 <label className="text-sm font-black text-slate-800 ml-1">Permission Level</label>
                                 <select 
@@ -256,7 +300,6 @@ const ManageUsers = () => {
                                 </select>
                             </div>
 
-                            {/* New Max Sessions Configuration Field */}
                             <div className="space-y-1">
                                 <label className="text-sm font-black text-slate-800 ml-1">Concurrent Device Capacity</label>
                                 <div className="relative">
@@ -271,7 +314,8 @@ const ManageUsers = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full bg-blue-700 hover:bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-200 transition-all mt-4 transform active:scale-[0.98]">
+                            {/* Submit button is safely structured within the vertical bounds now */}
+                            <button type="submit" className="w-full bg-blue-700 hover:bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-200 transition-all mt-4 transform active:scale-[0.98] shrink-0">
                                 {editMode ? 'Save Changes' : 'Create User'}
                             </button>
                         </form>

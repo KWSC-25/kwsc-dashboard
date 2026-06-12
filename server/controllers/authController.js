@@ -77,13 +77,14 @@ export const login = async (req, res) => {
             {
                 sessionId: sessionId,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                allowedDashboards: user.allowed_dashboards || []
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        return res.json({ success: true, token, role: user.role });
+        return res.json({ success: true, token, role: user.role, allowedDashboards: user.allowed_dashboards || [] });
     } catch (error) {
         console.error("Login Error:", error);
         return res.status(500).json({ success: false, message: "Server Error" });
