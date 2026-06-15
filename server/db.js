@@ -46,7 +46,13 @@ const pools = {};
 
 export const getDatabase = async (type) => {
     // 🌟 ALIAS STRATEGY: If 'hydrantkpi' is requested, cleanly route it to use the 'hydrant' pool instead
-    const targetType = type === 'hydrantkpi' ? 'hydrant' : type;
+  let targetType = type;
+    
+    if (type === 'hydrantkpi') {
+        targetType = 'hydrant';
+    } else if (type === 'zonecomplaint') {
+        targetType = 'complaint'; // 🎯 Redirects zonecomplaint to the existing complaint pool cleanly!
+    }
 
     // If pool already exists, return it instantly
     if (pools[targetType]) return pools[targetType];

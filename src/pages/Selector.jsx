@@ -44,11 +44,13 @@ const Selector = () => {
             path: '/dashboard'
         },
         {
-            id: 'analytics',
-            title: 'New Dashboard',
-            desc: '',
+            id: 'zonecomplaint',
+            title: 'Zone Wise Complaint Dashboard',
+            desc: 'Monitor complaints zone wise',
             icon: <BarChart3 size={40} color="#64748b" />,
-            active: false
+            active: true,
+            path: '/dashboard'
+
         },
         {
             id: 'hr',

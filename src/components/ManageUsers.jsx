@@ -46,7 +46,7 @@ const ManageUsers = () => {
             });
         } else {
             setEditMode(false);
-            setFormData({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi'] }); // Default all checked on new user initialization
+            setFormData({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint'] }); // Default all checked on new user initialization
         }
         setShowModal(true);
     };
@@ -274,7 +274,9 @@ const ManageUsers = () => {
                                     { id: 'complaint', label: 'Complaint Management' },
                                     { id: 'hydrant', label: 'Hydrant Management' },
                                     { id: 'lcms', label: 'LCMS Dashboard' },
-                                    { id: 'hydrantkpi', label: 'Hydrant KPI Dashboard' }
+                                    { id: 'hydrantkpi', label: 'Hydrant KPI Dashboard' },
+                                    { id: 'zonecomplaint', label: 'ZoneWise Complaint Dashboard' }
+
                                 ].map((dash) => (
                                     <label key={dash.id} className="flex items-center gap-3 cursor-pointer py-1 hover:bg-slate-100 px-2 rounded-lg transition-colors">
                                         <input 

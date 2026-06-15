@@ -1,0 +1,11 @@
+import express from 'express';
+import { getZoneKpiStats, getActiveComplaintTypes, getZoneWisePendingMatrix } from '../controllers/ZoneComplaintController.js';
+
+const router = express.Router();
+
+// Operational metrics execution pipelines
+router.get('/kpi-stats', getZoneKpiStats);
+router.get('/types', getActiveComplaintTypes);
+router.get('/zone-matrix', getZoneWisePendingMatrix)
+
+export default router;

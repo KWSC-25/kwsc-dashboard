@@ -23,7 +23,8 @@ import RedZoneViolations from '../components/RedZoneViolations';
 import HydrantOperationalHours from '../components/HydrantOperationalHours';
 import SpecialSourcesCard from '../components/SpecialSourcesCard';
 import HydrantKPIDashboard from '../components/HydrantKPIDashboard';
-
+import ComplaintZoneHeader from '../components/Zone-complaintHeader';
+import ZoneComplaintDashboard from '../components/ZoneComplaintDashboard';
 const Dashboard = () => {
     const location = useLocation();
     // It checks if 'location.state.initialTab' exists; otherwise, it defaults to 'complaint'
@@ -66,6 +67,8 @@ const Dashboard = () => {
             <option value="hydrant">HYDRANT SYSTEM</option>
             <option value="hydrantkpi">HYDRANT KPI DASHBOARD</option>
             <option value="lcms">LCMS DASHBOARD</option>
+            <option value="zonecomplaint">Zone wise Complaint DASHBOARD</option>
+
             
         </select>
     );
@@ -80,6 +83,8 @@ const Dashboard = () => {
                 <HmpHeader>{SystemSelector}</HmpHeader>
             ) : activeSystem === 'hydrantkpi' ? (
                 <HmpKpiHeader>{SystemSelector}</HmpKpiHeader>
+            ) : activeSystem === 'zonecomplaint' ? (
+                <ComplaintZoneHeader>{SystemSelector}</ComplaintZoneHeader>
             ) : (
                 <LcmsHeader>{SystemSelector}</LcmsHeader>
             )}
@@ -301,6 +306,9 @@ const Dashboard = () => {
                 )}
                 {activeSystem === 'lcms' && (
                     <LcmsDashboard /> // We will create this
+                )}
+                {activeSystem === 'zonecomplaint' && (
+                    <ZoneComplaintDashboard /> // We will create this
                 )}
             </div>
         </div>
