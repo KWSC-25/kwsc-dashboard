@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Droplets, LogOut, Construction, BarChart3, Users, Scale } from 'lucide-react';
+import { LayoutDashboard, Droplets, LogOut, BarChart3, Users, Scale } from 'lucide-react';
 import { handleGlobalLogout } from '../utils/authService';
 
 const Selector = () => {
     const navigate = useNavigate();
 
-  
+    // 1. Read allowed dashboards array from session store safely
+    const allowedDashboardsString = sessionStorage.getItem('allowedDashboards');
+    const allowedDashboards = allowedDashboardsString ? JSON.parse(allowedDashboardsString) : [];
+    const userRole = sessionStorage.getItem('role'); // To allow Admins bypass filters automatically
 
     const dashboardOptions = [
         {
@@ -31,7 +34,6 @@ const Selector = () => {
             icon: <Scale size={40} color="#5fb11c" />,
             active: true,
             path: '/dashboard'
-
         },
         {
             id: 'hydrantkpi',
@@ -41,13 +43,14 @@ const Selector = () => {
             active: true,
             path: '/dashboard'
         },
-
         {
-            id: 'analytics',
-            title: 'New Dashboard',
-            desc: '',
+            id: 'zonecomplaint',
+            title: 'Zone Wise Complaint Dashboard',
+            desc: 'Monitor complaints zone wise',
             icon: <BarChart3 size={40} color="#64748b" />,
-            active: false
+            active: true,
+            path: '/dashboard'
+
         },
         {
             id: 'hr',
@@ -60,7 +63,6 @@ const Selector = () => {
 
     return (
         <div className="selector-container">
-            {/* Added display: flex and align-items: center to ensure the logo and text are centered */}
             <div className="selector-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <img src="/kwsc-logo.png" alt="Logo" style={{ width: '80px', marginBottom: '10px' }} />
                 <h2 className="login-title-thin">Karachi Water & Sewerage Corporation</h2>
@@ -69,29 +71,40 @@ const Selector = () => {
             </div>
 
             <div className="selector-grid">
-                {dashboardOptions.map((opt) => (
-                    <div
-                        key={opt.id}
-                        className={`selector-card ${!opt.active ? 'disabled-card' : ''}`}
-                        onClick={() => {
-                            if (opt.active) {
-                                // 1. Save the ID (e.g., 'hydrant' or 'complaint') to storage
-                                sessionStorage.setItem('activeDashboard', opt.id);
+                {dashboardOptions.map((opt) => {
+                    // Check individual access rights map configurations
+                    // Admin roles completely bypass any dynamic filtering constraints
+                    const hasAccess = !opt.active || userRole === 'admin' || allowedDashboards.includes(opt.id);
 
-                                // 2. Navigate as usual
+                    return (
+                        <div
+                            key={opt.id}
+                            className={`selector-card ${!opt.active ? 'disabled-card' : ''} ${!hasAccess ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            onClick={() => {
+                                if (!opt.active) return;
+
+                                // 2. Trigger warning or block path redirection gracefully if they don't have access
+                                if (!hasAccess) {
+                                    alert("Access Denied: You do not have permissions to access this metrics dashboard. Contact your IT administrator.");
+                                    return;
+                                }
+
+                                sessionStorage.setItem('activeDashboard', opt.id);
                                 navigate(opt.path, { state: { initialTab: opt.id } });
-                            }
-                        }}
-                    >
-                        {!opt.active && <span className="coming-soon-tag">Coming Soon</span>}
-                        <div className="icon-wrapper">{opt.icon}</div>
-                        <h3>{opt.title}</h3>
-                        <p>{opt.desc}</p>
-                    </div>
-                ))}
+                            }}
+                        >
+                            {!opt.active && <span className="coming-soon-tag">Coming Soon</span>}
+                            {opt.active && !hasAccess && (
+                                <span className="coming-soon-tag" style={{ backgroundColor: '#ef4444' }}>Locked</span>
+                            )}
+                            <div className="icon-wrapper">{opt.icon}</div>
+                            <h3>{opt.title}</h3>
+                            <p>{opt.desc}</p>
+                        </div>
+                    );
+                })}
             </div>
 
-            {/* Added display: flex, align-items: center, and gap to keep icon and text on one line */}
             <button
                 onClick={() => handleGlobalLogout(navigate)}
                 className="selector-logout"
