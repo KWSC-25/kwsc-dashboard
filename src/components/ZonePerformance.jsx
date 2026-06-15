@@ -42,6 +42,20 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
         return () => clearInterval(matrixAutoRefreshInterval);
     }, [fetchMatrixMetrics]);
 
+// Calculate vertical totals for each column dynamic key
+    const columnTotals = matrixData.columns.reduce((acc, col) => {
+        const totalForCol = matrixData.data.reduce((sum, row) => {
+            return sum + parseInt(row[col.key] || 0, 10);
+        }, 0);
+        acc[col.key] = totalForCol;
+        return acc;
+    }, {});
+
+    // Calculate grand total of all pending entries
+    const grandTotalPending = matrixData.data.reduce((sum, row) => {
+        return sum + parseInt(row.total_zone_pending || 0, 10);
+    }, 0);
+
     if (loading) {
         return (
             <div className="bg-[#0c1122] border border-slate-800/80 rounded-xl p-8 flex flex-col items-center justify-center space-y-3 min-h-[250px]">
@@ -142,10 +156,31 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                             })
                         )}
                     </tbody>
+                    {/* NEW VERTICAL COLUMN SUMMARY ROW FOOTER */}
+                    {matrixData.data.length > 0 && (
+                        <tfoot className="border-t-2 border-slate-700 bg-[#0d1428] font-mono">
+                            <tr className="text-slate-200 font-black tracking-wide uppercase">
+                                <td className="py-6 px-6 font-sans font-black text-3xl text-cyan-400 sticky left-0 bg-[#0d1428] z-10 shadow-[4px_0_8px_rgba(0,0,0,0.5)] whitespace-nowrap">
+                                    TOTAL 
+                                </td>
+                                
+                                {matrixData.columns.map((col) => (
+                                    <td key={col.key} className="py-6 px-8 text-center text-3xl font-black text-slate-100 whitespace-nowrap">
+                                        {columnTotals[col.key].toLocaleString()}
+                                    </td>
+                                ))}
+                                
+                                <td className="py-6 px-8 text-center bg-red-950/60 text-red-400 font-black text-2xl border-l border-slate-800 whitespace-nowrap">
+                                    <span className="px-4 py-1.5 rounded bg-red-500/30 text-red-200 ring-1 ring-red-400/40 inline-block w-full text-center">
+                                        {grandTotalPending.toLocaleString()}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    )}
                 </table>
             </div>
         </div>
     );
 };
-
 export default ZonePerformance;
