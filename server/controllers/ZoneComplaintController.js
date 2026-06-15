@@ -109,7 +109,7 @@ export const getActiveComplaintTypes = async (req, res) => {
 
 export const getZoneWisePendingMatrix = async (req, res) => {
   try {
-    const { typeId, startDate, endDate } = req.query;
+    const { typeId, startDate, endDate, zoneId } = req.query;
 
     // A check to handle initial placeholder loading states gracefully
     const targetTypeId = (typeId && typeId !== 'ALL') ? Number(typeId) : 1; 
@@ -150,25 +150,49 @@ export const getZoneWisePendingMatrix = async (req, res) => {
       pivotColumnsSql += `SUM(CASE WHEN c.subtype_id = ${sub.id} AND c.status = 0 THEN 1 ELSE 0 END) AS \`${dynamicKey}\`,\n`;
     });
 
-    // Step 3: Compile core analytics evaluation metrics cleanly using explicit join configurations
-    const mainMatrixQuery = `
-      SELECT 
-        z.id AS zone_id,
-        z.title AS zone_name,
-        ${pivotColumnsSql}
-        SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending
-      FROM zones z
-      LEFT JOIN zone_towns zt ON z.id = zt.zone_id
-      LEFT JOIN complaint c ON zt.town_id = c.town_id 
-        AND c.type_id = ? 
-        ${dateFilterSql}
-      WHERE z.status = 1
-      GROUP BY z.id, z.title
-      ORDER BY z.title ASC;
-    `;
+    let mainMatrixQuery = "";
+    let executionParams = [];
 
-    // Inject targetTypeId both inside the explicit join matching array block and date arrays safely
-    const [matrixRows] = await req.db.query(mainMatrixQuery, [targetTypeId, ...queryParams]);
+    // Step 3: Conditional matrix generation depending on whether a drill-down Zone ID is active
+    if (zoneId) {
+      // DRILL DOWN VIEW: Fetch individual Towns for a specific Selected Zone
+      mainMatrixQuery = `
+        SELECT 
+          t.id AS zone_id, -- Mapped to zone_id placeholder to preserve frontend layout structure
+          t.town AS zone_name, -- Mapped to zone_name placeholder to preserve frontend layout structure
+          ${pivotColumnsSql}
+          SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending
+        FROM towns t
+        INNER JOIN zone_towns zt ON t.id = zt.town_id
+        LEFT JOIN complaint c ON t.id = c.town_id 
+          AND c.type_id = ? 
+          ${dateFilterSql}
+        WHERE zt.zone_id = ?
+        GROUP BY t.id, t.town
+        ORDER BY t.town ASC;
+      `;
+      executionParams = [targetTypeId, ...queryParams, Number(zoneId)];
+    } else {
+      // GLOBAL VIEW: Fetch aggregated data grouped by Zones
+      mainMatrixQuery = `
+        SELECT 
+          z.id AS zone_id,
+          z.title AS zone_name,
+          ${pivotColumnsSql}
+          SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending
+        FROM zones z
+        LEFT JOIN zone_towns zt ON z.id = zt.zone_id
+        LEFT JOIN complaint c ON zt.town_id = c.town_id 
+          AND c.type_id = ? 
+          ${dateFilterSql}
+        WHERE z.status = 1
+        GROUP BY z.id, z.title
+        ORDER BY z.title ASC;
+      `;
+      executionParams = [targetTypeId, ...queryParams];
+    }
+
+    const [matrixRows] = await req.db.query(mainMatrixQuery, executionParams);
 
     res.status(200).json({
       success: true,

@@ -1,17 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
-import { Layers, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Layers, ShieldAlert, RefreshCw, ArrowLeft } from 'lucide-react';
 
 const ZonePerformance = ({ typeId, startDate, endDate }) => {
     const [matrixData, setMatrixData] = useState({ columns: [], data: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // Tracks active drill-down context to flip between Zone view and Town view
+    const [selectedZone, setSelectedZone] = useState(null);
 
     const fetchMatrixMetrics = useCallback(async (showSpinner = true) => {
         if (showSpinner) setLoading(true);
         try {
             const resp = await api.get('zone-complaints/zone-matrix', {
-                params: { typeId, startDate, endDate }
+                params: { 
+                    typeId, 
+                    startDate, 
+                    endDate,
+                    // Inject active zone target context if it exists
+                    zoneId: selectedZone ? selectedZone.id : undefined 
+                }
             });
             if (resp.data?.success) {
                 setMatrixData({
@@ -26,7 +35,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
         } finally {
             if (showSpinner) setLoading(false);
         }
-    }, [typeId, startDate, endDate]);
+    }, [typeId, startDate, endDate, selectedZone]);
 
     // Initial load and filter change trigger
     useEffect(() => {
@@ -42,7 +51,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
         return () => clearInterval(matrixAutoRefreshInterval);
     }, [fetchMatrixMetrics]);
 
-// Calculate vertical totals for each column dynamic key
+    // Calculate vertical totals for each column dynamic key
     const columnTotals = matrixData.columns.reduce((acc, col) => {
         const totalForCol = matrixData.data.reduce((sum, row) => {
             return sum + parseInt(row[col.key] || 0, 10);
@@ -81,13 +90,23 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
             {/* COMPONENT HEADER COMPASS BLOCK */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
-                    <Layers className="w-5 h-5 text-cyan-400" />
+                    {selectedZone ? (
+                        <button 
+                            onClick={() => setSelectedZone(null)}
+                            className="p-2 bg-[#12182c] hover:bg-slate-800 text-cyan-400 rounded-md border border-slate-800/80 transition-all flex items-center justify-center mr-1"
+                            title="Back to Zonal Regions"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                    ) : (
+                        <Layers className="w-5 h-5 text-cyan-400" />
+                    )}
                     <div>
                         <h3 className="text-base font-black tracking-wider uppercase text-white">
-                            Zone Performance Analysis
+                            {selectedZone ? `${selectedZone.name} Town Performance` : 'Zone Performance Analysis'}
                         </h3>
                         <p className="text-xs text-slate-400 font-bold uppercase tracking-tight mt-0.5">
-                            Dynamic sub-type cross-examination matrix (Pending Breakdown) 
+                            {selectedZone ? `Detailed breakdown of towns inside ${selectedZone.name}` : 'Dynamic sub-type cross-examination matrix (Pending Breakdown)'}
                         </p>
                     </div>
                 </div>
@@ -105,10 +124,10 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                     <thead>
                         <tr className="bg-[#12182c] border-b border-slate-800 text-[40px] font-black tracking-wide text-slate-300 uppercase">
                             <th className="py-4 px-5 text-slate-200 text-2xl">
-                                ZONAL REGIONS
+                                {selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}
                             </th>
                             {matrixData.columns.map((col) => (
-                                <th key={col.key} className="py-4 px-3 font-mono  text-3xl" >
+                                <th key={col.key} className="py-4 px-3 font-mono text-3xl" >
                                     {col.label}
                                 </th>
                             ))}
@@ -128,9 +147,14 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                             matrixData.data.map((row) => {
                                 const totalPendingVal = parseInt(row.total_zone_pending || 0, 10);
                                 return (
-                                    <tr key={row.zone_id} className="hover:bg-[#0f1527]/90 transition-colors group">
+                                    <tr 
+                                        key={row.zone_id} 
+                                        // Trigger drilldown click event if we are viewing the general Zone list
+                                        onClick={() => !selectedZone && setSelectedZone({ id: row.zone_id, name: row.zone_name })}
+                                        className={`transition-colors group ${!selectedZone ? 'cursor-pointer hover:bg-[#0f1527]/90' : 'hover:bg-[#0f1527]/40'}`}
+                                    >
                                         
-                                        {/* ZONE REGION IDENTIFIER CELL */}
+                                        {/* ZONE/TOWN REGION IDENTIFIER CELL */}
                                         <td className="py-4 px-5 font-sans font-black text-slate-200 text-6xl sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">
                                             {row.zone_name.toUpperCase()}
                                         </td>
@@ -156,12 +180,12 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                             })
                         )}
                     </tbody>
-                    {/* NEW VERTICAL COLUMN SUMMARY ROW FOOTER */}
+                    {/* VERTICAL COLUMN SUMMARY ROW FOOTER */}
                     {matrixData.data.length > 0 && (
                         <tfoot className="border-t-2 border-slate-700 bg-[#0d1428] font-mono">
                             <tr className="text-slate-200 font-black tracking-wide uppercase">
                                 <td className="py-6 px-6 font-sans font-black text-3xl text-cyan-400 sticky left-0 bg-[#0d1428] z-10 shadow-[4px_0_8px_rgba(0,0,0,0.5)] whitespace-nowrap">
-                                    TOTAL 
+                                    TOTAL
                                 </td>
                                 
                                 {matrixData.columns.map((col) => (
@@ -183,4 +207,5 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
         </div>
     );
 };
+
 export default ZonePerformance;
