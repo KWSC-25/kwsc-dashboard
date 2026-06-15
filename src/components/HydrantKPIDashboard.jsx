@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DatePicker from 'react-datepicker'; // <-- Imported DatePicker
+import 'react-datepicker/dist/react-datepicker.css'; // <-- Imported Base Styles
 import api from '../utils/api';
 import HydrantCategoryTable from './HydrantCategoryTable'; 
 import CategorySlider from './CategorySlider';
 import HydrantPercentageStats from './HydrantPercentageStats'; 
 import HydrantPercentageStats2 from './HydrantPercentageStats2';
-import HydrantCharts from './HydrantCharts'; // <-- New Chart Component imported safely
+import HydrantCharts from './HydrantCharts';
 
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
@@ -14,11 +16,7 @@ const HydrantKPIDashboard = () => {
     const [startDate, setStartDate] = useState('2026-02-01');
     const [endDate, setEndDate] = useState(todayStr);
     const [activeFilters, setActiveFilters] = useState({ startDate: '2026-02-01', endDate: todayStr });
-
-    // Tracks how many 30-second ticks have passed in the current mode
     const [ticksElapsed, setTicksElapsed] = useState(0);
-
-    // Responsive state tracker for dynamic styling adjustments
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -30,7 +28,6 @@ const HydrantKPIDashboard = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Fetch metrics pipeline bound strictly to activeFilters state mapping
     const fetchTodayStats = useCallback(async () => {
         try {
             let url = 'newkpis/today-stats';
@@ -44,31 +41,24 @@ const HydrantKPIDashboard = () => {
         }
     }, [activeFilters]);
 
-    // Single source of truth for executing data fetches on state changes
     useEffect(() => {
         fetchTodayStats();
     }, [fetchTodayStats]);
 
-    // Single source of truth interval loop (Runs every 30 seconds)
     useEffect(() => {
         if (dashboardMode === 'CUSTOM') return;
 
         const interval = setInterval(() => {
-            // 1. Always refresh database statistics for the active view
             fetchTodayStats();
-
-            // 2. Increment ticks cleanly
             setTicksElapsed((prev) => prev + 1);
-        }, 30000); // 30 seconds per tick
+        }, 30000);
 
         return () => clearInterval(interval);
     }, [fetchTodayStats, dashboardMode]);
 
-    // Separate Side Effect: Watch ticks elapsed and shift modes purely
     useEffect(() => {
         if (dashboardMode === 'CUSTOM') return;
 
-        // TODATE -> TODAY (15 mins = 30 ticks)
         if (dashboardMode === 'TODATE' && ticksElapsed >= 30) {
             setStartDate(todayStr);
             setEndDate(todayStr);
@@ -76,7 +66,6 @@ const HydrantKPIDashboard = () => {
             setTicksElapsed(0);
             setDashboardMode('TODAY');
         } 
-        // TODAY -> TODATE (5 mins = 10 ticks)
         else if (dashboardMode === 'TODAY' && ticksElapsed >= 10) {
             setStartDate('2026-02-01');
             setEndDate(todayStr);
@@ -86,7 +75,6 @@ const HydrantKPIDashboard = () => {
         }
     }, [ticksElapsed, dashboardMode, todayStr]);
 
-    // Manual Form Filter submissions
     const handleApplyFilter = () => {
         setDashboardMode('CUSTOM');
         setActiveFilters({ startDate, endDate });
@@ -100,16 +88,13 @@ const HydrantKPIDashboard = () => {
         setTicksElapsed(0);
     };
 
-    // Manual navigation controls using the header arrow triggers
     const handleNavigateRight = () => {
         if (dashboardMode === 'TODAY') {
-            // If on TODAY, go back to TO DATE
             setDashboardMode('TODATE');
             setStartDate('2026-02-01');
             setEndDate(todayStr);
             setActiveFilters({ startDate: '2026-02-01', endDate: todayStr });
         } else {
-            // If on TO DATE (or CUSTOM), switch to TODAY
             setDashboardMode('TODAY');
             setStartDate(todayStr);
             setEndDate(todayStr);
@@ -120,13 +105,11 @@ const HydrantKPIDashboard = () => {
 
     const handleNavigateLeft = () => {
         if (dashboardMode === 'TODATE') {
-            // If on TO DATE, go forward to TODAY
             setDashboardMode('TODAY');
             setStartDate(todayStr);
             setEndDate(todayStr);
             setActiveFilters({ startDate: '', endDate: '' });
         } else {
-            // If on TODAY (or CUSTOM), switch to TO DATE
             setDashboardMode('TODATE');
             setStartDate('2026-02-01');
             setEndDate(todayStr);
@@ -136,6 +119,20 @@ const HydrantKPIDashboard = () => {
     };
 
     const handleTableDataCalculated = useCallback(() => {}, []);
+
+    // Helper functions to bridge library's Date objects with your system's ISO string states
+    const parseStringToDate = (dateStr) => {
+        if (!dateStr) return new Date();
+        const [year, month, day] = dateStr.split('-');
+        return new Date(year, month - 1, day);
+    };
+
+    const formatDateToString = (dateObj) => {
+        if (!dateObj) return '';
+        const offset = dateObj.getTimezoneOffset();
+        const adjustedDate = new Date(dateObj.getTime() - (offset * 60 * 1000));
+        return adjustedDate.toISOString().split('T')[0];
+    };
 
     if (!data || !data.ots || !data.orders) {
         return <div className="hmp-loading" style={{ color: '#fff', padding: '20px' }}>Fetching Hydrant KPI Stats...</div>;
@@ -196,7 +193,6 @@ const HydrantKPIDashboard = () => {
 
     const renderSingleCard = (key, type, cardType) => {
         const s = stats[key];
-        
         const configurations = {
             created: { label: `CREATED`, grad: "hmp-grad-cyan", lblClass: "label-cyan", count: s.created, gallons: s.created_gallons, amount: s.created_amount, isTatCard: false },
             completed: { label: `COMPLETED`, grad: "hmp-grad-green", lblClass: "label-green", count: s.completed, gallons: s.completed_gallons, amount: s.completed_amount, isTatCard: false },
@@ -239,7 +235,7 @@ const HydrantKPIDashboard = () => {
                 </div>
                 {cfg.isCancelledCard && type === 'OTS' && (
                     <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'space-between', border: 'none', paddingTop: '2px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '2px', fontSize: '35px', color: '#8a99a8' }}>
-                        <span style={{ color: 'white',  }}>Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
+                        <span style={{ color: 'white' }}>Consumer: <strong>{fmt(s.cancelled_consumer)}</strong></span>
                         <span style={{ color: 'white' }}>Hydrant: <strong>{fmt(s.cancelled_hydrant)}</strong></span>
                     </div>
                 )}
@@ -264,20 +260,25 @@ const HydrantKPIDashboard = () => {
 
     const themeColor = dashboardMode === 'TODATE' ? '#00f2ff' : '#FFF200';
 
+    // Shared layout wrapper object for consistent picker input text sizes
+    const datePickerInputStyle = {
+        background: '#222',
+        color: '#fff',
+        border: '1px solid #777',
+        borderRadius: '4px',
+        padding: '12px 50px 12px 20px', // Increased right padding to leave space for icon
+        fontSize: '28px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        width: isMobile ? '100%' : '260px'
+    };
+
     return (
         <div 
             className="hydrant-kpi-dashboard-wrapper animate-fade-in" 
-            style={{ 
-                padding: '20px', 
-                color: '#fff', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '0px', 
-                width: '100%',
-                position: 'relative' 
-            }}
+            style={{ padding: '20px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '0px', width: '100%', position: 'relative' }}
         >
-            {/* ==================== CONTROL BOX (ABSOLUTE RIGHT HIGHLIGHTED ZONE) ==================== */}
+            {/* ==================== CONTROL BOX ==================== */}
             <div 
                 className="kpi-date-filter-inline" 
                 style={{ 
@@ -297,22 +298,48 @@ const HydrantKPIDashboard = () => {
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
                     <label style={{ fontSize: '20px', color: '#fff', fontWeight: 'bold' }}>From:</label>
-                    <input  
-                        type="date" 
-                        value={startDate} 
-                        onChange={(e) => setStartDate(e.target.value)}
-                        style={{ background: '#222', color: '#fff', border: '1px solid #777', borderRadius: '4px', padding: '12px 20px', fontSize: '28px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none', width: isMobile ? 'auto' : '260px', colorScheme: 'dark' }}
-                    />
+                    {/* Configured format to dd-MM-yyyy with relative positioning container */}
+                    <div style={{ position: 'relative', display: 'inline-block', width: isMobile ? '100%' : 'auto' }}>
+                        <DatePicker
+                            selected={parseStringToDate(startDate)}
+                            onChange={(date) => setStartDate(formatDateToString(date))}
+                            dateFormat="dd-MM-yyyy"
+                            className="custom-dashboard-datepicker"
+                            customInput={<input style={datePickerInputStyle} />}
+                        />
+                        <svg 
+                            style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', width: '30px', height: '30px', color: '#fff', pointerEvents: 'none' }} 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            strokeWidth="2"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
                     <label style={{ fontSize: '20px', color: '#fff', fontWeight: 'bold' }}>To:</label>
-                    <input 
-                        type="date" 
-                        value={endDate} 
-                        onChange={(e) => setEndDate(e.target.value)}
-                        style={{ background: '#222', color: '#fff', border: '1px solid #777', borderRadius: '4px', padding: '12px 20px', fontSize: '28px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none', width: isMobile ? 'auto' : '260px', colorScheme: 'dark' }}
-                    />
+                    {/* Configured format to dd-MM-yyyy with relative positioning container */}
+                    <div style={{ position: 'relative', display: 'inline-block', width: isMobile ? '100%' : 'auto' }}>
+                        <DatePicker
+                            selected={parseStringToDate(endDate)}
+                            onChange={(date) => setEndDate(formatDateToString(date))}
+                            dateFormat="dd-MM-yyyy"
+                            className="custom-dashboard-datepicker"
+                            customInput={<input style={datePickerInputStyle} />}
+                        />
+                        <svg 
+                            style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', width: '30px', height: '30px', color: '#fff', pointerEvents: 'none' }} 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            strokeWidth="2"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '10px', marginTop: isMobile ? '4px' : '0px' }}>
@@ -322,7 +349,6 @@ const HydrantKPIDashboard = () => {
                     >
                         FILTER
                     </button>
-                    
                     <button 
                         onClick={handleResetFilter}
                         style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '4px', padding: '12px 26px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
@@ -335,81 +361,36 @@ const HydrantKPIDashboard = () => {
             {/* ==================== GLOBAL CONTROL SECTION ==================== */}
             <div className="hmp-kpi-group-wrapper hmp-grp-today" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch', position: 'relative' }}>
                 
-                {/* Header Control Panel Bar */}
                 <div className="hmp-group-label hmp-lbl-today" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: isMobile ? 'flex-start' : 'space-between', gap: '16px', width: '100%', marginBottom: '4px' }}>
-                    
-                    {/* Integrated Slider Header Title */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', marginTop:'-10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '0 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', marginTop:'-10px' }}>
                         <button 
                             onClick={handleNavigateLeft}
                             title="Toggle Dashboard Mode"
-                            style={{ background: 'none', border: 'none', color: themeColor, fontSize: '22px', fontWeight: 'bold', cursor: 'pointer', padding: '0 5px' }}
+                            style={{ background: 'none', border: 'none', color: themeColor, fontSize: '60px', fontWeight: 'bolder', cursor: 'pointer', padding: '0 20px' }}
                         >
                             &#8592;
                         </button>
-                        
-                        <span style={{ 
-                                fontSize: isMobile ? '22px' : '40px', // Dynamically scales down from 40px to 22px on mobile
-                                fontWeight: 'bold', 
-                                letterSpacing: '0.5px', 
-                                whiteSpace: 'nowrap', 
-                                minWidth: isMobile ? 'auto' : '190px', // Drops the high minimum layout constraint on mobile
-                                textAlign: 'center', 
-                                color: themeColor, 
-                                transition: 'color 0.4s ease' 
-                            }}>
-                                {getHeaderTitle()}
+                        <span style={{ fontSize: isMobile ? '22px' : '40px', fontWeight: 'bold', letterSpacing: '0.5px', whiteSpace: 'nowrap', minWidth: isMobile ? 'auto' : '190px', textAlign: 'center', color: themeColor, transition: 'color 0.4s ease' }}>
+                            {getHeaderTitle()}
                         </span>
-
                         <button 
                             onClick={handleNavigateRight}
                             title="Toggle Dashboard Mode"
-                            style={{ background: 'none', border: 'none', color: themeColor, fontSize: '22px', fontWeight: 'bold', cursor: 'pointer', padding: '0 5px' }}
+                            style={{ background: 'none', border: 'none', color: themeColor, fontSize: '60px', fontWeight: 'bolder', cursor: 'pointer', padding: '0 20px' }}
                         >
                             &#8594;
                         </button>
                     </div>
                 </div>
 
-                {/* Top Row: Cards Grid System Wrapper */}
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', marginTop: '30px', position: 'relative' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
-                        
-                        {/* ==================== SINGLE UNIFIED PENDING WRAPPER BOX ==================== */}
-                        <div 
-                            style={{ 
-                                position: 'absolute', 
-                                left: 'calc((100% / 6.5) * 0.5 + ((100% / 6.5) * 2) - 4px)', 
-                                width: 'calc((100% / 6.5) * 2 + 8px)',
-                                top: '-38px', 
-                                bottom: '-9px', 
-                                border: '1px solid rgba(191, 84, 46, 0.99)', 
-                                backgroundColor: 'rgba(255, 255, 255, 0.03)', 
-                                borderRadius: '8px', 
-                                zIndex: 1, 
-                                pointerEvents: 'none', 
-                                display: isMobile ? 'none' : 'block' 
-                            }}
-                        >
-                            <div 
-                                style={{ 
-                                    position: 'absolute', 
-                                    top: '-17px', 
-                                    left: '50%', 
-                                    transform: 'translateX(-50%)', 
-                                    padding: '0 12px', 
-                                    fontSize: '35px', 
-                                    backgroundColor: '#111622',
-                                    fontWeight: 'bold', 
-                                    color: '#ff4d4f', 
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
+                        <div style={{ position: 'absolute', left: 'calc((100% / 6.5) * 0.5 + ((100% / 6.5) * 2) - 4px)', width: 'calc((100% / 6.5) * 2 + 8px)', top: '-38px', bottom: '-9px', border: '1px solid rgba(191, 84, 46, 0.99)', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', zIndex: 1, pointerEvents: 'none', display: isMobile ? 'none' : 'block' }}>
+                            <div style={{ position: 'absolute', top: '-17px', left: '50%', transform: 'translateX(-50%)', padding: '0 12px', fontSize: '35px', backgroundColor: '#111622', fontWeight: 'bold', color: '#ff4d4f', whiteSpace: 'nowrap' }}>
                                 Pending Orders
                             </div>
                         </div>
 
-                        {/* 1. OTS ROW */}
                         <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '0.5fr repeat(6, minmax(0, 1fr))', gap: '8px', position: 'relative', zIndex: 2 }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 242, 255, 0.05)', border: '1px solid rgba(0, 242, 255, 0.3)', borderRadius: '6px', padding: '2px' }}>
                                 <span style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>online</span>
@@ -422,7 +403,6 @@ const HydrantKPIDashboard = () => {
                             <div>{renderSingleCard('daily_ots', 'OTS', 'tat')}</div>
                         </div>
                         
-                        {/* 2. HMP ROW */}
                         <div className="hmp-kpi-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '0.5fr repeat(6, minmax(0, 1fr))', gap: '8px', alignItems: 'stretch', position: 'relative', zIndex: 2 }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(190, 102, 227, 0.05)', border: '1px solid rgba(190, 102, 227, 0.3)', borderRadius: '6px', padding: '10px' }}>
                                 <span style={{ fontSize: '30px', fontWeight: 'bold', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>hmp</span>
@@ -434,21 +414,16 @@ const HydrantKPIDashboard = () => {
                             <div>{renderSingleCard('daily_hmp', 'HMP', 'cancelled')}</div>
                             <div>{renderSingleCard('daily_hmp', 'HMP', 'tat')}</div>
                         </div>
-
                     </div>
                 </div>
 
-                {/* Sub-component analytics systems pipeline blocks */}
                 <div style={{ width: '100%', marginTop: '20px' }}>
-                    <HydrantPercentageStats activeFilters={activeFilters}
-                    dashboardMode={dashboardMode} />
+                    <HydrantPercentageStats activeFilters={activeFilters} dashboardMode={dashboardMode} />
                 </div>
                 
-                {/* VISUAL ANALYTICS CHARTS SECTION (Synchronized with Global Filter State) */}
                 {(dashboardMode === 'TODATE' || dashboardMode === 'CUSTOM') && (
                     <div style={{ width: '100%', marginTop: '24px' }}>
-                        <HydrantCharts activeFilters={activeFilters}
-                         />
+                        <HydrantCharts activeFilters={activeFilters} />
                     </div>
                 )}
 
@@ -457,10 +432,7 @@ const HydrantKPIDashboard = () => {
                 </div>
 
                 <div style={{ width: '100%', marginTop: '24px' }}>
-                    <HydrantCategoryTable 
-                        activeFilters={activeFilters} 
-                        onDataCalculated={handleTableDataCalculated}
-                    />
+                    <HydrantCategoryTable activeFilters={activeFilters} onDataCalculated={handleTableDataCalculated} />
                 </div>
             </div>
         </div>

@@ -3753,3 +3753,26 @@ lcms styling  */
         top: 0 !important;
     }
 }
+
+/* Fix calendar popover panel scale size issues instantly */
+.react-datepicker {
+    font-size: 1.5rem !important;
+    background-color: #111622 !important;
+    border: 1px solid #444 !important;
+    color: #fff !important;
+}
+.react-datepicker__header {
+    background-color: #1a2233 !important;
+    border-bottom: 1px solid #444 !important;
+}
+.react-datepicker__current-month, .react-datepicker__day-name, .react-datepicker__day {
+    color: #fff !important;
+}
+.react-datepicker__day:hover {
+    background-color: #00f2ff !important;
+    color: #000 !important;
+}
+.react-datepicker__day--selected {
+    background-color: #be66e3 !important;
+    color: #fff !important;
+}
