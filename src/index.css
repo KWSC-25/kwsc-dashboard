@@ -3784,6 +3784,11 @@ lcms styling  */
   line-height: 1 !important;
   
 }
+.zone-name-cell {
+  font-size: 15px !important;
+  line-height: 1 !important;
+  
+}
 
 .matrix-total-badge {
   font-size: 25px !important;

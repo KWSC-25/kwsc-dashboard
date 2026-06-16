@@ -123,15 +123,15 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                 <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
                         <tr className="bg-[#12182c] border-b border-slate-800 text-[40px] font-black tracking-wide text-slate-300 uppercase">
-                            <th className="py-4 px-5 text-slate-200 text-5xl">
+                            <th className="zone-name-cell  py-4 px-5 text-slate-200 text-5xl">
                                 {selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}
                             </th>
                             {matrixData.columns.map((col) => (
-                                <th key={col.key} className="py-4 px-3 font-mono text-3xl" >
+                                <th key={col.key} className=" zone-name-cell py-4 px-3 font-mono text-3xl" >
                                     {col.label}
                                 </th>
                             ))}
-                            <th className="py-4 px-6 text-center bg-red-950/40 text-red-400 font-black tracking-wider text-sm border-l border-slate-800">
+                            <th className="zone-name-cell py-4 px-6 text-center bg-red-950/40 text-red-400 font-black tracking-wider text-sm border-l border-slate-800">
                                 TOTAL PENDING
                             </th>
                         </tr>
@@ -155,7 +155,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                     >
                                         
                                         {/* ZONE/TOWN REGION IDENTIFIER CELL */}
-                                        <td className="py-4 px-5 font-sans font-black text-slate-200 text-6xl sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">
+                                        <td className=" zone-name-cell  py-4 px-5 font-sans font-black text-slate-200 text-6xl sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">
                                             {row.zone_name.toUpperCase()}
                                         </td>
                                         
@@ -184,12 +184,12 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                     {matrixData.data.length > 0 && (
                         <tfoot className="border-t-2 border-slate-700 bg-[#0d1428] font-mono">
                             <tr className="text-slate-200 font-black tracking-wide uppercase">
-                                <td className="py-6 px-6 font-sans font-black text-3xl text-cyan-400 sticky left-0 bg-[#0d1428] z-10 shadow-[4px_0_8px_rgba(0,0,0,0.5)] whitespace-nowrap">
+                                <td className="py-2 px-4 font-sans font-black text-3xl text-cyan-400 sticky left-0 bg-[#1b3440] z-10 shadow-[4px_0_8px_rgba(0,0,0,0.5)] whitespace-nowrap">
                                     TOTAL
                                 </td>
                                 
                                 {matrixData.columns.map((col) => (
-                                    <td key={col.key} className=" matrix-count-cell py-6 px-8 text-center text-3xl font-black text-slate-100 whitespace-nowrap">
+                                    <td key={col.key} className=" matrix-count-cell py-4 px-2 text-center text-3xl font-black text-slate-100 whitespace-nowrap bg-[#1b3440] ">
                                         {columnTotals[col.key].toLocaleString()}
                                     </td>
                                 ))}
