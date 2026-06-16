@@ -2,6 +2,28 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import { Layers, ShieldAlert, RefreshCw, ArrowLeft } from 'lucide-react';
 
+// Helper function to format hours into Xm Xd Xh readable strings
+const formatAgingHours = (hoursNum) => {
+    if (!hoursNum || hoursNum <= 0) return '0h';
+    
+    let totalHours = Math.round(hoursNum);
+    const hoursInMonth = 30 * 24;
+    const hoursInDay = 24;
+
+    let months = Math.floor(totalHours / hoursInMonth);
+    totalHours %= hoursInMonth;
+
+    let days = Math.floor(totalHours / hoursInDay);
+    let hours = totalHours % hoursInDay;
+
+    let result = [];
+    if (months > 0) result.push(`${months}month`);
+    if (days > 0) result.push(`${days}d`);
+    if (hours > 0 || result.length === 0) result.push(`${hours}h`);
+
+    return result.join(' ');
+};
+
 const ZonePerformance = ({ typeId, startDate, endDate }) => {
     const [matrixData, setMatrixData] = useState({ columns: [], data: [] });
     const [loading, setLoading] = useState(true);
@@ -65,6 +87,15 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
         return sum + parseInt(row.total_zone_pending || 0, 10);
     }, 0);
 
+    // FIX: Accurate Weighted Average Calculation for Overall Performance
+    const totalWeightedHours = matrixData.data.reduce((sum, row) => {
+        const rowPendingCount = parseInt(row.total_zone_pending || 0, 10);
+        const rowAvgAging = parseFloat(row.avg_pending_aging || 0);
+        return sum + (rowPendingCount * rowAvgAging);
+    }, 0);
+
+    const grandAverageAging = grandTotalPending > 0 ? (totalWeightedHours / grandTotalPending) : 0;
+
     if (loading) {
         return (
             <div className="bg-[#0c1122] border border-slate-800/80 rounded-xl p-8 flex flex-col items-center justify-center space-y-3 min-h-[250px]">
@@ -120,32 +151,36 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
 
             {/* HIGH DENSITY RESPONSIVE GRID GRID - UPSCALED SIZE FOR BIG SCREENS */}
             <div className="overflow-x-auto rounded-xl border border-slate-800/70 bg-[#070a13]">
-                <table className="w-full text-left border-collapse min-w-[900px]">
+                <table className="w-full text-left border-collapse min-w-[1050px]">
                     <thead>
                         <tr className="bg-[#12182c] border-b border-slate-800 text-[40px] font-black tracking-wide text-slate-300 uppercase">
-                            <th className="zone-name-cell  py-4 px-5 text-slate-200 text-5xl">
+                            <th className="zone-name-cell py-4 px-5 text-slate-200 text-5xl">
                                 {selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}
                             </th>
                             {matrixData.columns.map((col) => (
-                                <th key={col.key} className=" zone-name-cell py-4 px-3 font-mono text-3xl" >
+                                <th key={col.key} className="zone-name-cell py-4 px-3 font-mono text-3xl" >
                                     {col.label}
                                 </th>
                             ))}
                             <th className="zone-name-cell py-4 px-6 text-center bg-red-950/40 text-red-400 font-black tracking-wider text-sm border-l border-slate-800">
                                 TOTAL PENDING
                             </th>
+                            <th className="zone-name-cell py-4 px-6 text-center bg-amber-950/20 text-amber-400 font-black tracking-wider text-sm border-l border-slate-800">
+                                AVG PENDING AGING
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/60 font-mono text-[14px]">
                         {matrixData.data.length === 0 ? (
                             <tr>
-                                <td colSpan={matrixData.columns.length + 2} className="py-12 text-center text-slate-500 text-xs uppercase font-black tracking-widest">
+                                <td colSpan={matrixData.columns.length + 3} className="py-12 text-center text-slate-500 text-xs uppercase font-black tracking-widest">
                                     No records matching filtered parameters.
                                 </td>
                             </tr>
                         ) : (
                             matrixData.data.map((row) => {
                                 const totalPendingVal = parseInt(row.total_zone_pending || 0, 10);
+                                const avgAgingVal = parseFloat(row.avg_pending_aging || 0);
                                 return (
                                     <tr 
                                         key={row.zone_id} 
@@ -155,11 +190,11 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                     >
                                         
                                         {/* ZONE/TOWN REGION IDENTIFIER CELL */}
-                                        <td className=" zone-name-cell  py-4 px-5 font-sans font-black text-slate-200 text-6xl sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">
+                                        <td className="zone-name-cell py-4 px-5 font-sans font-black text-slate-200 text-6xl sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">
                                             {row.zone_name.toUpperCase()}
                                         </td>
                                         
-                                        {/* DYNAMIC SUBTYPE RECORD MATRIX POINTER CELLS - FIXED VIA TARGETED CSS CLASS */}
+                                        {/* DYNAMIC SUBTYPE RECORD MATRIX POINTER CELLS */}
                                         {matrixData.columns.map((col) => {
                                             const count = parseInt(row[col.key] || 0, 10);
                                             return (
@@ -169,10 +204,17 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                             );
                                         })}
 
-                                        {/* CRITICAL ATTENTION REQUIRED: TOTAL PENDING COLUMN BACKED BY LIGHT RED GRADIENT - FIXED VIA TARGETED CSS CLASS */}
+                                        {/* TOTAL PENDING COLUMN */}
                                         <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-red-950/40 to-red-900/20 text-red-400 border-l border-slate-800/80">
                                             <span className={`matrix-total-badge rounded font-black tracking-tight ${totalPendingVal > 0 ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30' : 'bg-slate-800/50 text-slate-500'}`}>
                                                 {totalPendingVal.toLocaleString()}
+                                            </span>
+                                        </td>
+
+                                        {/* AGING DATA VISUALIZATION CELL IN MONTHS / DAYS / HOURS */}
+                                        <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-amber-950/20 to-amber-900/5 text-amber-400 border-l border-slate-800/80">
+                                            <span className={`matrix-total-badge rounded font-black tracking-tight ${avgAgingVal > 0 ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20' : 'bg-slate-800/50 text-slate-500'}`}>
+                                                {formatAgingHours(avgAgingVal)}
                                             </span>
                                         </td>
                                     </tr>
@@ -189,7 +231,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                 </td>
                                 
                                 {matrixData.columns.map((col) => (
-                                    <td key={col.key} className=" matrix-count-cell py-4 px-2 text-center text-3xl font-black text-slate-100 whitespace-nowrap bg-[#1b3440] ">
+                                    <td key={col.key} className="matrix-count-cell py-4 px-2 text-center text-3xl font-black text-slate-100 whitespace-nowrap bg-[#1b3440]">
                                         {columnTotals[col.key].toLocaleString()}
                                     </td>
                                 ))}
@@ -197,6 +239,12 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                 <td className="py-6 px-8 text-center bg-red-950/60 text-red-400 font-black text-2xl border-l border-slate-800 whitespace-nowrap">
                                     <span className="matrix-total-badge px-4 py-1.5 rounded bg-red-500/30 text-red-200 ring-1 ring-red-400/40 inline-block w-full text-center">
                                         {grandTotalPending.toLocaleString()}
+                                    </span>
+                                </td>
+
+                                <td className="py-6 px-8 text-center bg-amber-950/40 text-amber-400 font-black text-2xl border-l border-slate-800 whitespace-nowrap">
+                                    <span className="matrix-total-badge px-4 py-1.5 rounded bg-amber-500/20 text-amber-200 ring-1 ring-amber-400/30 inline-block w-full text-center">
+                                        {formatAgingHours(grandAverageAging)}
                                     </span>
                                 </td>
                             </tr>

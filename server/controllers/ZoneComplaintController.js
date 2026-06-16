@@ -161,7 +161,9 @@ export const getZoneWisePendingMatrix = async (req, res) => {
           t.id AS zone_id, -- Mapped to zone_id placeholder to preserve frontend layout structure
           t.town AS zone_name, -- Mapped to zone_name placeholder to preserve frontend layout structure
           ${pivotColumnsSql}
-          SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending
+          SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending,
+          -- Calculates the overall average aging in hours for all pending complaints in this town
+          IFNULL(ROUND(AVG(CASE WHEN c.status = 0 THEN TIMESTAMPDIFF(HOUR, c.created_at, NOW()) END), 1), 0) AS avg_pending_aging
         FROM towns t
         INNER JOIN zone_towns zt ON t.id = zt.town_id
         LEFT JOIN complaint c ON t.id = c.town_id 
@@ -179,7 +181,9 @@ export const getZoneWisePendingMatrix = async (req, res) => {
           z.id AS zone_id,
           z.title AS zone_name,
           ${pivotColumnsSql}
-          SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending
+          SUM(CASE WHEN c.status = 0 THEN 1 ELSE 0 END) AS total_zone_pending,
+          -- Calculates the overall average aging in hours for all pending complaints in this zone
+          IFNULL(ROUND(AVG(CASE WHEN c.status = 0 THEN TIMESTAMPDIFF(HOUR, c.created_at, NOW()) END), 1), 0) AS avg_pending_aging
         FROM zones z
         LEFT JOIN zone_towns zt ON z.id = zt.zone_id
         LEFT JOIN complaint c ON zt.town_id = c.town_id 
