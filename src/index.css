@@ -3776,3 +3776,18 @@ lcms styling  */
     background-color: #be66e3 !important;
     color: #fff !important;
 }
+
+
+/* Custom Dashboard Matrix Text Upscaling overrides */
+.matrix-count-cell {
+  font-size: 20px !important;
+  line-height: 1 !important;
+  
+}
+
+.matrix-total-badge {
+  font-size: 25px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  padding: 6px 16px !important;
+}

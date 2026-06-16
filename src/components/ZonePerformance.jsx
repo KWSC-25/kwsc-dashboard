@@ -102,7 +102,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                         <Layers className="w-5 h-5 text-cyan-400" />
                     )}
                     <div>
-                        <h3 className="text-base font-black tracking-wider uppercase text-white">
+                        <h3 className="font-black tracking-wider uppercase text-white">
                             {selectedZone ? `${selectedZone.name} Town Performance` : 'Zone Performance Analysis'}
                         </h3>
                         <p className="text-xs text-slate-400 font-bold uppercase tracking-tight mt-0.5">
@@ -123,7 +123,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                 <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
                         <tr className="bg-[#12182c] border-b border-slate-800 text-[40px] font-black tracking-wide text-slate-300 uppercase">
-                            <th className="py-4 px-5 text-slate-200 text-2xl">
+                            <th className="py-4 px-5 text-slate-200 text-5xl">
                                 {selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}
                             </th>
                             {matrixData.columns.map((col) => (
@@ -159,19 +159,19 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                             {row.zone_name.toUpperCase()}
                                         </td>
                                         
-                                        {/* DYNAMIC SUBTYPE RECORD MATRIX POINTER CELLS */}
+                                        {/* DYNAMIC SUBTYPE RECORD MATRIX POINTER CELLS - FIXED VIA TARGETED CSS CLASS */}
                                         {matrixData.columns.map((col) => {
                                             const count = parseInt(row[col.key] || 0, 10);
                                             return (
-                                                <td key={col.key} className={`py-4 px-3 text-center font-bold text-base ${count > 0 ? 'text-amber-400' : 'text-slate-600'}`}>
+                                                <td key={col.key} className={`matrix-count-cell py-4 px-3 text-center font-bold ${count > 0 ? 'text-amber-400' : 'text-slate-600'}`}>
                                                     {count.toLocaleString()}
                                                 </td>
                                             );
                                         })}
 
-                                        {/* CRITICAL ATTENTION REQUIRED: TOTAL PENDING COLUMN BACKED BY LIGHT RED GRADIENT */}
+                                        {/* CRITICAL ATTENTION REQUIRED: TOTAL PENDING COLUMN BACKED BY LIGHT RED GRADIENT - FIXED VIA TARGETED CSS CLASS */}
                                         <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-red-950/40 to-red-900/20 text-red-400 border-l border-slate-800/80">
-                                            <span className={`px-3 py-1 rounded text-base font-black tracking-tight ${totalPendingVal > 0 ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30' : 'bg-slate-800/50 text-slate-500'}`}>
+                                            <span className={`matrix-total-badge rounded font-black tracking-tight ${totalPendingVal > 0 ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30' : 'bg-slate-800/50 text-slate-500'}`}>
                                                 {totalPendingVal.toLocaleString()}
                                             </span>
                                         </td>
@@ -189,13 +189,13 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                 </td>
                                 
                                 {matrixData.columns.map((col) => (
-                                    <td key={col.key} className="py-6 px-8 text-center text-3xl font-black text-slate-100 whitespace-nowrap">
+                                    <td key={col.key} className=" matrix-count-cell py-6 px-8 text-center text-3xl font-black text-slate-100 whitespace-nowrap">
                                         {columnTotals[col.key].toLocaleString()}
                                     </td>
                                 ))}
                                 
                                 <td className="py-6 px-8 text-center bg-red-950/60 text-red-400 font-black text-2xl border-l border-slate-800 whitespace-nowrap">
-                                    <span className="px-4 py-1.5 rounded bg-red-500/30 text-red-200 ring-1 ring-red-400/40 inline-block w-full text-center">
+                                    <span className="matrix-total-badge px-4 py-1.5 rounded bg-red-500/30 text-red-200 ring-1 ring-red-400/40 inline-block w-full text-center">
                                         {grandTotalPending.toLocaleString()}
                                     </span>
                                 </td>
