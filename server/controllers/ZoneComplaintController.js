@@ -212,3 +212,109 @@ export const getZoneWisePendingMatrix = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+export const getZoneWiseResolvedMatrix = async (req, res) => {
+  try {
+    const { typeId, startDate, endDate, zoneId } = req.query;
+
+    // A check to handle initial placeholder loading states gracefully
+    const targetTypeId = (typeId && typeId !== 'ALL') ? Number(typeId) : 1; 
+
+    // 1. Build cleaner date boundary clauses without embedding the 'WHERE' keyword directly
+    let dateFilterSql = "";
+    let queryParams = [];
+
+    if (startDate && endDate) {
+      dateFilterSql = " AND c.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) ";
+      queryParams.push(startDate, endDate);
+    } else {
+      dateFilterSql = " AND c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) ";
+    }
+
+    // Step 1: Query database for subtypes belonging to our target type identifier
+    const subtypeQuery = `
+      SELECT id, title 
+      FROM sub_types 
+      WHERE type_id = ?
+      ORDER BY title ASC
+    `;
+    const [subtypes] = await req.db.query(subtypeQuery, [targetTypeId]);
+
+    if (subtypes.length === 0) {
+      return res.status(200).json({
+        success: true,
+        columns: [],
+        data: []
+      });
+    }
+
+    // Step 2: Build out the pivot sum matrices programmatically for Resolved cases (status = 1)
+    let pivotColumnsSql = '';
+    subtypes.forEach(sub => {
+      const dynamicKey = `subtype_${sub.id}`;
+      pivotColumnsSql += `SUM(CASE WHEN c.subtype_id = ${sub.id} AND c.status = 1 THEN 1 ELSE 0 END) AS \`${dynamicKey}\`,\n`;
+    });
+
+    let mainMatrixQuery = "";
+    let executionParams = [];
+
+    // Step 3: Conditional matrix generation depending on whether a drill-down Zone ID is active
+    if (zoneId) {
+      // DRILL DOWN VIEW: Fetch individual Towns for a specific Selected Zone
+      mainMatrixQuery = `
+        SELECT 
+          t.id AS zone_id, 
+          t.town AS zone_name, 
+          ${pivotColumnsSql}
+          SUM(CASE WHEN c.status = 1 THEN 1 ELSE 0 END) AS total_zone_resolved,
+          -- Calculates the overall average resolution TAT in hours for all resolved complaints in this town
+          IFNULL(ROUND(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(HOUR, c.created_at, c.updated_at) END), 1), 0) AS avg_resolution_tat
+        FROM towns t
+        INNER JOIN zone_towns zt ON t.id = zt.town_id
+        LEFT JOIN complaint c ON t.id = c.town_id 
+          AND c.type_id = ? 
+          ${dateFilterSql}
+        WHERE zt.zone_id = ?
+        GROUP BY t.id, t.town
+        ORDER BY t.town ASC;
+      `;
+      executionParams = [targetTypeId, ...queryParams, Number(zoneId)];
+    } else {
+      // GLOBAL VIEW: Fetch aggregated data grouped by Zones
+      mainMatrixQuery = `
+        SELECT 
+          z.id AS zone_id,
+          z.title AS zone_name,
+          ${pivotColumnsSql}
+          SUM(CASE WHEN c.status = 1 THEN 1 ELSE 0 END) AS total_zone_resolved,
+          -- Calculates the overall average resolution TAT in hours for all resolved complaints in this zone
+          IFNULL(ROUND(AVG(CASE WHEN c.status = 1 THEN TIMESTAMPDIFF(HOUR, c.created_at, c.updated_at) END), 1), 0) AS avg_resolution_tat
+        FROM zones z
+        LEFT JOIN zone_towns zt ON z.id = zt.zone_id
+        LEFT JOIN complaint c ON zt.town_id = c.town_id 
+          AND c.type_id = ? 
+          ${dateFilterSql}
+        WHERE z.status = 1
+        GROUP BY z.id, z.title
+        ORDER BY z.title ASC;
+      `;
+      executionParams = [targetTypeId, ...queryParams];
+    }
+
+    const [matrixRows] = await req.db.query(mainMatrixQuery, executionParams);
+
+    res.status(200).json({
+      success: true,
+      columns: subtypes.map(sub => ({
+        key: `subtype_${sub.id}`,
+        label: sub.title.toUpperCase()
+      })),
+      data: matrixRows
+    });
+
+  } catch (error) {
+    console.error("Zone-Wise Resolved Analytics Dynamic Pivot Matrix Failure:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
