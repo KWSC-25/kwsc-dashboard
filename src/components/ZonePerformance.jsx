@@ -168,8 +168,8 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                     <table className="w-full text-left border-collapse min-w-[1050px]">
                         <thead>
                             <tr className="bg-[#12182c] border-b border-slate-800 font-black tracking-wide text-slate-300 uppercase text-xs">
-                                <th className="py-4 px-5 text-slate-200">{selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}</th>
-                                {pendingMatrix.columns.map(col => <th key={col.key} className="py-4 px-3 font-mono">{col.label}</th>)}
+                                <th className="zone-name-cell py-4 px-5 text-slate-200">{selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}</th>
+                                {pendingMatrix.columns.map(col => <th key={col.key} className="zone-name-cell py-4 px-3 font-mono">{col.label}</th>)}
                                 <th className="py-4 px-6 text-center bg-red-950/40 text-red-400 border-l border-slate-800">TOTAL PENDING</th>
                                 <th className="py-4 px-6 text-center bg-amber-950/20 text-amber-400 border-l border-slate-800">AVERAGE PENDING AGING</th>
                             </tr>
@@ -189,16 +189,16 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                             onClick={() => !selectedZone && setSelectedZone({ id: row.zone_id, name: row.zone_name })}
                                             className={`transition-colors group ${!selectedZone ? 'cursor-pointer hover:bg-[#0f1527]/90' : 'hover:bg-[#0f1527]/40'}`}
                                         >
-                                            <td className="py-4 px-5 font-sans font-black text-slate-200 sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">{row.zone_name.toUpperCase()}</td>
+                                            <td className="zone-name-cell py-4 px-5 font-sans font-black text-slate-200 sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">{row.zone_name.toUpperCase()}</td>
                                             {pendingMatrix.columns.map((col) => {
                                                 const count = parseInt(row[col.key] || 0, 10);
-                                                return <td key={col.key} className={`py-4 px-3 text-center font-bold ${count > 0 ? 'text-amber-400' : 'text-slate-600'}`}>{count.toLocaleString()}</td>;
+                                                return <td key={col.key} className={` matrix-count-cell py-4 px-3 text-center font-bold ${count > 0 ? 'text-amber-400' : 'text-slate-600'}`}>{count.toLocaleString()}</td>;
                                             })}
                                             <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-red-950/40 to-red-900/20 text-red-400 border-l border-slate-800/80">
-                                                <span className={`px-2 py-0.5 rounded font-black tracking-tight ${totalVal > 0 ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30' : 'bg-slate-800/50 text-slate-500'}`}>{totalVal.toLocaleString()}</span>
+                                                <span className={`matrix-count-cell px-2 py-0.5 rounded font-black tracking-tight ${totalVal > 0 ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30' : 'bg-slate-800/50 text-slate-500'}`}>{totalVal.toLocaleString()}</span>
                                             </td>
                                             <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-amber-950/20 to-amber-900/5 text-amber-400 border-l border-slate-800/80">
-                                                <span className={`px-2 py-0.5 rounded font-black tracking-tight ${avgAging > 0 ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20' : 'bg-slate-800/50 text-slate-500'}`}>{formatAgingHours(avgAging)}</span>
+                                                <span className={`matrix-count-cell px-2 py-0.5 rounded font-black tracking-tight ${avgAging > 0 ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20' : 'bg-slate-800/50 text-slate-500'}`}>{formatAgingHours(avgAging)}</span>
                                             </td>
                                         </tr>
                                     );
@@ -209,12 +209,12 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                             <tfoot className="border-t-2 border-slate-700 bg-[#0d1428] font-mono text-xs">
                                 <tr className="text-slate-200 font-black tracking-wide uppercase">
                                     <td className="py-4 px-5 font-sans font-black text-cyan-400 sticky left-0 bg-[#0d1428] z-10">TOTAL</td>
-                                    {pendingMatrix.columns.map(col => <td key={col.key} className="py-4 px-2 text-center text-slate-100 font-black bg-[#12182c]/40">{pendingMetrics.columnTotals[col.key].toLocaleString()}</td>)}
+                                    {pendingMatrix.columns.map(col => <td key={col.key} className="matrix-count-cell py-4 px-2 text-center text-slate-100 font-black bg-[#12182c]/40">{pendingMetrics.columnTotals[col.key].toLocaleString()}</td>)}
                                     <td className="py-4 px-6 text-center bg-red-950/60 text-red-400 font-black border-l border-slate-800">
-                                        <span className="px-3 py-1 rounded bg-red-500/30 text-red-200 ring-1 ring-red-400/40 inline-block w-full text-center">{pendingMetrics.grandTotal.toLocaleString()}</span>
+                                        <span className="matrix-count-cell px-3 py-1 rounded bg-red-500/30 text-red-200 ring-1 ring-red-400/40 inline-block w-full text-center">{pendingMetrics.grandTotal.toLocaleString()}</span>
                                     </td>
                                     <td className="py-4 px-6 text-center bg-amber-950/40 text-amber-400 font-black border-l border-slate-800">
-                                        <span className="px-3 py-1 rounded bg-amber-500/20 text-amber-200 ring-1 ring-amber-400/30 inline-block w-full text-center">{formatAgingHours(pendingMetrics.grandAverageAging)}</span>
+                                        <span className="matrix-count-cell px-3 py-1 rounded bg-amber-500/20 text-amber-200 ring-1 ring-amber-400/30 inline-block w-full text-center">{formatAgingHours(pendingMetrics.grandAverageAging)}</span>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -234,8 +234,8 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                     <table className="w-full text-left border-collapse min-w-[1050px]">
                         <thead>
                             <tr className="bg-[#12182c] border-b border-slate-800 font-black tracking-wide text-slate-300 uppercase text-xs">
-                                <th className="py-4 px-5 text-slate-200">{selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}</th>
-                                {resolvedMatrix.columns.map(col => <th key={col.key} className="py-4 px-3 font-mono">{col.label}</th>)}
+                                <th className="zone-name-cell py-4 px-5 text-slate-200">{selectedZone ? 'TOWN REGIONS' : 'ZONAL REGIONS'}</th>
+                                {resolvedMatrix.columns.map(col => <th key={col.key} className="zone-name-cell py-4 px-3 font-mono">{col.label}</th>)}
                                 <th className="py-4 px-6 text-center bg-emerald-950/40 text-emerald-400 border-l border-slate-800">TOTAL RESOLVED</th>
                                 <th className="py-4 px-6 text-center bg-cyan-950/20 text-cyan-400 border-l border-slate-800">AVERAGE RESOLUTION TAT</th>
                             </tr>
@@ -255,16 +255,16 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                             onClick={() => !selectedZone && setSelectedZone({ id: row.zone_id, name: row.zone_name })}
                                             className={`transition-colors group ${!selectedZone ? 'cursor-pointer hover:bg-[#0f1527]/90' : 'hover:bg-[#0f1527]/40'}`}
                                         >
-                                            <td className="py-4 px-5 font-sans font-black text-slate-200 sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">{row.zone_name.toUpperCase()}</td>
+                                            <td className="zone-name-cell py-4 px-5 font-sans font-black text-slate-200 sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">{row.zone_name.toUpperCase()}</td>
                                             {resolvedMatrix.columns.map((col) => {
                                                 const count = parseInt(row[col.key] || 0, 10);
-                                                return <td key={col.key} className={`py-4 px-3 text-center font-bold ${count > 0 ? 'text-emerald-400' : 'text-slate-600'}`}>{count.toLocaleString()}</td>;
+                                                return <td key={col.key} className={`matrix-count-cell py-4 px-3 text-center font-bold ${count > 0 ? 'text-emerald-400' : 'text-slate-600'}`}>{count.toLocaleString()}</td>;
                                             })}
                                             <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-emerald-950/40 to-emerald-900/20 text-emerald-400 border-l border-slate-800/80">
-                                                <span className={`px-2 py-0.5 rounded font-black tracking-tight ${totalVal > 0 ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30' : 'bg-slate-800/50 text-slate-500'}`}>{totalVal.toLocaleString()}</span>
+                                                <span className={`matrix-count-cell px-2 py-0.5 rounded font-black tracking-tight ${totalVal > 0 ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30' : 'bg-slate-800/50 text-slate-500'}`}>{totalVal.toLocaleString()}</span>
                                             </td>
                                             <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-cyan-950/20 to-cyan-900/5 text-cyan-400 border-l border-slate-800/80">
-                                                <span className={`px-2 py-0.5 rounded font-black tracking-tight ${avgTat > 0 ? 'bg-cyan-500/10 text-cyan-300 ring-1 ring-cyan-500/20' : 'bg-slate-800/50 text-slate-500'}`}>{formatAgingHours(avgTat)}</span>
+                                                <span className={`matrix-count-cell px-2 py-0.5 rounded font-black tracking-tight ${avgTat > 0 ? 'bg-cyan-500/10 text-cyan-300 ring-1 ring-cyan-500/20' : 'bg-slate-800/50 text-slate-500'}`}>{formatAgingHours(avgTat)}</span>
                                             </td>
                                         </tr>
                                     );
@@ -275,12 +275,12 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                             <tfoot className="border-t-2 border-slate-700 bg-[#0d1428] font-mono text-xs">
                                 <tr className="text-slate-200 font-black tracking-wide uppercase">
                                     <td className="py-4 px-5 font-sans font-black text-cyan-400 sticky left-0 bg-[#0d1428] z-10">TOTAL</td>
-                                    {resolvedMatrix.columns.map(col => <td key={col.key} className="py-4 px-2 text-center text-slate-100 font-black bg-[#12182c]/40">{resolvedMetrics.columnTotals[col.key].toLocaleString()}</td>)}
+                                    {resolvedMatrix.columns.map(col => <td key={col.key} className="matrix-count-cell py-4 px-2 text-center text-slate-100 font-black bg-[#12182c]/40">{resolvedMetrics.columnTotals[col.key].toLocaleString()}</td>)}
                                     <td className="py-4 px-6 text-center bg-emerald-950/60 text-emerald-400 font-black border-l border-slate-800">
-                                        <span className="px-3 py-1 rounded bg-emerald-500/30 text-emerald-200 ring-1 ring-emerald-400/40 inline-block w-full text-center">{resolvedMetrics.grandTotal.toLocaleString()}</span>
+                                        <span className="matrix-count-cell px-3 py-1 rounded bg-emerald-500/30 text-emerald-200 ring-1 ring-emerald-400/40 inline-block w-full text-center">{resolvedMetrics.grandTotal.toLocaleString()}</span>
                                     </td>
                                     <td className="py-4 px-6 text-center bg-cyan-950/40 text-cyan-400 font-black border-l border-slate-800">
-                                        <span className="px-3 py-1 rounded bg-cyan-500/20 text-cyan-200 ring-1 ring-cyan-400/30 inline-block w-full text-center">{formatAgingHours(resolvedMetrics.grandAverageAging)}</span>
+                                        <span className="matrix-count-cell px-3 py-1 rounded bg-cyan-500/20 text-cyan-200 ring-1 ring-cyan-400/30 inline-block w-full text-center">{formatAgingHours(resolvedMetrics.grandAverageAging)}</span>
                                     </td>
                                 </tr>
                             </tfoot>
