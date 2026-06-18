@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import ZonePerformance from './ZonePerformance'; 
+import ZoneComplaintMap from './ZoneComplaintMap';
 import { 
     Activity, 
     CheckCircle2, 
@@ -34,6 +35,7 @@ const ZoneComplaintDashboard = () => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' or 'map'
 
     // Responsive screen context monitoring
     useEffect(() => {
@@ -224,6 +226,13 @@ const ZoneComplaintDashboard = () => {
                     >
                         Clear Filters
                     </button>
+                    <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setActiveView('map'); }}
+                        className="bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all shadow-lg shadow-cyan-600/10"
+                    >
+                        Go to Map View
+                    </button>
                 </div>
             </div>
 
@@ -286,12 +295,21 @@ const ZoneComplaintDashboard = () => {
                 </div>
             )}
 
-            {/* ==================== ZONE PERFORMANCE BREAKDOWN ANALYSIS ==================== */}
-            <ZonePerformance 
-                typeId={selectedType}
-                startDate={startDate}
-                endDate={endDate}
-            />
+            {/* Replace the bottom area containing <ZonePerformance /> with this */}
+            {activeView === 'dashboard' ? (
+                <ZonePerformance 
+                    typeId={selectedType}
+                    startDate={startDate}
+                    endDate={endDate}
+                />
+            ) : (
+                <ZoneComplaintMap 
+                    typeId={selectedType}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onBackToDashboard={() => setActiveView('dashboard')}
+                />
+            )}
 
           
 
