@@ -142,10 +142,10 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                     )}
                     <div>
                         <h2 className="text-xl font-black tracking-wider uppercase text-white">
-                            {selectedZone ? `${selectedZone.name} Town Performance Ledger` : 'Zonal Performance Cross-Examination Grid'}
+                            {selectedZone ? `${selectedZone.name} Town Performance` : 'Zonal Performance Cross-Examination Grid'}
                         </h2>
                         <p className="text-xs text-slate-400 font-bold uppercase tracking-tight mt-0.5">
-                            {selectedZone ? `Detailed breakdowns for town networks located inside ${selectedZone.name}` : 'Central performance monitoring matrices for all municipal service domains'}
+                            {selectedZone ? `Detailed breakdowns for towns in ${selectedZone.name}` : 'Central performance monitoring matrices for all zones'}
                         </p>
                     </div>
                 </div>
