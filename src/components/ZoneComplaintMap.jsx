@@ -107,6 +107,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
     const getZoneOfTown = (feature) => TOWN_TO_ZONE_MAP[getTownName(feature).toLowerCase().trim()] || 'ZONE 1';
     const getUcLabelName = (feature) => feature.properties?.Name || feature.properties?.name || "Unnamed UC";
 
+
     const getCountForLayerItem = (itemName, targetDepth) => {
         const cleanName = itemName.toLowerCase().trim();
         let record = null;
@@ -121,35 +122,41 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                 if (cleanName.includes('4') && dbName.includes('-iv')) return true;
                 return false;
             });
-            } else if (targetDepth === 'town') {
-                record = complaintStats.find(r => {
-                    // Just remove the word 'town' and normalize spacing
-                    const dbTown = r.name.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
-                    const geoTown = cleanName.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
-                    
-                    // 1. Standard strict match (This will now naturally match "site (moriro mir bahar)")
-                    if (dbTown === geoTown) return true;
-                    
-                    // 2. Keamari / Mauripur exception fallbacks
-                    if (geoTown.includes('keamari') && dbTown.includes('keamari')) return true;
-
-                    return false;
-                });
-            } else if (targetDepth === 'uc') {
-            const ucNumMatch = cleanName.match(/uc[- ]*(\d+)/);
+        } else if (targetDepth === 'town') {
             record = complaintStats.find(r => {
-                const dbUc = r.name.toLowerCase();
-                if (dbUc.includes(cleanName) || cleanName.includes(dbUc)) return true;
-                if (ucNumMatch) {
-                    const dbUcNumMatch = dbUc.match(/uc[- ]*(\d+)/);
-                    return dbUcNumMatch && ucNumMatch[1] === dbUcNumMatch[1];
-                }
+                const dbTown = r.name.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
+                const geoTown = cleanName.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
+                
+                if (dbTown === geoTown) return true;
+                if (geoTown.includes('keamari') && dbTown.includes('keamari')) return true;
+
                 return false;
             });
+        } else if (targetDepth === 'uc') {
+            // Extract the UC numeric value cleanly from GeoJSON name string (e.g., "Mominabad UC6" -> 6)
+            const ucNumMatch = cleanName.match(/uc[- ]*(\d+)/);
+            const targetNumber = ucNumMatch ? parseInt(ucNumMatch[1], 10) : null;
+
+            if (targetNumber !== null) {
+                record = complaintStats.find(r => {
+                    const dbUc = r.name.toLowerCase().replace(/\s+/g, ' ').trim();
+                    
+                    // Match any DB string containing 'uc-X', 'uc - X', 'ucX', or 'uc-0X'
+                    const dbUcNumMatch = dbUc.match(/uc\s*[- ]*\s*0*(\d+)/);
+                    if (dbUcNumMatch) {
+                        const dbNumber = parseInt(dbUcNumMatch[1], 10);
+                        
+                        // If the UC numbers align perfectly, accept it for our active town scope
+                        if (targetNumber === dbNumber) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            }
         }
         return record ? record.total_complaints : 0;
     };
-
     const getColorFromRatio = (count) => {
         const ratio = maxComplaintsValue > 0 ? count / maxComplaintsValue : 0;
         if (count === 0) return '#fee2e2';
@@ -263,18 +270,37 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
         return [sumLng / points.length, sumLat / points.length];
     };
 
-    const filterUcByTownBoundary = (ucGeoJson) => {
+const filterUcByTownBoundary = (ucGeoJson) => {
         if (!ucGeoJson || !selectedTown || !townData) return { type: "FeatureCollection", features: [] };
         
-        const currentTargetClean = selectedTown.toLowerCase().replace('town', '').trim();
+        const currentTargetClean = selectedTown.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
         
-        const targetTownFeature = townData.features.find(f => 
-            getTownName(f).toLowerCase().replace('town', '').trim() === currentTargetClean
-        );
+        // Match parent town feature accurately
+        const targetTownFeature = townData.features.find(f => {
+            const name = getTownName(f).toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
+            if (name === currentTargetClean) return true;
+            if (currentTargetClean.includes('keamari') && name.includes('keamari')) return true;
+            return false;
+        });
 
         if (!targetTownFeature || !targetTownFeature.geometry) return { type: "FeatureCollection", features: [] };
 
         const filteredFeatures = ucGeoJson.features.filter(ucFeature => {
+            const ucTitle = getUcLabelName(ucFeature).toLowerCase();
+            
+            // --- EXPLICIT HARD STRIP MATCH OVERRIDES ---
+            // Direct text parsing ensures shapes aren't lost to centroid polygon mathematical drops
+            if (currentTargetClean.includes('gadap') && ucTitle.includes('gadap')) return true;
+            if (currentTargetClean.includes('ibrahim') && ucTitle.includes('ibrahim')) return true;
+            if (currentTargetClean.includes('malir') && ucTitle.includes('malir')) return true;
+            if (currentTargetClean.includes('model') && ucTitle.includes('model')) return true;
+            if (currentTargetClean.includes('clifton') && ucTitle.includes('clifton')) return true;
+            if (currentTargetClean.includes('keamari') && ucTitle.includes('keamari')) return true;
+            if (ucTitle.includes('liaquatabad uc7') || ucTitle.includes('uc7 liaquatabad')) {
+                return currentTargetClean.includes('liaquatabad');
+            }
+
+            // --- STANDARD BOUNDARY GEOMETRY FALLBACK ---
             const centroid = getFeatureCentroid(ucFeature.geometry);
             if (!centroid) return false;
 
