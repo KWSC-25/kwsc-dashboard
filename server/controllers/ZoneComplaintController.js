@@ -396,8 +396,12 @@ export const getMapComplaintDistribution = async (req, res) => {
 
     } else if (currentDepth === 'uc') {
       const cleanTownInput = selectedTownId ? selectedTownId.toLowerCase().trim() : '';
-      const strippedTownInput = cleanTownInput.replace('town', '').trim();
       
+      // Extract the first pure word identifier (e.g., "site town (moriro...)" -> "site")
+      // This prevents parenthesis text blocks from destroying database matches
+      const coreWordMatch = cleanTownInput.match(/^([a-z]+)/);
+      const coreKeyword = coreWordMatch ? coreWordMatch[1] : cleanTownInput;
+
       const ucQuery = `
         SELECT 
           st.id AS uc_id,
@@ -408,22 +412,19 @@ export const getMapComplaintDistribution = async (req, res) => {
         ${baseWhereClause}
         AND st.town_id = (
           SELECT id FROM towns 
-          WHERE LOWER(town) = ? 
-             OR LOWER(town) LIKE ? 
+          WHERE LOWER(town) LIKE ? 
              OR LOWER(town) LIKE ?
-          ORDER BY (LOWER(town) = ?) DESC 
+          ORDER BY (LOWER(town) LIKE ?) DESC 
           LIMIT 1
         )
         GROUP BY st.id, st.title
       `;
       
-      // Ensures accurate priority ordering for special compound string rows like SITE Town
       [mapDataRows] = await req.db.query(ucQuery, [
         ...queryParams, 
-        cleanTownInput,
-        `%${cleanTownInput}%`,
-        `%${strippedTownInput}%`,
-        cleanTownInput
+        `%\u0025${coreKeyword}%\u0025`, // e.g. "%site%"
+        `%\u0025${cleanTownInput.replace('town','').trim()}%\u0025`,
+        `%\u0025${coreKeyword}%\u0025`
       ]);
     }
 

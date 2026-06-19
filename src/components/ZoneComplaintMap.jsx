@@ -138,6 +138,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
             const targetNumber = ucNumMatch ? parseInt(ucNumMatch[1], 10) : null;
 
             if (targetNumber !== null) {
+
                 record = complaintStats.find(r => {
                     const dbUc = r.name.toLowerCase().replace(/\s+/g, ' ').trim();
                     
@@ -354,6 +355,15 @@ const filterUcByTownBoundary = (ucGeoJson) => {
                     <div className="flex items-center gap-1.5 pr-2 border-r border-slate-700 text-cyan-400 font-extrabold uppercase">
                         {getRenderedTotalsText()}
                     </div>
+                    
+                    {/* MAP STREET VIEW TOGGLE ENGINE */}
+                    <button 
+                        onClick={() => setVerificationMode(!verificationMode)}
+                        className={`flex items-center gap-1 pr-2 border-r border-slate-700 text-[10px] font-black tracking-wider uppercase transition-colors ${verificationMode ? 'text-green-400' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>Map Street View</span>
+                    </button>
                     
                     {/* SUBTYPE SELECT ENGINE DROPDOWN */}
                     <div className="flex items-center gap-1 pr-2 border-r border-slate-700">
