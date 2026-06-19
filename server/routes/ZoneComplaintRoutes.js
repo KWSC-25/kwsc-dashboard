@@ -1,5 +1,5 @@
 import express from 'express';
-import { getZoneKpiStats, getActiveComplaintTypes, getZoneWisePendingMatrix, getZoneWiseResolvedMatrix } from '../controllers/ZoneComplaintController.js';
+import { getZoneKpiStats, getActiveComplaintTypes, getZoneWisePendingMatrix, getZoneWiseResolvedMatrix, getMapComplaintDistribution } from '../controllers/ZoneComplaintController.js';
 
 const router = express.Router();
 
@@ -8,5 +8,6 @@ router.get('/kpi-stats', getZoneKpiStats);
 router.get('/types', getActiveComplaintTypes);
 router.get('/zone-matrix', getZoneWisePendingMatrix);
 router.get('/zone-resolved-matrix', getZoneWiseResolvedMatrix)
+router.get('/map-distribution', getMapComplaintDistribution)
 
 export default router;

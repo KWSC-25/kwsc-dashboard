@@ -228,7 +228,7 @@ const ZoneComplaintDashboard = () => {
                     </button>
                     <button
                         type="button"
-                        onClick={(e) => { e.preventDefault(); setActiveView('map'); }}
+                        onClick={e => { e.preventDefault(); setActiveView('map'); }}
                         className="bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all shadow-lg shadow-cyan-600/10"
                     >
                         Go to Map View
@@ -295,7 +295,6 @@ const ZoneComplaintDashboard = () => {
                 </div>
             )}
 
-            {/* Replace the bottom area containing <ZonePerformance /> with this */}
             {activeView === 'dashboard' ? (
                 <ZonePerformance 
                     typeId={selectedType}
@@ -304,15 +303,14 @@ const ZoneComplaintDashboard = () => {
                 />
             ) : (
                 <ZoneComplaintMap 
-                    typeId={selectedType}
-                    startDate={startDate}
-                    endDate={endDate}
+                    globalFilters={{
+                        typeId: selectedType,
+                        startDate: startDate,
+                        endDate: endDate
+                    }}
                     onBackToDashboard={() => setActiveView('dashboard')}
                 />
             )}
-
-          
-
         </div>
     );
 };
