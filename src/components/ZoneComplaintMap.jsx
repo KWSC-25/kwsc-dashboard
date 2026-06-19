@@ -1,23 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
-import { ArrowLeft, MapPin, Eye, Layers } from 'lucide-react';
+import { ArrowLeft, MapPin, Layers } from 'lucide-react';
+import api from '../utils/api';
 
 const KarachiCenter = [24.8607, 67.0011];
 
-// Official KWSB 4-Zone configuration matrix mapping (With fallback normalization variants)
 const TOWN_TO_ZONE_MAP = {
-    'shah faisal town': 'ZONE 1', 'ibrahim hyderi town': 'ZONE 1', 'koraingi town': 'ZONE 1', 'landhi town': 'ZONE 1', 'malir town': 'ZONE 1', 'gadap town': 'ZONE 1', 'model zone town': 'ZONE 1',
-    'gulshan town': 'ZONE 2', 'gulshan e iqbal town': 'ZONE 2', 'chanesar goth town': 'ZONE 2', 'chanesar town': 'ZONE 2', 'lyari town': 'ZONE 2', 'saddar town': 'ZONE 2', 'safoora town': 'ZONE 2', 'clifton': 'ZONE 2', 'jinnah town': 'ZONE 2', 'saddar town2': 'ZONE 2',
-    'baldia town': 'ZONE 3', 'manghopir town': 'ZONE 3', 'mangopir town': 'ZONE 3', 'manghopir town (surjani town)': 'ZONE 3', 'mangopir town (surjani town)': 'ZONE 3', 'keamari town': 'ZONE 3', 'mauripur town': 'ZONE 3', 'maripur/keamari town': 'ZONE 3', 'orangi town': 'ZONE 3', 'site town': 'ZONE 3', 'site town (moriro mir bahar)': 'ZONE 3', 'mominabad town': 'ZONE 3',
-    'north nazimabad town': 'ZONE 4', 'gulberg town': 'ZONE 4', 'liaquatabad town': 'ZONE 4', 'new karachi town': 'ZONE 4', 'nazimabad town': 'ZONE 4', 'sohrabh goth town': 'ZONE 4', 'sohrab goth town': 'ZONE 4'
-};
+    'shah faisal town': 'ZONE 1', 'ibrahim hydry town': 'ZONE 1', 'korangi town': 'ZONE 1', 'landhi town': 'ZONE 1', 'malir town': 'ZONE 1', 'gadap town': 'ZONE 1', 'model zone town': 'ZONE 1',
 
-const ZONE_COLORS = {
-    'ZONE 1': '#3b82f6', // Blue
-    'ZONE 2': '#10b981', // Emerald Green
-    'ZONE 3': '#f59e0b', // Amber
-    'ZONE 4': '#a855f7'  // Purple
+    'gulshan e iqbal town': 'ZONE 2', 'chanesar town': 'ZONE 2', 'lyari town': 'ZONE 2', 'saddar town': 'ZONE 2', 'safoora town': 'ZONE 2', 'clifton town': 'ZONE 2', 'jinnah town': 'ZONE 2',
+
+    'baldia town': 'ZONE 3', 'mangopir town (surjani town)': 'ZONE 3', 'keamari town': 'ZONE 3', 'orangi town': 'ZONE 3', 'site town (moriro mir bahar)': 'ZONE 3', 'mominabad town': 'ZONE 3', 
+
+    'north nazimabad town': 'ZONE 4', 'gulberg town': 'ZONE 4', 'liaquatabad town': 'ZONE 4', 'new karachi town': 'ZONE 4', 'nazimabad town': 'ZONE 4',  'sohrab goth town': 'ZONE 4'
 };
 
 const invisibleIcon = new L.Icon({
@@ -26,17 +22,18 @@ const invisibleIcon = new L.Icon({
     iconAnchor: [0, 0]
 });
 
-const ZoneComplaintMap = ({ onBackToDashboard }) => {
+const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', startDate: '', endDate: '' } }) => {
     const [mapDepth, setMapDepth] = useState('zone'); 
     const [townData, setTownData] = useState(null);
     const [ucData, setUcData] = useState(null);
-    
     const [selectedZone, setSelectedZone] = useState(null);
     const [selectedTown, setSelectedTown] = useState(null);
     const [zoneCenters, setZoneCenters] = useState([]);
     const [verificationMode, setVerificationMode] = useState(false);
-
-    const selectedTownPolygonRef = useRef(null);
+    const [subtypes, setSubtypes] = useState([]);
+    const [selectedSubtype, setSelectedSubtype] = useState('ALL');
+    const [complaintStats, setComplaintStats] = useState([]);
+    const [maxComplaintsValue, setMaxComplaintsValue] = useState(0);
 
     useEffect(() => {
         fetch('/towns-json.geojson')
@@ -44,36 +41,55 @@ const ZoneComplaintMap = ({ onBackToDashboard }) => {
             .then(data => {
                 setTownData(data);
                 calculateZoneCenters(data);
-            })
-            .catch(err => console.error("Error fetching towns-json layer:", err));
+            });
 
         fetch('/ucs-json.geojson')
             .then(res => res.json())
-            .then(data => setUcData(data))
-            .catch(err => console.error("Error fetching ucs-json layer:", err));
+            .then(data => setUcData(data));
     }, []);
+
+    useEffect(() => {
+        const fetchDistributionMetrics = async () => {
+            try {
+                const params = {
+                    currentDepth: mapDepth,
+                    typeId: globalFilters.typeId,
+                    startDate: globalFilters.startDate,
+                    endDate: globalFilters.endDate,
+                    subtypeId: selectedSubtype
+                };
+                if (selectedZone) params.selectedZoneName = selectedZone;
+                if (selectedTown) params.selectedTownId = selectedTown;
+
+                const res = await api.get('zone-complaints/map-distribution', { params });
+                if (res.data.success) {
+                    setSubtypes(res.data.subtypes || []);
+                    setComplaintStats(res.data.mapData || []);
+                    const maxVal = res.data.mapData.reduce((max, obj) => obj.total_complaints > max ? obj.total_complaints : max, 0);
+                    setMaxComplaintsValue(maxVal || 1);
+                }
+            } catch (error) {
+                console.error("Failed syncing map component data vectors", error);
+            }
+        };
+        fetchDistributionMetrics();
+    }, [mapDepth, selectedZone, selectedTown, globalFilters, selectedSubtype]);
 
     const calculateZoneCenters = (geoJson) => {
         if (!geoJson || !geoJson.features) return;
         const groups = {};
-        
         geoJson.features.forEach(f => {
             const name = (f.properties?.name || f.properties?.Name || "").toLowerCase().trim();
             const zone = TOWN_TO_ZONE_MAP[name];
-            
             if (zone && f.geometry) {
                 if (!groups[zone]) groups[zone] = [];
                 try {
                     let coords = f.geometry.coordinates;
-                    while (Array.isArray(coords) && Array.isArray(coords[0])) {
-                        coords = coords[0];
-                    }
-                    if (Array.isArray(coords) && coords.length >= 2 && typeof coords[0] === 'number') {
-                        groups[zone].push([coords[1], coords[0]]);
-                    }
-                } catch (e) {
-                    console.warn("Skipped coordinate entry for center assignment optimization", e);
-                }
+                    while (Array.isArray(coords) && Array.isArray(coords[0])) coords = coords[0];
+                    if (Array.isArray(coords) && coords.length >= 2) groups[zone].push([coords[1], coords[0]]);
+                } catch  {
+                            return false;}
+
             }
         });
 
@@ -89,45 +105,99 @@ const ZoneComplaintMap = ({ onBackToDashboard }) => {
 
     const getTownName = (feature) => feature.properties?.name || feature.properties?.Name || "Unknown Town";
     const getZoneOfTown = (feature) => TOWN_TO_ZONE_MAP[getTownName(feature).toLowerCase().trim()] || 'ZONE 1';
-    
-    const getUcLabelName = (feature) => {
-        if (!feature || !feature.properties) return "UC Layer Fragment";
-        return feature.properties.Name || feature.properties.name || "Unnamed UC";
+    const getUcLabelName = (feature) => feature.properties?.Name || feature.properties?.name || "Unnamed UC";
+
+    const getCountForLayerItem = (itemName, targetDepth) => {
+        const cleanName = itemName.toLowerCase().trim();
+        let record = null;
+
+        if (targetDepth === 'zone') {
+            record = complaintStats.find(r => {
+                const dbName = r.name.toLowerCase();
+                if (cleanName === dbName) return true;
+                if (cleanName.includes('1') && dbName.includes('-i')) return true;
+                if (cleanName.includes('2') && dbName.includes('-ii')) return true;
+                if (cleanName.includes('3') && dbName.includes('-iii')) return true;
+                if (cleanName.includes('4') && dbName.includes('-iv')) return true;
+                return false;
+            });
+            } else if (targetDepth === 'town') {
+                record = complaintStats.find(r => {
+                    // Just remove the word 'town' and normalize spacing
+                    const dbTown = r.name.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
+                    const geoTown = cleanName.toLowerCase().replace(/\btown\b/g, '').replace(/\s+/g, ' ').trim();
+                    
+                    // 1. Standard strict match (This will now naturally match "site (moriro mir bahar)")
+                    if (dbTown === geoTown) return true;
+                    
+                    // 2. Keamari / Mauripur exception fallbacks
+                    if (geoTown.includes('keamari') && dbTown.includes('keamari')) return true;
+
+                    return false;
+                });
+            } else if (targetDepth === 'uc') {
+            const ucNumMatch = cleanName.match(/uc[- ]*(\d+)/);
+            record = complaintStats.find(r => {
+                const dbUc = r.name.toLowerCase();
+                if (dbUc.includes(cleanName) || cleanName.includes(dbUc)) return true;
+                if (ucNumMatch) {
+                    const dbUcNumMatch = dbUc.match(/uc[- ]*(\d+)/);
+                    return dbUcNumMatch && ucNumMatch[1] === dbUcNumMatch[1];
+                }
+                return false;
+            });
+        }
+        return record ? record.total_complaints : 0;
+    };
+
+    const getColorFromRatio = (count) => {
+        const ratio = maxComplaintsValue > 0 ? count / maxComplaintsValue : 0;
+        if (count === 0) return '#fee2e2';
+        if (ratio <= 0.2) return '#fecaca';
+        if (ratio <= 0.4) return '#fca5a5';
+        if (ratio <= 0.6) return '#f87171';
+        if (ratio <= 0.8) return '#ef4444';
+        return '#b91c1c';
     };
 
     const styleFeature = (feature) => {
+        const townName = getTownName(feature);
         const currentZone = getZoneOfTown(feature);
 
         if (mapDepth === 'zone') {
+            const zoneCount = getCountForLayerItem(currentZone, 'zone');
             return {
-                fillColor: ZONE_COLORS[currentZone] || '#64748b',
+                fillColor: getColorFromRatio(zoneCount),
                 weight: 2,
-                color: verificationMode ? '#ffffff' : '#0f172a',
-                fillOpacity: verificationMode ? 0.35 : 0.6,
+                color: '#ffffff',
+                fillOpacity: 0.65, 
                 opacity: 1
             };
         }
 
         if (mapDepth === 'town') {
             const isMatch = currentZone === selectedZone;
+            const count = getCountForLayerItem(townName, 'town');
+            const color = getColorFromRatio(count);
+
             return {
-                fillColor: isMatch ? ZONE_COLORS[selectedZone] : '#12182c',
+                fillColor: isMatch ? color : '#12182c',
                 weight: isMatch ? 2.5 : 1,
                 color: isMatch ? '#ffffff' : '#1e293b',
-                fillOpacity: isMatch ? (verificationMode ? 0.4 : 0.75) : 0.05,
+                fillOpacity: isMatch ? 0.8 : 0.05,
                 opacity: isMatch ? 1 : 0.2
             };
         }
-
         return { fillOpacity: 0, opacity: 0, weight: 0 };
     };
 
     const onEachTownFeature = (feature, layer) => {
         const townName = getTownName(feature);
         const currentZone = getZoneOfTown(feature);
+        const count = getCountForLayerItem(townName, 'town');
 
         if (mapDepth === 'town' && currentZone === selectedZone) {
-            layer.bindTooltip(townName.toUpperCase(), {
+            layer.bindTooltip(`${townName.toUpperCase()} (${count} Complaints)`, {
                 permanent: true,
                 direction: 'center',
                 className: 'bg-slate-950/90 text-white font-black text-[10px] px-2 py-0.5 rounded border border-slate-700 pointer-events-none'
@@ -135,20 +205,11 @@ const ZoneComplaintMap = ({ onBackToDashboard }) => {
         }
 
         layer.on({
-            mouseover: () => {
-                if (mapDepth === 'zone' || (mapDepth === 'town' && currentZone === selectedZone)) {
-                    layer.setStyle({ fillOpacity: 0.85 });
-                }
-            },
-            mouseout: () => {
-                layer.setStyle(styleFeature(feature));
-            },
             click: () => {
                 if (mapDepth === 'zone') {
                     setSelectedZone(currentZone);
                     setMapDepth('town');
                 } else if (mapDepth === 'town' && currentZone === selectedZone) {
-                    selectedTownPolygonRef.current = layer; 
                     setSelectedTown(townName);
                     setMapDepth('uc');
                 }
@@ -158,158 +219,177 @@ const ZoneComplaintMap = ({ onBackToDashboard }) => {
 
     const onEachUcFeature = (feature, layer) => {
         const ucTitle = getUcLabelName(feature);
-        layer.bindTooltip(ucTitle.toUpperCase(), {
+        const count = getCountForLayerItem(ucTitle, 'uc');
+
+        layer.bindTooltip(`${ucTitle.toUpperCase()} [${count}]`, {
             permanent: true,
             direction: 'center',
-            className: 'bg-rose-950/95 text-rose-100 font-black text-[9px] px-1.5 py-0.5 rounded border border-rose-500/40 tracking-wide pointer-events-none shadow-lg'
+            className: 'bg-rose-950/95 text-rose-100 font-black text-[9px] px-1.5 py-0.5 rounded border border-rose-500/40 pointer-events-none shadow-lg'
         });
     };
 
-    // FIXED FILTER ENGINE: Matches via text prefix first to prevent neighboring town leakages
-    const filterUcByTownBoundary = (ucGeoJson) => {
-        if (!ucGeoJson || !selectedTown) return { type: "FeatureCollection", features: [] };
-        
-        // Normalize strings (e.g., "manghopir town" -> "manghopir" or "mangopir")
-        const currentTargetClean = selectedTown.toLowerCase().replace('town', '').trim();
-        const baseNameRoot = currentTargetClean.substring(0, 5); // Grabs root like "mangh" or "mango"
-        
-        const townLayer = selectedTownPolygonRef.current;
-        
-        const filteredFeatures = ucGeoJson.features.filter(ucFeature => {
-            const ucLabel = getUcLabelName(ucFeature).toLowerCase();
-            
-            // Step 1: Text Validation Strategy (Ensures zero bleed-through from neighbors)
-            if (ucLabel.includes(currentTargetClean) || ucLabel.includes(baseNameRoot)) {
-                return true;
+    const checkPointInPolygon = (lng, lat, polygonCoordinates) => {
+        let inside = false;
+        for (let i = 0, j = polygonCoordinates.length - 1; i < polygonCoordinates.length; j = i++) {
+            const xi = polygonCoordinates[i][0], yi = polygonCoordinates[i][1];
+            const xj = polygonCoordinates[j][0], yj = polygonCoordinates[j][1];
+            const intersect = ((yi > lat) !== (yj > lat))
+                && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    };
+
+    const getFeatureCentroid = (geometry) => {
+        let points = [];
+        const extractPoints = (coords) => {
+            if (typeof coords[0] === 'number') {
+                points.push(coords);
+            } else {
+                coords.forEach(extractPoints);
             }
+        };
+        if (geometry && geometry.coordinates) {
+            extractPoints(geometry.coordinates);
+        }
+        if (points.length === 0) return null;
+        
+        let sumLng = 0;
+        let sumLat = 0;
+        points.forEach(p => {
+            sumLng += p[0];
+            sumLat += p[1];
+        });
+        return [sumLng / points.length, sumLat / points.length];
+    };
 
-            // Step 2: Spatial Fallback strategy if text validation didn't hit but it sits perfectly inside boundary
-            if (!townLayer) return false;
+    const filterUcByTownBoundary = (ucGeoJson) => {
+        if (!ucGeoJson || !selectedTown || !townData) return { type: "FeatureCollection", features: [] };
+        
+        const currentTargetClean = selectedTown.toLowerCase().replace('town', '').trim();
+        
+        const targetTownFeature = townData.features.find(f => 
+            getTownName(f).toLowerCase().replace('town', '').trim() === currentTargetClean
+        );
+
+        if (!targetTownFeature || !targetTownFeature.geometry) return { type: "FeatureCollection", features: [] };
+
+        const filteredFeatures = ucGeoJson.features.filter(ucFeature => {
+            const centroid = getFeatureCentroid(ucFeature.geometry);
+            if (!centroid) return false;
+
+            const [ucLng, ucLat] = centroid;
+            const geom = targetTownFeature.geometry;
+
             try {
-                let coords = ucFeature.geometry.coordinates;
-                while (Array.isArray(coords) && Array.isArray(coords[0])) {
-                    coords = coords[0];
+                if (geom.type === 'Polygon') {
+                    return checkPointInPolygon(ucLng, ucLat, geom.coordinates[0]);
+                } else if (geom.type === 'MultiPolygon') {
+                    return geom.coordinates.some(poly => checkPointInPolygon(ucLng, ucLat, poly[0]));
                 }
-                const leafletPoint = L.latLng(coords[1], coords[0]);
-                
-                // Double validation: Must be inside boundary AND must not explicitly mention a different town name
-                const isInsideGeo = townLayer.getBounds().contains(leafletPoint);
-                const belongsToAnotherTown = Object.keys(TOWN_TO_ZONE_MAP).some(otherTown => {
-                    const otherClean = otherTown.replace('town', '').trim();
-                    return otherClean !== currentTargetClean && ucLabel.includes(otherClean);
-                });
-
-                return isInsideGeo && !belongsToAnotherTown;
-            } catch (e) {
+            } catch {
                 return false;
             }
+            return false;
         });
 
         return { type: "FeatureCollection", features: filteredFeatures };
     };
 
-    const handleBreadcrumbClick = (depth) => {
-        if (depth === 'zone') {
-            setSelectedZone(null);
-            setSelectedTown(null);
-            selectedTownPolygonRef.current = null;
-            setMapDepth('zone');
-        } else if (depth === 'town') {
-            setSelectedTown(null);
-            setMapDepth('town');
+    const getRenderedTotalsText = () => {
+        if (mapDepth === 'zone') {
+            return `Total Shown: 4 Zones`;
+        } else if (mapDepth === 'town') {
+            if (!townData) return '';
+            const filteredTownsCount = townData.features.filter(f => getZoneOfTown(f) === selectedZone).length;
+            return `Total Shown: ${filteredTownsCount} Towns`;
+        } else if (mapDepth === 'uc') {
+            if (!ucData) return '';
+            const filteredUcsCount = filterUcByTownBoundary(ucData).features.length;
+            return `Total Shown: ${filteredUcsCount} Union Councils`;
         }
+        return '';
     };
 
     return (
         <div className="bg-[#0c1122] border border-slate-800 rounded-xl p-5 space-y-4 shadow-2xl">
-            
-            {/* Upper Action Interface Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={onBackToDashboard}
-                        className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black uppercase tracking-wider px-3 py-2 rounded-lg transition-all"
-                    >
+                    <button onClick={onBackToDashboard} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black uppercase px-3 py-2 rounded-lg">
                         <ArrowLeft className="w-4 h-4" /> Exit Map
                     </button>
-                    <div>
-                        <h2 className="text-sm font-black tracking-wide text-white uppercase flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4 text-cyan-400" />
-                            {mapDepth === 'zone' ? "Karachi Administrative Zone Layout" : mapDepth === 'town' ? `${selectedZone} - Active Towns` : `${selectedTown?.toUpperCase()} - Verified Union Councils (UC)`}
-                        </h2>
+                    <h2 className="text-sm font-black text-white uppercase flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-cyan-400" />
+                        {mapDepth === 'zone' ? "Karachi Administrative Zone Layout" : mapDepth === 'town' ? `${selectedZone} - Active Towns` : `${selectedTown?.toUpperCase()} - Union Councils`}
+                    </h2>
+                </div>
+
+                <div className="text-xs font-bold text-slate-400 flex flex-wrap items-center gap-3 bg-[#12182c] border border-slate-800 px-3 py-1.5 rounded-lg">
+                    <div className="flex items-center gap-1.5 pr-2 border-r border-slate-700 text-cyan-400 font-extrabold uppercase">
+                        {getRenderedTotalsText()}
                     </div>
-                </div>
+                    
+                    {/* SUBTYPE SELECT ENGINE DROPDOWN */}
+                    <div className="flex items-center gap-1 pr-2 border-r border-slate-700">
+                        <span className="text-slate-400 uppercase text-[10px] font-black tracking-wider">Subtype:</span>
+                        <select
+                            value={selectedSubtype}
+                            onChange={(e) => setSelectedSubtype(e.target.value)}
+                            className="bg-transparent text-white font-black text-xs outline-none cursor-pointer pr-4 border-none focus:ring-0 uppercase"
+                        >
+                            <option value="ALL" className="bg-[#12182c] text-white font-semibold">ALL SUBTYPES</option>
+                            {subtypes.map((st) => (
+                                <option key={st.id} value={st.id} className="bg-[#12182c] text-white font-semibold">
+                                    {st.title.toUpperCase()}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                {/* Satellite/Street Map verification switch */}
-                <button
-                    onClick={() => setVerificationMode(!verificationMode)}
-                    className={`flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-2 rounded-lg transition-all border ${
-                        verificationMode 
-                            ? 'bg-amber-500 text-slate-950 border-amber-400' 
-                            : 'bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800'
-                    }`}
-                >
-                    {verificationMode ? <Layers className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    {verificationMode ? "Standard Dark Map" : "Verify with Street Map"}
-                </button>
-
-                {/* Dynamic Legend Palette */}
-                <div className="flex items-center gap-4 bg-[#12182c] border border-slate-800 px-4 py-2 rounded-lg text-xs font-bold">
-                    {Object.keys(ZONE_COLORS).map(z => (
-                        <div key={z} className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: ZONE_COLORS[z] }} />
-                            <span className={selectedZone === z ? "text-white font-black" : "text-slate-400"}>{z}</span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Dashboard Navigation Controls */}
-                <div className="text-xs font-bold text-slate-400 flex items-center gap-2 bg-[#12182c] border border-slate-800 px-3 py-1.5 rounded-lg">
-                    <span className={`cursor-pointer uppercase ${mapDepth === 'zone' ? 'text-cyan-400 font-black' : 'hover:text-white'}`} onClick={() => handleBreadcrumbClick('zone')}>Karachi</span>
-                    {selectedZone && <> <span className="text-slate-600 font-medium">&gt;</span> <span className={`cursor-pointer uppercase ${mapDepth === 'town' ? 'text-cyan-400 font-black' : 'hover:text-white'}`} onClick={() => handleBreadcrumbClick('town')}>{selectedZone}</span> </>}
-                    {selectedTown && <> <span className="text-slate-600 font-medium">&gt;</span> <span className="text-rose-400 font-black uppercase">{selectedTown}</span> </>}
+                    <span className="cursor-pointer uppercase" onClick={() => { setSelectedZone(null); setSelectedTown(null); setMapDepth('zone'); }}>Karachi</span>
+                    {selectedZone && <><span>&gt;</span><span className="cursor-pointer uppercase" onClick={() => { setSelectedTown(null); setMapDepth('town'); }}>{selectedZone}</span></>}
+                    {selectedTown && <><span>&gt;</span><span className="text-rose-400 font-black uppercase">{selectedTown}</span></>}
                 </div>
             </div>
 
-            {/* Main Interactive Leaflet Map Window */}
-            <div className="h-[620px] w-full rounded-lg overflow-hidden border border-slate-800 relative bg-[#060913]">
-                <MapContainer center={KarachiCenter} zoom={11} className="h-full w-full" scrollWheelZoom={true}>
-                    <TileLayer
-                        attribution='&copy; OpenStreetMap contributors'
-                        url={verificationMode 
-                            ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                        }
-                    />
+            <div className="h-[850px] w-full rounded-lg overflow-hidden border border-slate-800 relative bg-[#060913]">
+                <MapContainer center={KarachiCenter} zoom={11} className="h-full w-full">
+                    <TileLayer url={verificationMode ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"} />
 
-                    {/* Layer 1 & 2: Towns Polygon Render Matrix */}
                     {townData && (
                         <GeoJSON 
-                            key={`towns-${mapDepth}-${selectedZone}-${verificationMode}`}
+                            key={`towns-${mapDepth}-${selectedZone}-${verificationMode}-${maxComplaintsValue}-${selectedSubtype}`}
                             data={townData}
                             style={styleFeature}
                             onEachFeature={onEachTownFeature}
                         />
                     )}
 
-                    {/* Single Central Floating Title Overlays for Macro Zones */}
-                    {mapDepth === 'zone' && zoneCenters.map(zc => (
-                        <Marker key={zc.zone} position={zc.center} icon={invisibleIcon}>
-                            <Tooltip permanent direction="center" className="bg-slate-900 border-2 border-cyan-500 text-white font-black text-xs px-2.5 py-1 rounded-md shadow-2xl tracking-widest text-center">
-                                <div className="flex items-center gap-1.5 justify-center">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: ZONE_COLORS[zc.zone] }} />
-                                    {zc.zone}
-                                </div>
-                            </Tooltip>
-                        </Marker>
-                    ))}
+                    {mapDepth === 'zone' && zoneCenters.map(zc => {
+                        const count = getCountForLayerItem(zc.zone, 'zone');
+                        return (
+                            <Marker key={zc.zone} position={zc.center} icon={invisibleIcon}>
+                                <Tooltip permanent direction="center" className="bg-slate-900 border-2 border-cyan-500 text-white font-black text-xs px-2.5 py-1 rounded-md shadow-2xl">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <div className="flex items-center gap-1.5 font-extrabold">
+                                            {zc.zone}
+                                        </div>
+                                        <span className="text-[10px] text-rose-400 font-bold">{count} Complaints</span>
+                                    </div>
+                                </Tooltip>
+                            </Marker>
+                        );
+                    })}
 
-                    {/* Layer 3: Filtered Real KML-Labeled Union Councils */}
                     {ucData && mapDepth === 'uc' && (
                         <GeoJSON 
-                            key={`ucs-${selectedTown}`}
+                            key={`ucs-${selectedTown}-${maxComplaintsValue}-${selectedSubtype}`}
                             data={filterUcByTownBoundary(ucData)}
-                            style={{ fillColor: '#e11d48', weight: 1.5, color: '#ffffff', fillOpacity: 0.65, opacity: 1 }}
+                            style={(f) => {
+                                const count = getCountForLayerItem(getUcLabelName(f), 'uc');
+                                const color = getColorFromRatio(count);
+                                return { fillColor: color, weight: 1.8, color: '#ffffff', fillOpacity: 0.8, opacity: 1 };
+                            }}
                             onEachFeature={onEachUcFeature}
                         />
                     )}
