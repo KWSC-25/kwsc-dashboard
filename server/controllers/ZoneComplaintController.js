@@ -322,8 +322,9 @@ export const getZoneWiseResolvedMatrix = async (req, res) => {
 // Controller function to fetch complaint map distribution data & dynamic subtypes
 export const getMapComplaintDistribution = async (req, res) => {
   try {
-    const { typeId, startDate, endDate, subtypeId, currentDepth, selectedZoneName, selectedTownId } = req.query;
+    const { typeId, startDate, endDate, subtypeId } = req.query;
 
+    // 1. Fetch available Subtypes based on Global Category Type Filter
     let subtypesQuery = `SELECT id, title FROM sub_types ORDER BY title ASC`;
     let subtypesParams = [];
 
@@ -333,100 +334,39 @@ export const getMapComplaintDistribution = async (req, res) => {
     }
     const [subtypes] = await req.db.query(subtypesQuery, subtypesParams);
 
+    // 2. Build Dynamic Conditions for Left Join Aggregate
     let queryParams = [];
-    let baseWhereClause = ` WHERE c.status IN (0, 1, 2) `; 
+    let joinConditions = ` ON st.id = c.sub_town_id AND c.status IN (0, 1, 2) `; 
 
     if (typeId && typeId !== 'ALL') {
-      baseWhereClause += ` AND c.type_id = ? `;
+      joinConditions += ` AND c.type_id = ? `;
       queryParams.push(Number(typeId));
     }
     if (subtypeId && subtypeId !== 'ALL') {
-      baseWhereClause += ` AND c.subtype_id = ? `;
+      joinConditions += ` AND c.subtype_id = ? `;
       queryParams.push(Number(subtypeId));
     }
     if (startDate && endDate) {
-      baseWhereClause += ` AND c.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) `;
+      joinConditions += ` AND c.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) `;
       queryParams.push(startDate, endDate);
     } else {
-      baseWhereClause += ` AND c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) `;
+      joinConditions += ` AND c.created_at BETWEEN '2024-10-23 00:00:00' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) `;
     }
 
-    let mapDataRows = [];
+    // 3. Fetch ALL UCs mapping them alongside their parent town cleanly
+    const globalUcQuery = `
+      SELECT 
+        t.town AS town_name,
+        st.title AS name,
+        COUNT(c.id) AS total_complaints
+      FROM subtown st
+      INNER JOIN towns t ON st.town_id = t.id
+      LEFT JOIN complaint c ${joinConditions}
+      GROUP BY t.town, st.title
+      ORDER BY t.town ASC, st.title ASC
+    `;
 
-    if (currentDepth === 'zone') {
-      const zoneQuery = `
-        SELECT 
-          z.title AS name,
-          COUNT(c.id) AS total_complaints
-        FROM zones z
-        LEFT JOIN zone_towns zt ON z.id = zt.zone_id
-        LEFT JOIN complaint c ON zt.town_id = c.town_id
-        ${baseWhereClause}
-        GROUP BY z.id, z.title
-      `;
-      [mapDataRows] = await req.db.query(zoneQuery, queryParams);
-
-    } else if (currentDepth === 'town') {
-      let digit = selectedZoneName ? selectedZoneName.replace(/[^0-9]/g, '') : '';
-      let romanFallback = '';
-      if (digit === '1') romanFallback = '-I';
-      if (digit === '2') romanFallback = '-II';
-      if (digit === '3') romanFallback = '-III';
-      if (digit === '4') romanFallback = '-IV';
-
-      const townQuery = `
-        SELECT 
-          t.id AS town_id,
-          t.town AS name,
-          COUNT(c.id) AS total_complaints
-        FROM towns t
-        INNER JOIN zone_towns zt ON t.id = zt.town_id
-        INNER JOIN zones z ON zt.zone_id = z.id
-        LEFT JOIN complaint c ON t.id = c.town_id
-        ${baseWhereClause}
-        AND (z.title LIKE ? OR z.title LIKE ? OR z.title LIKE ?)
-        GROUP BY t.id, t.town
-      `;
-      [mapDataRows] = await req.db.query(townQuery, [
-        ...queryParams, 
-        `%${selectedZoneName}%`, 
-        `%${digit}%`, 
-        `%${romanFallback}%`
-      ]);
-
-    } else if (currentDepth === 'uc') {
-      const cleanTownInput = selectedTownId ? selectedTownId.toLowerCase().trim() : '';
-      
-      // Extract the first pure word identifier (e.g., "site town (moriro...)" -> "site")
-      // This prevents parenthesis text blocks from destroying database matches
-      const coreWordMatch = cleanTownInput.match(/^([a-z]+)/);
-      const coreKeyword = coreWordMatch ? coreWordMatch[1] : cleanTownInput;
-
-      const ucQuery = `
-        SELECT 
-          st.id AS uc_id,
-          st.title AS name,
-          COUNT(c.id) AS total_complaints
-        FROM subtown st
-        LEFT JOIN complaint c ON st.id = c.sub_town_id
-        ${baseWhereClause}
-        AND st.town_id = (
-          SELECT id FROM towns 
-          WHERE LOWER(town) LIKE ? 
-             OR LOWER(town) LIKE ?
-          ORDER BY (LOWER(town) LIKE ?) DESC 
-          LIMIT 1
-        )
-        GROUP BY st.id, st.title
-      `;
-      
-      [mapDataRows] = await req.db.query(ucQuery, [
-        ...queryParams, 
-        `%\u0025${coreKeyword}%\u0025`, // e.g. "%site%"
-        `%\u0025${cleanTownInput.replace('town','').trim()}%\u0025`,
-        `%\u0025${coreKeyword}%\u0025`
-      ]);
-    }
+    const [mapDataRows] = await req.db.query(globalUcQuery, queryParams);
 
     res.status(200).json({
       success: true,
