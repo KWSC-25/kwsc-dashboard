@@ -334,35 +334,39 @@ export const getMapComplaintDistribution = async (req, res) => {
     }
     const [subtypes] = await req.db.query(subtypesQuery, subtypesParams);
 
-    // 2. Build Dynamic Conditions for Left Join Aggregate
+    // 2. Build Dynamic Conditions for Isolated Complaint Aggregation
+    let filterConditions = ` WHERE c.status IN (0, 1, 2) `;
     let queryParams = [];
-    let joinConditions = ` ON st.id = c.sub_town_id AND c.status IN (0, 1, 2) `; 
 
     if (typeId && typeId !== 'ALL') {
-      joinConditions += ` AND c.type_id = ? `;
+      filterConditions += ` AND c.type_id = ? `;
       queryParams.push(Number(typeId));
     }
     if (subtypeId && subtypeId !== 'ALL') {
-      joinConditions += ` AND c.subtype_id = ? `;
+      filterConditions += ` AND c.subtype_id = ? `;
       queryParams.push(Number(subtypeId));
     }
     if (startDate && endDate) {
-      joinConditions += ` AND c.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) `;
+      filterConditions += ` AND c.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) `;
       queryParams.push(startDate, endDate);
     } else {
-      joinConditions += ` AND c.created_at BETWEEN '2024-10-23 00:00:00' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) `;
+      filterConditions += ` AND c.created_at BETWEEN '2024-10-23 00:00:00' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) `;
     }
 
-    // 3. Fetch ALL UCs mapping them alongside their parent town cleanly
+    // 3. Optimized Structural Query using a Pre-Aggregated Subquery
     const globalUcQuery = `
       SELECT 
         t.town AS town_name,
         st.title AS name,
-        COUNT(c.id) AS total_complaints
+        IFNULL(counts.total_complaints, 0) AS total_complaints
       FROM subtown st
       INNER JOIN towns t ON st.town_id = t.id
-      LEFT JOIN complaint c ${joinConditions}
-      GROUP BY t.town, st.title
+      LEFT JOIN (
+        SELECT sub_town_id, COUNT(id) AS total_complaints
+        FROM complaint c
+        ${filterConditions}
+        GROUP BY sub_town_id
+      ) counts ON st.id = counts.sub_town_id
       ORDER BY t.town ASC, st.title ASC
     `;
 

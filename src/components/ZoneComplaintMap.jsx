@@ -63,6 +63,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
             const dbUc = r.name.toLowerCase().replace(/\s+/g, ' ').trim();
             const dbTown = r.town_name.toLowerCase().trim();
             
+            // Match structural configurations
             const dbUcNumMatch = dbUc.match(/uc\s*[- ]*\s*0*(\d+)/);
             if (dbUcNumMatch) {
                 const dbNumber = parseInt(dbUcNumMatch[1], 10);
@@ -80,7 +81,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
         return record ? record.total_complaints : 0;
     };
 
-const getColorFromRatio = (count) => {
+    const getColorFromRatio = (count) => {
         if (count === 0) return '#c2bebe'; // Slate border indicator for zero complaints
         
         // Log calculation spreads out variance at the lower numerical bounds
@@ -97,6 +98,7 @@ const getColorFromRatio = (count) => {
         if (ratio <= 0.92) return '#be123c';
         return '#9f1239'; 
     };
+
     const onEachUcFeature = (feature, layer) => {
         const ucTitle = getUcLabelName(feature);
         const count = getCountForUc(ucTitle);
@@ -111,14 +113,25 @@ const getColorFromRatio = (count) => {
     return (
         <div className="bg-[#0c1122] border border-slate-800 rounded-xl p-5 space-y-4 shadow-2xl">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-6">
                     <button onClick={onBackToDashboard} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black uppercase px-3 py-2 rounded-lg">
                         <ArrowLeft className="w-4 h-4" /> Exit Map
                     </button>
-                    <h2 className="text-sm font-black text-white uppercase flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4 text-cyan-400" />
-                        Karachi Administrative Overview - City-Wide UC Tracker
-                    </h2>
+                    <div className="space-y-1.5">
+                        <h2 className="text-sm font-black text-white uppercase flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4 text-cyan-400" />
+                            Karachi Administrative Overview - City-Wide UC Tracker
+                        </h2>
+                        {/* Dynamic Map Legend Segment */}
+                        <div className="flex items-center gap-3 bg-[#070a14] border border-slate-800/80 rounded-md px-2.5 py-1 text-[10px] w-fit">
+                            <span className="text-slate-500 font-black tracking-wider uppercase pr-1">Density Scale:</span>
+                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#c2bebe]" /> <span className="text-slate-400 font-bold">0</span></div>
+                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#ffe4e6]" /> <span className="text-slate-400 font-bold">Low</span></div>
+                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#fda4af]" /> <span className="text-slate-400 font-bold">Moderate</span></div>
+                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#f43f5e]" /> <span className="text-slate-400 font-bold">High</span></div>
+                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#9f1239]" /> <span className="text-slate-400 font-bold">Critical (Peak)</span></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="text-xs font-bold text-slate-400 flex flex-wrap items-center gap-3 bg-[#12182c] border border-slate-800 px-3 py-1.5 rounded-lg">
