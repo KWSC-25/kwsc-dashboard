@@ -11,7 +11,7 @@ import {
     Filter, 
     RefreshCw, 
     ArrowUpRight, 
-    TrendingUp 
+    TrendingUp
 } from 'lucide-react';
 
 const ZoneComplaintDashboard = () => {
@@ -133,6 +133,15 @@ const ZoneComplaintDashboard = () => {
         setEndDate(tempEndDate);
     };
 
+    const handleSelectToday = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setTempStartDate(todayStr);
+        setTempEndDate(todayStr);
+        setStartDate(todayStr);
+        setEndDate(todayStr);
+    };
+
     const handleResetFilter = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -209,6 +218,15 @@ const ZoneComplaintDashboard = () => {
                             />
                         </div>
                     </div>
+
+                    {/* QUICK TODAY TOGGLE INTERACTION BUTTON */}
+                    <button
+                        type="button"
+                        onClick={handleSelectToday}
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all flex-1 md:flex-none shadow-lg shadow-indigo-600/20"
+                    >
+                        Today
+                    </button>
 
                     {/* CONTROL ACTION TRIGGER BUTTONS */}
                     <button

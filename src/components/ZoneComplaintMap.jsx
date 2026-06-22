@@ -123,7 +123,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                             Karachi Administrative Overview - City-Wide UC Tracker
                         </h2>
                         {/* Dynamic Map Legend Segment */}
-                        <div className="flex items-center gap-3 bg-[#070a14] border border-slate-800/80 rounded-md px-2.5 py-1 text-[10px] w-fit">
+                        <div className="flex items-center gap-3 bg-[#070a14] border border-slate-800/80 rounded-md px-2.5 py-1 text-[12px] w-fit">
                             <span className="text-slate-500 font-black tracking-wider uppercase pr-1">Density Scale:</span>
                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#c2bebe]" /> <span className="text-slate-400 font-bold">0</span></div>
                             <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded bg-[#ffe4e6]" /> <span className="text-slate-400 font-bold">Low</span></div>
