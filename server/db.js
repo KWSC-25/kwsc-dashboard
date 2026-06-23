@@ -46,7 +46,11 @@ const pools = {};
 
 export const getDatabase = async (type) => {
     // 🌟 ALIAS STRATEGY: If 'hydrantkpi' is requested, cleanly route it to use the 'hydrant' pool instead
-  let targetType = type;
+    if (type === 'chlorination') {
+        console.log(`ℹ️ [CHLORINATION] requested: Skipping database connection pool initialization.`);
+        return null; 
+    }
+    let targetType = type;
     
     if (type === 'hydrantkpi') {
         targetType = 'hydrant';

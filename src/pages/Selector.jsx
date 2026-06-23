@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Droplets, LogOut, BarChart3, Scale, Activity } from 'lucide-react'; // Added Activity icon for chlorination
+import { LayoutDashboard, Droplets, LogOut, BarChart3, Scale, Activity, ShelvingUnit, Video, Presentation } from 'lucide-react'; 
 import { handleGlobalLogout } from '../utils/authService';
 
 const Selector = () => {
@@ -60,7 +60,32 @@ const Selector = () => {
             active: true,
             path: 'https://kwssip.muraqib.theadtec.com',
             isExternal: true // Custom property to track direct link routing
-        }
+        },
+        {
+            id: 'wmp',
+            title: 'Works Management Portal',
+            desc: 'Works and Video Archiving',
+            icon: <Video size={40} color="#eab308" />, // Yellow theme icon
+            active: true,
+            path: 'http://wmp.kwsc.gos.pk',
+            isExternal: true // Custom property to track direct link routing
+        },
+        {
+            id: 'mci',
+            title: 'Manhole Cover Inventory System',
+            desc: 'Track Inventory Usage',
+            icon: <ShelvingUnit size={40} color="#64748b" />,
+            active: false,
+            path: '/dashboard'
+        },
+        {
+            id: 'eci',
+            title: 'Executive Committee Dashboard',
+            desc: 'Monitor minutes of meeting',
+            icon: <Presentation size={40} color="#64748b" />,
+            active: false,
+            path: '/dashboard'
+        },
     ];
 
     return (
