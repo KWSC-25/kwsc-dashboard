@@ -10,7 +10,7 @@ import HydrantCharts from './HydrantCharts';
 
 const HydrantKPIDashboard = () => {
     const [data, setData] = useState(null);
-    
+    const [toDateSnapshot, setToDateSnapshot] = useState(null);
     const todayStr = new Date().toISOString().split('T')[0];
     const [dashboardMode, setDashboardMode] = useState('TODATE');
     const [startDate, setStartDate] = useState('2026-02-01');
@@ -27,7 +27,6 @@ const HydrantKPIDashboard = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
     const fetchTodayStats = useCallback(async () => {
         try {
             let url = 'newkpis/today-stats';
@@ -36,10 +35,15 @@ const HydrantKPIDashboard = () => {
             }
             const resp = await api.get(url);
             setData(resp.data.data);
+
+            // --- ADD THIS BLOCK TO CAPTURE TO-DATE VALUES ---
+            if (dashboardMode === 'TODATE' && resp.data.data) {
+                setToDateSnapshot(resp.data.data);
+            }
         } catch (err) {
             console.error("Hydrant KPI Fetch Error:", err);
         }
-    }, [activeFilters]);
+    }, [activeFilters, dashboardMode]); // Added dashboardMode here as a dependency
 
     useEffect(() => {
         fetchTodayStats();
@@ -247,6 +251,27 @@ const HydrantKPIDashboard = () => {
                     <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'flex-start', border: 'none', paddingTop: '1px' }}>
                         <span className={`hmp-label ${cfg.lblClass}`} style={{ fontSize: '30px' }}>Max Aging: {cfg.aging}</span>
                     </div>
+                )}
+{/* --- ADD NEW DIV FOR TO DATE MINUS TODAY COUNT --- */}
+                {dashboardMode === 'TODAY' && toDateSnapshot && ['dispatched', 'pending'].includes(cardType) && (
+                    (() => {
+                        const targetGroup = key === 'daily_ots' ? 'ots' : 'orders';
+                        const targetProp = cardType === 'dispatched' 
+                            ? (key === 'daily_ots' ? 'ots_dispatched_today' : 'hmp-dispatched_today') // match your backend object key
+                            : (key === 'daily_ots' ? 'ots_pending_today' : 'hmp_pending_today');
+                        
+                        // Fallback handling checking the structural breakdown
+                        const snapshotVal = Number(toDateSnapshot[targetGroup]?.[targetProp === 'hmp-dispatched_today' ? 'hmp_dispatched_today' : targetProp]) || 0;
+                        const totalDiff = Math.max(0, snapshotVal - Number(cfg.count));
+
+                        return (
+                            <div className="hmp-sub-row" style={{ display: 'flex', justifyContent: 'flex-start', border: 'none', paddingTop: '4px', borderTop: '1px dashed rgba(255,255,255,0.15)', marginTop: '4px' }}>
+                                <span style={{ fontSize: '28px', color: '#a0aec0', fontWeight: 'bold' }}>
+                                    Backlog (To Date - Today): <strong style={{ color: '#fff' }}>{fmt(totalDiff)}</strong>
+                                </span>
+                            </div>
+                        );
+                    })()
                 )}
             </div>
         );
