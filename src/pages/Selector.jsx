@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Droplets, LogOut, BarChart3, Users, Scale } from 'lucide-react';
+import { LayoutDashboard, Droplets, LogOut, BarChart3, Scale, Activity } from 'lucide-react'; // Added Activity icon for chlorination
 import { handleGlobalLogout } from '../utils/authService';
 
 const Selector = () => {
@@ -50,14 +50,16 @@ const Selector = () => {
             icon: <BarChart3 size={40} color="#64748b" />,
             active: true,
             path: '/dashboard'
-
         },
+        // ===== NEW CHLORINATION DASHBOARD ADDED HERE =====
         {
-            id: 'hr',
-            title: 'New Dashboard',
-            desc: '',
-            icon: <Users size={40} color="#64748b" />,
-            active: false
+            id: 'chlorination',
+            title: 'Chlorination Dashboard',
+            desc: 'Monitor live water chlorination system indicators',
+            icon: <Activity size={40} color="#eab308" />, // Yellow theme icon
+            active: true,
+            path: 'https://kwssip.muraqib.theadtec.com',
+            isExternal: true // Custom property to track direct link routing
         }
     ];
 
@@ -90,7 +92,14 @@ const Selector = () => {
                                 }
 
                                 sessionStorage.setItem('activeDashboard', opt.id);
-                                navigate(opt.path, { state: { initialTab: opt.id } });
+
+                                // Conditional execution block handles browser-level window routing vs SPA router engine updates
+                                if (opt.isExternal) {
+                                    window.location.href = opt.path; 
+                                    // Alternatively, use window.open(opt.path, '_blank') if you prefer opening it in a fresh browser tab
+                                } else {
+                                    navigate(opt.path, { state: { initialTab: opt.id } });
+                                }
                             }}
                         >
                             {!opt.active && <span className="coming-soon-tag">Coming Soon</span>}
