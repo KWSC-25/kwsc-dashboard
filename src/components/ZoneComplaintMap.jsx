@@ -5,6 +5,26 @@ import api from '../utils/api';
 
 const KarachiCenter = [24.8607, 67.0011];
 
+// Zone assignment data vectors mapping parent towns to target operational sectors
+const ZONE_MAPPING = {
+    'ZONE 1': [
+        'SHAH FAISAL TOWN', 'IBRAHIM HYDRY TOWN', 'KORANGI TOWN', 
+        'LANDHI TOWN', 'MALIR TOWN', 'MODEL ZONE TOWN', 'GADAP TOWN'
+    ],
+    'ZONE 2': [
+        'CLIFTON', 'GULSHAN E IQBAL TOWN', 'CHANESAR TOWN', 
+        'LYARI TOWN', 'SADDAR TOWN', 'SAFOORA TOWN', 'JINNAH TOWN'
+    ],
+    'ZONE 3': [
+        'BALDIA TOWN', 'MANGOPIR TOWN', 'SURJANI TOWN', 'MARIPUR/KEAMARI TOWN', 'MARIPUR', 'KEAMARI',
+        'KEAMARI TOWN', 'ORANGI TOWN', 'SITE TOWN', 'MORIRO MIR BAHAR', 'MOMINABAD TOWN'
+    ],
+    'ZONE 4': [
+        'NORTH NAZIMABAD TOWN', 'GULBERG TOWN', 'LIAQUATABAD TOWN', 
+        'NEW KARACHI TOWN', 'NAZIMABAD TOWN', 'SOHRAB GOTH TOWN'
+    ]
+};
+
 const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', startDate: '', endDate: '' } }) => {
     const [ucData, setUcData] = useState(null);
     const [verificationMode, setVerificationMode] = useState(false);
@@ -103,10 +123,22 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
         const ucTitle = getUcLabelName(feature);
         const count = getCountForUc(ucTitle);
 
-        layer.bindTooltip(`${ucTitle.toUpperCase()} [${count}]`, {
+        // Determine Zone dynamically by extracting town name from feature label
+        const cleanGeoName = ucTitle.toUpperCase().replace(/UC[- ]*\d+/g, '').replace(/\s+/g, ' ').trim();
+        let detectedZone = "UNKNOWN ZONE";
+
+        for (const [zoneName, towns] of Object.entries(ZONE_MAPPING)) {
+            const match = towns.some(town => town.includes(cleanGeoName) || cleanGeoName.includes(town));
+            if (match) {
+                detectedZone = zoneName;
+                break;
+            }
+        }
+
+        layer.bindTooltip(`${ucTitle.toUpperCase()} [${count}]<br/><span style="font-size: 14px; opacity: 0.85; letter-spacing: 0.05em;">${detectedZone}</span>`, {
             permanent: false,
             direction: 'center',
-            className: 'bg-rose-950/95 text-rose-100 font-black text-[9px] px-1.5 py-0.5 rounded border border-rose-500/40 pointer-events-none shadow-lg'
+            className: 'bg-rose-950/95 text-rose-100 font-black text-[20px] px-1.5 py-0.5 rounded border border-rose-500/40 pointer-events-none shadow-lg text-center'
         });
     };
 
