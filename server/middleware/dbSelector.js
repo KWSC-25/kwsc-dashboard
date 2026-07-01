@@ -10,7 +10,7 @@ export const dbSelector = async (req, res, next) => {
     }
 
     let dbType = context;
-    if (dbType === 'lcms') {
+    if (dbType === 'lcms' ) {
         dbType = 'auth';
     }
 

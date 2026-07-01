@@ -71,6 +71,14 @@ const Selector = () => {
             isExternal: true // Custom property to track direct link routing
         },
         {
+            id: 'eci',
+            title: 'Executive Committee Dashboard',
+            desc: 'Monitor minutes of meeting',
+            icon: <Presentation size={40} color="#64748b" />,
+            active: true,
+            path: '/dashboard'
+        },
+        {
             id: 'mci',
             title: 'Manhole Cover Inventory System',
             desc: 'Track Inventory Usage',
@@ -78,14 +86,7 @@ const Selector = () => {
             active: false,
             path: '/dashboard'
         },
-        {
-            id: 'eci',
-            title: 'Executive Committee Dashboard',
-            desc: 'Monitor minutes of meeting',
-            icon: <Presentation size={40} color="#64748b" />,
-            active: false,
-            path: '/dashboard'
-        },
+
     ];
 
     return (

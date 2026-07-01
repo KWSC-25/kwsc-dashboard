@@ -52,8 +52,12 @@ export const getDatabase = async (type) => {
     }
     let targetType = type;
     
+    if (type === 'eci') {
+        targetType = 'auth'; 
+    }
     if (type === 'hydrantkpi') {
-        targetType = 'hydrant';
+        targetType = 'hydrant'; 
+
     } else if (type === 'zonecomplaint') {
         targetType = 'complaint'; // 🎯 Redirects zonecomplaint to the existing complaint pool cleanly!
     }

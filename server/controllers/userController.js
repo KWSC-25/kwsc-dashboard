@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 export const getAllUsers = async (req, res) => {
     try {
         const result = await authDb.query(
-            `SELECT id, username, email, role, max_sessions, allowed_dashboards, created_at, updated_at 
+            `SELECT id, username, email, role, max_sessions, allowed_dashboards,can_upload, created_at, updated_at 
              FROM dashboard_users 
              ORDER BY created_at DESC`
         );
@@ -16,21 +16,22 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-    const { username, email, password, role, max_sessions, allowed_dashboards } = req.body;
+    const { username, email, password, role, max_sessions, allowed_dashboards, can_upload} = req.body;
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         await authDb.query(
-            `INSERT INTO dashboard_users (username, email, password, role, max_sessions, allowed_dashboards) 
-             VALUES ($1, $2, $3, $4, $5, $6)`,
+            `INSERT INTO dashboard_users (username, email, password, role, max_sessions, allowed_dashboards, can_upload) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [
                 username, 
                 email, 
                 hashedPassword, 
                 role || 'viewer', 
                 parseInt(max_sessions, 10) || 2, 
-                allowed_dashboards || [] // Stored cleanly as PostgreSQL array string/array literal type
+                allowed_dashboards || [],
+                !!can_upload // Evaluates cleanly to a boolean literal for PostgreSQL
             ]
         );
 
@@ -43,30 +44,31 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { username, email, password, role, max_sessions, allowed_dashboards } = req.body;
+    const { username, email, password, role, max_sessions, allowed_dashboards, can_upload } = req.body;
 
     try {
         let query;
         let values;
         const sessionLimit = parseInt(max_sessions, 10) || 2;
         const dashboardsArray = allowed_dashboards || [];
+        const uploadPermission = !!can_upload;
 
         if (password && password.trim() !== "") {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
             query = `
                 UPDATE dashboard_users 
-                SET username = $1, email = $2, password = $3, role = $4, max_sessions = $5, allowed_dashboards = $6, updated_at = NOW() 
-                WHERE id = $7
+                SET username = $1, email = $2, password = $3, role = $4, max_sessions = $5, allowed_dashboards = $6, can_upload = $7, updated_at = NOW() 
+                WHERE id = $8
             `;
-            values = [username, email, hashedPassword, role, sessionLimit, dashboardsArray, id];
+            values = [username, email, hashedPassword, role, sessionLimit, dashboardsArray, uploadPermission, id];
         } else {
             query = `
                 UPDATE dashboard_users 
-                SET username = $1, email = $2, role = $3, max_sessions = $4, allowed_dashboards = $5, updated_at = NOW() 
-                WHERE id = $6
+                SET username = $1, email = $2, role = $3, max_sessions = $4, allowed_dashboards = $5, can_upload = $6, updated_at = NOW() 
+                WHERE id = $7
             `;
-            values = [username, email, role, sessionLimit, dashboardsArray, id];
+            values = [username, email, role, sessionLimit, dashboardsArray, uploadPermission, id];
         }
 
         const result = await authDb.query(query, values);
@@ -105,4 +107,4 @@ export const getSessionLogs = async (req, res) => {
         console.error("Fetch Sessions Error:", error);
         res.status(500).json({ success: false, message: "Server Error loading session logs" });
     }
-};
+}; 

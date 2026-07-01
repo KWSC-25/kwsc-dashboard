@@ -25,6 +25,8 @@ import SpecialSourcesCard from '../components/SpecialSourcesCard';
 import HydrantKPIDashboard from '../components/HydrantKPIDashboard';
 import ComplaintZoneHeader from '../components/Zone-complaintHeader';
 import ZoneComplaintDashboard from '../components/ZoneComplaintDashboard';
+import EciHeader from '../components/ECI-Header';
+import EciDashboard from '../components/ExecutiveCommitteeDashboard';
 const Dashboard = () => {
     const location = useLocation();
     // It checks if 'location.state.initialTab' exists; otherwise, it defaults to 'complaint'
@@ -68,6 +70,8 @@ const Dashboard = () => {
             <option value="hydrantkpi">HYDRANT KPI DASHBOARD</option>
             <option value="lcms">LCMS DASHBOARD</option>
             <option value="zonecomplaint">Zone wise Complaint DASHBOARD</option>
+            <option value="eci">Executive Committee DASHBOARD</option>
+
 
             
         </select>
@@ -85,8 +89,11 @@ const Dashboard = () => {
                 <HmpKpiHeader>{SystemSelector}</HmpKpiHeader>
             ) : activeSystem === 'zonecomplaint' ? (
                 <ComplaintZoneHeader>{SystemSelector}</ComplaintZoneHeader>
+            ) : activeSystem === 'eci' ? (
+                <EciHeader>{SystemSelector}</EciHeader>
             ) : (
                 <LcmsHeader>{SystemSelector}</LcmsHeader>
+
             )}
 
             <div className="content-padding main-scroll-area">
@@ -309,6 +316,10 @@ const Dashboard = () => {
                 )}
                 {activeSystem === 'zonecomplaint' && (
                     <ZoneComplaintDashboard /> // We will create this
+                )}
+
+                {activeSystem === 'eci' && (
+                    <EciDashboard /> // We will create this
                 )}
             </div>
         </div>

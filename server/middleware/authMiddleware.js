@@ -1,6 +1,6 @@
 /* global process */
 import jwt from 'jsonwebtoken';
-import { authDb } from '../db.js'; // Ensure this path points correctly to your db configuration file
+import { authDb } from '../db.js';
 
 export const protect = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -10,6 +10,11 @@ export const protect = async (req, res, next) => {
         // 1. Decode and verify signature status
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
+        // Safety check: Ensure sessionId exists in token
+        if (!decoded.sessionId) {
+            return res.status(401).json({ message: "Session context missing from token" });
+        }
+
         // 2. Query database to verify if this specific session was evicted / revoked
         const sessionCheck = await authDb.query(
             `SELECT is_revoked, logout_at 
@@ -20,7 +25,7 @@ export const protect = async (req, res, next) => {
 
         // If the session record row disappeared or doesn't exist
         if (sessionCheck.rows.length === 0) {
-            return res.status(401).json({ message: "Session expired or invalid" });
+            return res.status(401).json({ message: "Session record not found" });
         }
 
         const session = sessionCheck.rows[0];
@@ -32,12 +37,12 @@ export const protect = async (req, res, next) => {
             });
         }
 
-        // Attach decoded fields to request context
+        // Attach decoded fields directly to request context
         req.user = decoded;
         next();
     } catch (error) {
         console.error("JWT Verification Error:", error);
-        res.status(401).json({ message: "Token failed" });
+        res.status(401).json({ message: "Token failed verification" });
     }
 };
 

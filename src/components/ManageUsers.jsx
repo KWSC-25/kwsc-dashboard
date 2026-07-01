@@ -14,8 +14,7 @@ const ManageUsers = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
-    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: [] });
-
+    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: [], can_upload: false });
     const fetchUsers = async () => {
         try {
             setLoading(true);
@@ -42,11 +41,20 @@ const ManageUsers = () => {
                 password: '', 
                 role: user.role,
                 max_sessions: user.max_sessions || 2,
-                allowed_dashboards: user.allowed_dashboards || [] // <-- Hydrate configuration array field
+                allowed_dashboards: user.allowed_dashboards || [],
+                can_upload: !!user.can_upload // Force clean true/false state evaluation
             });
         } else {
             setEditMode(false);
-            setFormData({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint', 'chlorination', 'wmp'] }); // Default all checked on new user initialization
+            setFormData({ 
+                username: '', 
+                email: '', 
+                password: '', 
+                role: 'viewer', 
+                max_sessions: 2, 
+                allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint', 'chlorination', 'wmp', 'eci'],
+                can_upload: false // Default to false for completely new user setups
+            });
         }
         setShowModal(true);
     };
@@ -277,7 +285,9 @@ const ManageUsers = () => {
                                     { id: 'hydrantkpi', label: 'Hydrant KPI Dashboard' },
                                     { id: 'zonecomplaint', label: 'ZoneWise Complaint Dashboard' },
                                     { id: 'chlorination', label: 'Chlorination Dashboard' },
-                                    { id: 'wmp', label: 'Work Management Portal'}
+                                    { id: 'wmp', label: 'Work Management Portal'},
+                                    { id: 'eci', label: 'Executive Committee Dashboard'}
+
 
 
                                 ].map((dash) => (
@@ -303,6 +313,19 @@ const ManageUsers = () => {
                                     <option value="viewer">Viewer (Read Only)</option>
                                     <option value="admin">Admin (Full Control)</option>
                                 </select>
+                            </div>
+                            {/* ECI Central Material Upload Control Flag */}
+                            <div className="flex items-center gap-3 border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer mt-2">
+                                <input 
+                                    id="can_upload_checkbox"
+                                    type="checkbox"
+                                    className="w-5 h-5 text-blue-600 border-2 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                                    checked={formData.can_upload}
+                                    onChange={(e) => setFormData({ ...formData, can_upload: e.target.checked })}
+                                />
+                                <label htmlFor="can_upload_checkbox" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
+                                    Allow to upload ECI materials
+                                </label>
                             </div>
 
                             <div className="space-y-1">
