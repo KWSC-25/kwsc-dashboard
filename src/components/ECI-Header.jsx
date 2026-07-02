@@ -6,15 +6,12 @@ import { handleGlobalLogout } from '../utils/authService';
 const EciHeader = ({ children }) => {
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        sessionStorage.removeItem('token'); // Clear session
-        navigate('/'); // Redirect to login
-    };
+ 
 
     return (
         <header className="hmp-header-main">
             <div className="title-group">
-                <h1><span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '2.9rem'}}>EXECUTIVE COMMITTEE DASHBOARD (LIVE)</small></span></h1>
+                <h1><span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '1.5rem', marginLeft: '30px'}}>EXECUTIVE COMMITTEE DASHBOARD (LIVE)</small></span></h1>
             </div>
             
             <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '15px' , marginRight:'10px'}}>
@@ -32,7 +29,7 @@ const EciHeader = ({ children }) => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '2rem',
+                        fontSize: '1.5rem',
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.background = '#d3d3d380'}
@@ -56,7 +53,7 @@ const EciHeader = ({ children }) => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '2rem',
+                        fontSize: '1.5rem',
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.background = '#ef444444'}
