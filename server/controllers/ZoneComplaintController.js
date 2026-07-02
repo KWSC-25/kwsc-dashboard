@@ -319,6 +319,73 @@ export const getZoneWiseResolvedMatrix = async (req, res) => {
   }
 };
 
+export const getComplaintBreakdownDetails = async (req, res) => {
+  try {
+    const { typeId, startDate, endDate, zoneId, subtypeKey, status, isDrillDown } = req.query;
+
+    const targetTypeId = (typeId && typeId !== 'ALL') ? Number(typeId) : 1;
+    const targetStatus = Number(status); // 0 = Pending, 1 = Resolved
+    
+    // Extract raw numeric ID from custom key prefix (e.g., 'subtype_12' -> 12)
+    const subtypeId = subtypeKey ? Number(subtypeKey.replace('subtype_', '')) : null;
+
+    if (!subtypeId) {
+      return res.status(400).json({ success: false, error: "Invalid or missing subtype parameters." });
+    }
+
+    // 1. Replicate exact core date clauses to align totals perfectly
+    let dateFilterSql = "";
+    let queryParams = [];
+
+    if (startDate && endDate) {
+      dateFilterSql = " AND c.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) ";
+      queryParams.push(startDate, endDate);
+    } else {
+      dateFilterSql = " AND c.created_at BETWEEN '2024-10-23' AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) ";
+    }
+
+    // 2. Build target spatial scope conditions based on frontend view placement
+    let structuralScopeSql = "";
+    if (isDrillDown === 'true') {
+      // In town view, zoneId represents the specific town row's database ID
+      structuralScopeSql = " AND c.town_id = ? ";
+      queryParams.push(Number(zoneId));
+    } else {
+      // In global view, zoneId maps to a parent zone containing multiple towns
+      structuralScopeSql = " AND c.town_id IN (SELECT town_id FROM zone_towns WHERE zone_id = ?) ";
+      queryParams.push(Number(zoneId));
+    }
+
+    const breakdownQuery = `
+      SELECT 
+        c.comp_num,
+        c.customer_name,
+        c.description,
+        st.title,
+        c.created_at
+      FROM complaint c
+      JOIN subtown st on c.sub_town_id = st.id
+      WHERE c.type_id = ?
+        AND c.subtype_id = ?
+        AND c.status = ?
+        ${dateFilterSql}
+        ${structuralScopeSql}
+      ORDER BY c.created_at DESC;
+    `;
+
+    const [rows] = await req.db.query(breakdownQuery, [targetTypeId, subtypeId, targetStatus, ...queryParams]);
+
+    res.status(200).json({
+      success: true,
+      data: rows
+    });
+
+  } catch (error) {
+    console.error("Granular operational breakdown tracing failure:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 // Controller function to fetch complaint map distribution data & dynamic subtypes
 export const getMapComplaintDistribution = async (req, res) => {
   try {

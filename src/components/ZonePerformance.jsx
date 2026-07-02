@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
-import { Layers, RefreshCw, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Layers, RefreshCw, ArrowLeft, CheckCircle2, X, Calendar, User, FileText, Hash, MapPin } from 'lucide-react';
 
 // Helper function to format hours into Xmonth Xd Xh readable strings
 const formatAgingHours = (hoursNum) => {
@@ -34,6 +34,15 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
     
     // Tracks active drill-down context to flip between Zone view and Town view globally
     const [selectedZone, setSelectedZone] = useState(null);
+
+    // --- Modal Popup Management State Layouts ---
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        loading: false,
+        title: '',
+        subtitle: '',
+        data: []
+    });
 
     const fetchAllMatrixMetrics = useCallback(async (showSpinner = true) => {
         if (showSpinner) setLoading(true);
@@ -84,6 +93,44 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
         return () => clearInterval(matrixAutoRefreshInterval);
     }, [fetchAllMatrixMetrics]);
 
+    // --- Modal Breakdown Aggregation Engine (Only triggered for Pending) ---
+    const handleCellDetailsClick = async (e, row, col, statusType) => {
+        e.stopPropagation(); // Block parent <tr> click triggers when popping modals
+        
+        setModalConfig({
+            isOpen: true,
+            loading: true,
+            title: col.label,
+            subtitle: `${row.zone_name.toUpperCase()} • PENDING CASES`,
+            data: []
+        });
+
+        try {
+            const response = await api.get('zone-complaints/zone-complaint-breakdown', {
+                params: {
+                    typeId,
+                    startDate,
+                    endDate,
+                    zoneId: row.zone_id,
+                    subtypeKey: col.key,
+                    status: statusType,
+                    isDrillDown: selectedZone ? 'true' : 'false'
+                }
+            });
+
+            if (response.data?.success) {
+                setModalConfig(prev => ({
+                    ...prev,
+                    loading: false,
+                    data: response.data.data || []
+                }));
+            }
+        } catch (err) {
+            console.error("Failed fetching breakdown details target parameters:", err);
+            setModalConfig(prev => ({ ...prev, loading: false }));
+        }
+    };
+
     if (loading) {
         return (
             <div className="bg-[#0c1122] border border-slate-800/80 rounded-xl p-8 flex flex-col items-center justify-center space-y-3 min-h-[400px]">
@@ -127,7 +174,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
     const resolvedMetrics = computeTableMetrics(resolvedMatrix, 'total_zone_resolved', 'avg_resolution_tat');
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 relative">
             {/* CENTRAL BANNER COMMAND AND NAVIGATION HEADLINE */}
             <div className="bg-[#0c1122] border border-slate-800/80 rounded-xl p-6 shadow-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -192,7 +239,21 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                             <td className="zone-name-cell py-4 px-5 font-sans font-black text-slate-200 sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">{row.zone_name.toUpperCase()}</td>
                                             {pendingMatrix.columns.map((col) => {
                                                 const count = parseInt(row[col.key] || 0, 10);
-                                                return <td key={col.key} className={` matrix-count-cell py-4 px-3 text-center font-bold ${count > 0 ? 'text-amber-400' : 'text-slate-600'}`}>{count.toLocaleString()}</td>;
+                                                return (
+                                                    <td 
+                                                        key={col.key} 
+                                                        onClick={(e) => selectedZone && count > 0 && handleCellDetailsClick(e, row, col, 0)}
+                                                        className={`matrix-count-cell py-4 px-3 text-center font-bold transition-all ${
+                                                            count > 0 
+                                                                ? selectedZone
+                                                                    ? 'text-amber-400 hover:bg-amber-500/10 cursor-pointer underline decoration-dotted decoration-amber-500/50 underline-offset-4'
+                                                                    : 'text-amber-400'
+                                                                : 'text-slate-600'
+                                                        }`}
+                                                    >
+                                                        {count.toLocaleString()}
+                                                    </td>
+                                                );
                                             })}
                                             <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-red-950/40 to-red-900/20 text-red-400 border-l border-slate-800/80">
                                                 <span className={`matrix-count-cell px-2 py-0.5 rounded font-black tracking-tight ${totalVal > 0 ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30' : 'bg-slate-800/50 text-slate-500'}`}>{totalVal.toLocaleString()}</span>
@@ -223,7 +284,7 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                 </div>
             </div>
 
-            {/* TABLE 2: ZONE-WISE RESOLVED BREAKDOWN */}
+            {/* TABLE 2: ZONE-WISE RESOLVED BREAKDOWN (Click capabilities removed here) */}
             <div className="bg-[#0c1122] border border-slate-800/80 rounded-xl p-6 shadow-2xl space-y-4">
                 <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -258,7 +319,14 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                                             <td className="zone-name-cell py-4 px-5 font-sans font-black text-slate-200 sticky left-0 bg-[#070a13] group-hover:bg-[#0f1527] transition-colors z-10 shadow-[3px_0_6px_rgba(0,0,0,0.3)]">{row.zone_name.toUpperCase()}</td>
                                             {resolvedMatrix.columns.map((col) => {
                                                 const count = parseInt(row[col.key] || 0, 10);
-                                                return <td key={col.key} className={`matrix-count-cell py-4 px-3 text-center font-bold ${count > 0 ? 'text-emerald-400' : 'text-slate-600'}`}>{count.toLocaleString()}</td>;
+                                                return (
+                                                    <td 
+                                                        key={col.key} 
+                                                        className={`matrix-count-cell py-4 px-3 text-center font-bold text-slate-400`}
+                                                    >
+                                                        {count.toLocaleString()}
+                                                    </td>
+                                                );
                                             })}
                                             <td className="py-4 px-6 text-center font-black bg-gradient-to-b from-emerald-950/40 to-emerald-900/20 text-emerald-400 border-l border-slate-800/80">
                                                 <span className={`matrix-count-cell px-2 py-0.5 rounded font-black tracking-tight ${totalVal > 0 ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30' : 'bg-slate-800/50 text-slate-500'}`}>{totalVal.toLocaleString()}</span>
@@ -288,6 +356,78 @@ const ZonePerformance = ({ typeId, startDate, endDate }) => {
                     </table>
                 </div>
             </div>
+
+            {/* --- DETAILED COMPLAINT BREAKDOWN OPERLAY TABULAR MODAL --- */}
+            {modalConfig.isOpen && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+                    <div className="bg-[#0c1122] border border-slate-800 w-full max-w-5xl rounded-xl shadow-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
+                        
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+                            <div>
+                                <h4 className="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                                    {modalConfig.title} Breakdown
+                                </h4>
+                                <p className="text-[11px] text-slate-400 font-black tracking-wide uppercase mt-0.5">
+                                    {modalConfig.subtitle}
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false, data: [] }))}
+                                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Content Frame */}
+                        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                            {modalConfig.loading ? (
+                                <div className="py-20 flex flex-col items-center justify-center space-y-3">
+                                    <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                                    <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                                        Compiling Complaint Records From Database...
+                                    </p>
+                                </div>
+                            ) : modalConfig.data.length === 0 ? (
+                                <div className="py-16 text-center text-slate-500 text-xs font-black uppercase tracking-wider">
+                                    No granular records found matching filters.
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto border border-slate-800/70 rounded-xl bg-[#070a13]">
+                                    <table className="w-full text-left border-collapse font-mono text-xs">
+                                        <thead>
+                                            <tr className="bg-[#12182c] border-b border-slate-800 font-black tracking-wide text-slate-300 uppercase">
+                                                <th className="py-3 px-4 text-slate-400 w-[60px]">S.No</th>
+                                                <th className="py-3 px-4 text-cyan-400 w-[140px]"><span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> COMPLAINT NUMBER</span></th>
+                                                <th className="py-3 px-4 w-[180px]"><span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> CUSTOMER NAME</span></th>
+                                                <th className="py-3 px-4 w-[140px]"><span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-amber-500" /> UC TITLE</span></th>
+                                                <th className="py-3 px-4"><span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> DESCRIPTION</span></th>
+                                                <th className="py-3 px-4 text-center w-[180px]"><span className="flex items-center gap-1 justify-center"><Calendar className="w-3.5 h-3.5" /> DATE & TIME</span></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                                            {modalConfig.data.map((complaint, index) => (
+                                                <tr key={complaint.comp_num || index} className="hover:bg-[#0f1527]/50 transition-colors">
+                                                    <td className="py-3 px-4 text-slate-500 font-bold">{index + 1}</td>
+                                                    <td className="py-3 px-4 font-black text-cyan-400 tracking-tight whitespace-nowrap">{complaint.comp_num}</td>
+                                                    <td className="py-3 px-4 font-bold text-slate-200 truncate max-w-[180px]" title={complaint.customer_name}>{complaint.customer_name || 'N/A'}</td>
+                                                    <td className="py-3 px-4 font-black text-amber-400 truncate max-w-[140px]" title={complaint.title}>{complaint.title || 'N/A'}</td>
+                                                    <td className="py-3 px-4 text-slate-400 leading-relaxed font-sans text-[13px] break-words max-w-sm">{complaint.description || <span className="italic text-slate-600">No content details provided</span>}</td>
+                                                    <td className="py-3 px-4 text-center text-slate-400 font-medium whitespace-nowrap">
+                                                        {new Date(complaint.created_at).toLocaleString('en-GB', { hour12: true, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

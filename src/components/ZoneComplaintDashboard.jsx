@@ -23,11 +23,11 @@ const ZoneComplaintDashboard = () => {
     const todayStr = new Date().toISOString().split('T')[0];
     
     // Core parameters passed directly into the API Telemetry Hook
-    const [startDate, setStartDate] = useState('2024-10-23');
+    const [startDate, setStartDate] = useState(todayStr);
     const [endDate, setEndDate] = useState(todayStr);
 
     // Staging states to isolate unsubmitted UI changes while picker is open
-    const [tempStartDate, setTempStartDate] = useState('2024-10-23');
+    const [tempStartDate, setTempStartDate] = useState(todayStr);
     const [tempEndDate, setTempEndDate] = useState(todayStr);
     
     const [loading, setLoading] = useState(true);
@@ -36,6 +36,12 @@ const ZoneComplaintDashboard = () => {
     const [error, setError] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
     const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' or 'map'
+
+    const formatToDDMMYYYY = (dateStr) => {
+        if (!dateStr) return '';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    };
 
     // Responsive screen context monitoring
     useEffect(() => {
@@ -136,9 +142,9 @@ const ZoneComplaintDashboard = () => {
     const handleSelectToday = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        setTempStartDate(todayStr);
+        setTempStartDate('2024-10-23');
         setTempEndDate(todayStr);
-        setStartDate(todayStr);
+        setStartDate('2024-10-23');
         setEndDate(todayStr);
     };
 
@@ -146,9 +152,9 @@ const ZoneComplaintDashboard = () => {
         e.preventDefault();
         e.stopPropagation();
         setSelectedType(1); // Clear reset to Sewerage primary context
-        setStartDate('2024-10-23');
+        setStartDate(todayStr);
         setEndDate(todayStr);
-        setTempStartDate('2024-10-23');
+        setTempStartDate(todayStr);
         setTempEndDate(todayStr);
     };
 
@@ -197,25 +203,38 @@ const ZoneComplaintDashboard = () => {
                     </div>
 
                     {/* DURATION RANGE SELECTION WINDOWS */}
-                    <div className="flex items-center gap-3 bg-[#12182c] border border-slate-800 rounded-lg px-3 py-2 flex-1 md:flex-none">
-                        <Calendar className="w-4 h-4 text-cyan-400" />
-                        <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Timeline:</span>
-                        <div className="flex items-center gap-2 text-xs font-black text-indigo-300">
+                    <div className="flex items-center gap-4 text-xs font-black text-indigo-300 relative bg-[#12182c] border border-slate-800 rounded-lg px-3 py-2">
+                        
+                        {/* START DATE */}
+                        <div className="relative flex items-center gap-2 cursor-pointer group">
+                            <span className="pointer-events-none text-indigo-300 group-hover:text-white transition-colors">
+                                {formatToDDMMYYYY(tempStartDate)}
+                            </span>
                             <input 
                                 type="date" 
                                 value={tempStartDate}
                                 onChange={handleStartDateChange}
-                                className="bg-transparent border-none outline-none focus:text-white cursor-pointer"
+                                className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full"
                                 style={{ colorScheme: 'dark' }}
                             />
-                            <span className="text-slate-600 font-medium">TO</span>
+                            <Calendar className="w-4 h-4 text-cyan-400 pointer-events-none" />
+                        </div>
+                        
+                        <span className="text-slate-600 font-black select-none">TO</span>
+                        
+                        {/* END DATE */}
+                        <div className="relative flex items-center gap-2 cursor-pointer group">
+                            <span className="pointer-events-none text-indigo-300 group-hover:text-white transition-colors">
+                                {formatToDDMMYYYY(tempEndDate)}
+                            </span>
                             <input 
                                 type="date" 
                                 value={tempEndDate}
                                 onChange={handleEndDateChange}
-                                className="bg-transparent border-none outline-none focus:text-white cursor-pointer"
+                                className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full"
                                 style={{ colorScheme: 'dark' }}
                             />
+                            <Calendar className="w-4 h-4 text-cyan-400 pointer-events-none" />
                         </div>
                     </div>
 
@@ -225,7 +244,7 @@ const ZoneComplaintDashboard = () => {
                         onClick={handleSelectToday}
                         className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all flex-1 md:flex-none shadow-lg shadow-indigo-600/20"
                     >
-                        Today
+                        To-Date
                     </button>
 
                     {/* CONTROL ACTION TRIGGER BUTTONS */}

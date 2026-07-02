@@ -135,10 +135,10 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
             }
         }
 
-        layer.bindTooltip(`${ucTitle.toUpperCase()} [${count}]<br/><span style="font-size: 14px; opacity: 0.85; letter-spacing: 0.05em;">${detectedZone}</span>`, {
+        layer.bindTooltip(`${ucTitle.toUpperCase()} [${count}]<br/><span style="font-size: 10px; opacity: 0.85; letter-spacing: 0.05em;">${detectedZone}</span>`, {
             permanent: false,
-            direction: 'center',
-            className: 'bg-rose-950/95 text-rose-100 font-black text-[20px] px-1.5 py-0.5 rounded border border-rose-500/40 pointer-events-none shadow-lg text-center'
+            direction: 'right',
+            className: 'text-rose-100 font-black text-[15px] px-1.5 py-0.5 pointer-events-none text-center'
         });
     };
 
