@@ -105,9 +105,9 @@ const ExecutiveCommitteeUploadPanel = () => {
 
     if (loading) {
         return (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-xs">
+            <div className=" rounded-2xl border border-slate-200 p-12 text-center shadow-xs">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-slate-500 font-bold text-sm tracking-wide">Synchronizing ECI Secure Node Environments...</p>
+                <p className="text-white font-bold text-sm tracking-wide">Loading...</p>
             </div>
         );
     }
@@ -153,8 +153,8 @@ const ExecutiveCommitteeUploadPanel = () => {
                     <tbody className="divide-y divide-slate-100 text-sm font-bold text-slate-700">
                         {materials.length === 0 ? (
                             <tr>
-                                <td colSpan="6" className="p-12 text-center text-slate-400 font-medium bg-white">
-                                    <FileText size={32} className="mx-auto text-slate-300 mb-2" />
+                                <td colSpan="6" className="p-12 text-center text-slate-400 font-medium ">
+                                    <FileText size={32} className="mx-auto text-white mb-2" />
                                     No records tracked or archived on your profile index yet.
                                 </td>
                             </tr>
@@ -214,7 +214,7 @@ const ExecutiveCommitteeUploadPanel = () => {
                         {/* Modal Header */}
                         <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                             <h3 className="text-base font-black text-slate-900">
-                                {editMode ? 'Modify Cataloged Record File' : 'Index Fresh Committee Materials'}
+                                {editMode ? 'Modify Cataloged Record File' : 'Executive Committee Materials'}
                             </h3>
                             <button 
                                 onClick={() => setIsModalOpen(false)} 
@@ -239,7 +239,7 @@ const ExecutiveCommitteeUploadPanel = () => {
                                 <textarea
                                     required
                                     rows="3"
-                                    placeholder="e.g. PROGRESS ON EMC DECISIONS BY CHIEF ENVIRONMENT & SOCIAL OFFICER"
+                                    placeholder="add description/subject"
                                     className="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl outline-none focus:border-blue-600 text-slate-900 font-bold text-sm transition-all resize-none uppercase"
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
@@ -248,7 +248,7 @@ const ExecutiveCommitteeUploadPanel = () => {
 
                             <div className="space-y-1">
                                 <label className="text-xs font-black text-slate-500 tracking-wider uppercase ml-0.5">
-                                    Meeting / Official Incident Date
+                                    Meeting / Official Event Date
                                 </label>
                                 <input
                                     type="date"
@@ -261,7 +261,7 @@ const ExecutiveCommitteeUploadPanel = () => {
 
                             <div className="space-y-1">
                                 <label className="text-xs font-black text-slate-500 tracking-wider uppercase ml-0.5">
-                                    PDF Document File Payload {editMode && <span className="text-slate-400 font-normal normal-case">(Leave blank to retain current file)</span>}
+                                    PDF Document  {editMode && <span className="text-slate-400 font-normal normal-case">(Leave blank to retain current file)</span>}
                                 </label>
                                 <div className="border-2 border-dashed border-slate-200 p-4 rounded-xl hover:border-slate-300 transition-all bg-slate-50/50">
                                     <input

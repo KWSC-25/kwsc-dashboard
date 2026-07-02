@@ -57,12 +57,12 @@ const ExecutiveCommitteeDashboard = () => {
 
     if (isUploading) {
         return (
-            <div className="p-6 bg-transparent text-white">
+            <div className="p-8 bg-transparent text-white">
                 <button
                     onClick={() => setIsUploading(false)}
-                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white bg-transparent border-none cursor-pointer mb-5 text-xl font-bold transition-colors"
+                    className="inline-flex items-center gap-3 text-slate-400 hover:text-white bg-transparent border-none cursor-pointer mb-8 text-2xl font-bold transition-colors"
                 >
-                    <ArrowLeft size={16} />
+                    <ArrowLeft size={28} />
                     <span>Back to Analytics Dashboard</span>
                 </button>
                 <ExecutiveCommitteeUploadPanel />
@@ -71,86 +71,86 @@ const ExecutiveCommitteeDashboard = () => {
     }
 
     return (
-        <div className="p-6 relative text-slate-200 bg-transparent">
+        <div className="p-8 relative text-slate-200 bg-transparent min-h-screen">
             {/* Custom Warning Notification Banner Toast */}
             {toastMessage && (
-                <div className="fixed top-6 right-6 bg-red-600 text-white px-6 py-4 rounded-xl z-50 shadow-xl flex items-center gap-3 border border-red-500 animate-in fade-in slide-in-from-top-4 duration-200">
-                    <AlertCircle size={20} />
-                    <span className="font-bold text-sm">{toastMessage}</span>
+                <div className="fixed top-8 right-8 bg-red-600 text-white px-8 py-5 rounded-2xl z-50 shadow-2xl flex items-center gap-4 border border-red-500 animate-in fade-in slide-in-from-top-4 duration-200">
+                    <AlertCircle size={28} />
+                    <span className="font-black text-xl">{toastMessage}</span>
                 </div>
             )}
 
             {/* Subheader / Table Heading Layout Group */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-800/60 pb-5">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 border-b border-slate-800/80 pb-6">
                 <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight uppercase">Executive Committee Analytics</h2>
-                    <p className="text-xl font-semibold text-slate-400 mt-1">Review operational updates, global uploads, and centralized documentation files.</p>
+                    <h2 className="text-4xl font-black text-white tracking-tight uppercase">Executive Committee Analytics</h2>
+                    <p className="text-lg font-semibold text-slate-400 mt-2">Review operational updates, global uploads, and centralized documentation files.</p>
                 </div>
                 <button
                     onClick={handleUploadNavigation}
                     disabled={actionLoading}
-                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white disabled:text-slate-500 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer disabled:cursor-not-allowed select-none border border-transparent"
+                    className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white disabled:text-slate-500 font-black text-lg px-6 py-3.5 rounded-xl transition-all shadow-lg cursor-pointer disabled:cursor-not-allowed select-none border border-transparent"
                 >
-                    <Upload size={18} />
+                    <Upload size={22} />
                     <span>{actionLoading ? 'Verifying Context...' : 'Go to Upload Panel'}</span>
                 </button>
             </div>
 
             {/* Centralized Global Feed Monitoring Matrix Grid */}
             {dashboardLoading ? (
-                <div className="p-12 text-center bg-transparent">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className="text-slate-400 font-bold text-sm tracking-wide">Retrieving Executive Committee Monitoring Index...</p>
+                <div className="p-24 text-center bg-transparent">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
+                    <p className="text-slate-400 font-bold text-xl tracking-wide">Retrieving Executive Committee Monitoring Index...</p>
                 </div>
             ) : (
                 <div className="bg-transparent overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse table-auto">
                             <thead>
-                                <tr className="border-b border-slate-800 text-5xl font-black tracking-wider text-slate-400 uppercase">
-                                    <th className="p-4 pl-2 w-16">Seq</th>
-                                    <th className="p-4 w-48">Uploader Name</th>
-                                    <th className="p-4 w-50">Document / Matter Subject</th>
-                                    <th className="p-4 w-44">Meeting Date</th>
-                                    <th className="p-4 w-48">Uploaded At</th>
-                                    <th className="p-4 w-28 text-center">Document</th>
+                                <tr className="border-b border-slate-700/60 text-9xl text-slate-400 ">
+                                    <th className="p-6 pl-2 w-20">Seq</th>
+                                    <th className="p-6 w-64">Uploader Name</th>
+                                    <th className="p-6">Document / Matter Subject</th>
+                                    <th className="p-6 w-60">Meeting Date</th>
+                                    <th className="p-6 w-64">Uploaded At</th>
+                                    <th className="p-6 w-40 text-center">Document</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800/50 text-sm font-semibold text-slate-300">
+                            <tbody className="divide-y divide-slate-800/60  font-bold text-slate-300">
                                 {allMaterials.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="p-12 text-center text-slate-500 font-medium bg-transparent">
-                                            <FileText size={32} className="mx-auto text-slate-600 mb-2" />
-                                            No tracking indices populated globally inside this archive yet.
+                                        <td colSpan="6" className="p-24 text-center text-slate-500 font-semibold bg-transparent">
+                                            <FileText size={56} className="mx-auto text-slate-700 mb-4" />
+                                            <span className="text-2xl">No tracking indices populated globally inside this archive yet.</span>
                                         </td>
                                     </tr>
                                 ) : (
                                     allMaterials.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-slate-900/40 transition-colors group">
-                                            <td className="p-4  font-mono text-slate-500 text-xl">{index + 1}</td>
-                                            <td className="p-4">
-                                                <span className="bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-xs font-mono uppercase text-slate-300 group-hover:border-slate-700 transition-colors">
+                                        <tr key={item.id} className="hover:bg-slate-900/30 transition-colors group">
+                                            <td className="p-6 pl-2 font-mono text-slate-500 text-6xl">{index + 1}</td>
+                                            <td className="p-6 text-9xl">
+                                                <span className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5  uppercase text-slate-300 group-hover:border-slate-600 transition-colors">
                                                     {item.uploader_name}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-white font-bold max-w-md break-words uppercase tracking-tight">
+                                            <td className="p-6 text-white font-black text-6xl max-w-xl break-words uppercase tracking-wide">
                                                 {item.subject}
                                             </td>
-                                            <td className="p-4 text-slate-300">
+                                            <td className="p-6 text-slate-300 text-xl">
                                                 {new Date(item.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </td>
-                                            <td className="p-4 text-slate-500 font-medium text-xs">
+                                            <td className="p-6 text-slate-500 font-medium text-base font-mono">
                                                 {new Date(item.created_at).toLocaleString()}
                                             </td>
-                                            <td className="p-4 text-center">
+                                            <td className="p-6 text-center">
                                                 <a 
                                                     href={`/${item.pdf_path}`} 
                                                     target="_blank" 
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-1 text-xs font-bold text-red-400 bg-red-950/20 hover:bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-900/50 hover:border-red-500 transition-all cursor-pointer"
+                                                    className="inline-flex items-center gap-2 text-base font-black text-red-400 bg-red-950/20 hover:bg-red-950/50 px-4 py-2.5 rounded-xl border border-red-900/60 hover:border-red-500 transition-all cursor-pointer whitespace-nowrap"
                                                 >
-                                                    <Eye size={14} />
-                                                    <span>View</span>
+                                                    <Eye size={18} />
+                                                    <span>View Document</span>
                                                 </a>
                                             </td>
                                         </tr>
