@@ -389,7 +389,7 @@ export const getComplaintBreakdownDetails = async (req, res) => {
 // Controller function to fetch complaint map distribution data & dynamic subtypes
 export const getMapComplaintDistribution = async (req, res) => {
   try {
-    const { typeId, startDate, endDate, subtypeId } = req.query;
+    const { typeId, startDate, endDate, subtypeId, status } = req.query;
 
     // 1. Fetch available Subtypes based on Global Category Type Filter
     let subtypesQuery = `SELECT id, title FROM sub_types ORDER BY title ASC`;
@@ -402,8 +402,16 @@ export const getMapComplaintDistribution = async (req, res) => {
     const [subtypes] = await req.db.query(subtypesQuery, subtypesParams);
 
     // 2. Build Dynamic Conditions for Isolated Complaint Aggregation
-    let filterConditions = ` WHERE c.status IN (0, 1, 2) `;
+    let filterConditions = ` WHERE 1=1 `;
     let queryParams = [];
+
+    // Apply status filter mapping safely
+    if (status && status !== 'ALL') {
+      filterConditions += ` AND c.status = ? `;
+      queryParams.push(Number(status));
+    } else {
+      filterConditions += ` AND c.status IN (0, 1, 2) `;
+    }
 
     if (typeId && typeId !== 'ALL') {
       filterConditions += ` AND c.type_id = ? `;

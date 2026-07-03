@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import { ArrowLeft, MapPin, Layers } from 'lucide-react';
+import { ArrowLeft, MapPin, Layers, Info } from 'lucide-react';
 import api from '../utils/api';
 
 const KarachiCenter = [24.8607, 67.0011];
@@ -30,8 +30,10 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
     const [verificationMode, setVerificationMode] = useState(false);
     const [subtypes, setSubtypes] = useState([]);
     const [selectedSubtype, setSelectedSubtype] = useState('ALL');
+    const [selectedStatus, setSelectedStatus] = useState('ALL'); // New Filter State Vector
     const [complaintStats, setComplaintStats] = useState([]);
     const [maxComplaintsValue, setMaxComplaintsValue] = useState(0);
+    const [hoveredUc, setHoveredUc] = useState(null); // Managed state panel for overlay card
 
     useEffect(() => {
         fetch('/ucs-json.geojson')
@@ -46,7 +48,8 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                     typeId: globalFilters.typeId,
                     startDate: globalFilters.startDate,
                     endDate: globalFilters.endDate,
-                    subtypeId: selectedSubtype
+                    subtypeId: selectedSubtype,
+                    status: selectedStatus // Propagated cleanly to endpoint
                 };
 
                 const res = await api.get('zone-complaints/map-distribution', { params });
@@ -62,7 +65,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
             }
         };
         fetchDistributionMetrics();
-    }, [globalFilters, selectedSubtype]);
+    }, [globalFilters, selectedSubtype, selectedStatus]);
 
     const getUcLabelName = (feature) => feature.properties?.Name || feature.properties?.name || "Unnamed UC";
 
@@ -135,10 +138,30 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
             }
         }
 
-        layer.bindTooltip(`${ucTitle.toUpperCase()} [${count}]<br/><span style="font-size: 10px; opacity: 0.85; letter-spacing: 0.05em;">${detectedZone}</span>`, {
-            permanent: false,
-            direction: 'right',
-            className: 'text-rose-100 font-black text-[15px] px-1.5 py-0.5 pointer-events-none text-center'
+        // Setup mouse events to update the fixed position overlay card context
+        layer.on({
+            mouseover: (e) => {
+                const targetLayer = e.target;
+                targetLayer.setStyle({
+                    fillOpacity: 0.95,
+                    weight: 2,
+                    color: '#00ffff' // highlight border boundary on pointer capture
+                });
+                setHoveredUc({
+                    title: ucTitle.toUpperCase(),
+                    count: count,
+                    zone: detectedZone
+                });
+            },
+            mouseout: (e) => {
+                const targetLayer = e.target;
+                targetLayer.setStyle({
+                    fillOpacity: 0.75,
+                    weight: 1.2,
+                    color: '#ffffff'
+                });
+                setHoveredUc(null);
+            }
         });
     };
 
@@ -179,7 +202,22 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                         <span>Map Street View</span>
                     </button>
                     
+                    {/* Status Filter Component Element */}
                     <div className="flex items-center gap-1 pr-2 border-r border-slate-700">
+                        <span className="text-slate-400 uppercase text-[10px] font-black tracking-wider">Status:</span>
+                        <select
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                            className="bg-transparent text-white font-black text-xs outline-none cursor-pointer pr-4 border-none focus:ring-0 uppercase"
+                        >
+                            <option value="ALL" className="bg-[#12182c] text-white font-semibold">REGISTERED</option>
+                            <option value="0" className="bg-[#12182c] text-white font-semibold">PENDING</option>
+                            <option value="2" className="bg-[#12182c] text-white font-semibold">WORK IN PROGRESS</option>
+                            <option value="1" className="bg-[#12182c] text-white font-semibold">RESOLVED</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-1 pr-2">
                         <span className="text-slate-400 uppercase text-[10px] font-black tracking-wider">Subtype:</span>
                         <select
                             value={selectedSubtype}
@@ -194,8 +232,6 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                             ))}
                         </select>
                     </div>
-
-                    <span className="text-rose-400 font-black uppercase tracking-wider">City View Mode</span>
                 </div>
             </div>
 
@@ -205,7 +241,7 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
 
                     {ucData && (
                         <GeoJSON 
-                            key={`global-ucs-${maxComplaintsValue}-${selectedSubtype}-${verificationMode}`}
+                            key={`global-ucs-${maxComplaintsValue}-${selectedSubtype}-${selectedStatus}-${verificationMode}`}
                             data={ucData}
                             style={(f) => {
                                 const count = getCountForUc(getUcLabelName(f));
@@ -222,6 +258,38 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                         />
                     )}
                 </MapContainer>
+
+                {/* Fixed Overlay Card Dashboard Section positioned safely below Leaflet Zoom Controls */}
+                <div className="absolute top-20 left-4 z-[1000] w-72 transition-all duration-200 pointer-events-none">
+                    {hoveredUc ? (
+                        <div className="bg-[#0c1122]/95 backdrop-blur border-2 border-cyan-500/80 shadow-2xl rounded-xl p-4 space-y-3 animate-fadeIn">
+                            <div className="flex items-start justify-between">
+                                <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/60 font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                    {hoveredUc.zone}
+                                </span>
+                                <Info className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <div className="space-y-0.5">
+                                <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Selected Sector</p>
+                                <h4 className="text-white text-base font-black tracking-tight leading-snug drop-shadow-sm">
+                                    {hoveredUc.title}
+                                </h4>
+                            </div>
+                            <div className="bg-[#060913] border border-slate-800/80 rounded-lg p-2.5 flex items-center justify-between">
+                                <span className="text-slate-400 font-medium text-xs">Total Complaints:</span>
+                                <span className="text-xl font-black text-rose-400 tracking-wide">
+                                    {hoveredUc.count}
+                                </span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-[#0c1122]/70 backdrop-blur border border-slate-800 shadow-xl rounded-xl p-3 text-center">
+                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest">
+                                Hover over a UC region to inspect
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
