@@ -26,16 +26,16 @@ const MohatsibDashboard = () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // Separate records into Upcoming/Today vs Past
+            // Separate records into Upcoming/Today vs Past using the new appearance_date
             const upcomingRecords = [];
             const pastRecords = [];
 
             rawRecords.forEach(record => {
-                if (record.event_date) {
-                    const eventDate = new Date(record.event_date);
-                    eventDate.setHours(0, 0, 0, 0);
+                if (record.appearance_date) {
+                    const appearanceDate = new Date(record.appearance_date);
+                    appearanceDate.setHours(0, 0, 0, 0);
                     
-                    if (eventDate >= today) {
+                    if (appearanceDate >= today) {
                         upcomingRecords.push(record);
                     } else {
                         pastRecords.push(record);
@@ -45,17 +45,28 @@ const MohatsibDashboard = () => {
                 }
             });
 
-            // Sort upcoming records in ASCENDING order (closest future date first)
+            // Sort upcoming records in ASCENDING order (closest future appearance date first)
             upcomingRecords.sort((a, b) => {
-                const dateA = a.event_date ? new Date(a.event_date) : new Date(0);
-                const dateB = b.event_date ? new Date(b.event_date) : new Date(0);
+                const dateA = a.appearance_date ? new Date(a.appearance_date) : new Date(0);
+                const dateB = b.appearance_date ? new Date(b.appearance_date) : new Date(0);
+                if (dateA.getTime() === dateB.getTime()) {
+                    // Secondary sorting by appearance_time if dates match
+                    const timeA = a.appearance_time || "00:00:00";
+                    const timeB = b.appearance_time || "00:00:00";
+                    return timeA.localeCompare(timeB);
+                }
                 return dateA - dateB;
             });
 
-            // Sort past records in DESCENDING order (most recently passed first)
+            // Sort past records in DESCENDING order (most recently passed appearance first)
             pastRecords.sort((a, b) => {
-                const dateA = a.event_date ? new Date(a.event_date) : new Date(0);
-                const dateB = b.event_date ? new Date(b.event_date) : new Date(0);
+                const dateA = a.appearance_date ? new Date(a.appearance_date) : new Date(0);
+                const dateB = b.appearance_date ? new Date(b.appearance_date) : new Date(0);
+                if (dateA.getTime() === dateB.getTime()) {
+                    const timeA = a.appearance_time || "00:00:00";
+                    const timeB = b.appearance_time || "00:00:00";
+                    return timeB.localeCompare(timeA);
+                }
                 return dateB - dateA;
             });
 
@@ -91,6 +102,16 @@ const MohatsibDashboard = () => {
     const showToast = (msg) => {
         setToastMessage(msg);
         setTimeout(() => setToastMessage(null), 5000);
+    };
+
+    // Formats 24h DB time string (HH:MM:SS) to standard 12-hour (HH:MM AM/PM) format
+    const formatTime12h = (timeStr) => {
+        if (!timeStr) return '-';
+        const [hourStr, minuteStr] = timeStr.split(':');
+        const hour = parseInt(hourStr, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const formattedHour = hour % 12 || 12;
+        return `${formattedHour}:${minuteStr} ${ampm}`;
     };
 
     if (isManagingPanel) {
@@ -141,12 +162,14 @@ const MohatsibDashboard = () => {
                             <thead>
                                 <tr className="border-b border-slate-800 bg-slate-900/50 text-xs font-black tracking-widest text-slate-400 uppercase">
                                     <th className="p-4 pl-5 w-12 text-center">Seq</th>
-                                    <th className="p-4 w-28">Date</th>
+                                    <th className="p-4 w-28">Event Date</th>
+                                    <th className="p-4 w-28">Appearance Date</th>
+                                    <th className="p-4 w-24">Time</th>
                                     <th className="p-4 w-32">Recipient</th>
                                     <th className="p-4 w-32">Letter From</th>
+                                    <th className="p-4 w-32">Secretariat</th>
                                     <th className="p-4 w-36">Reference No</th>
                                     <th className="p-4 min-w-[200px]">Subject</th>
-                                    <th className="p-4 w-40">Target Official</th>
                                     <th className="p-4 w-40">Assigned To</th>
                                     <th className="p-4 w-28">Stage</th>
                                     <th className="p-4 w-28">Status</th>
@@ -156,7 +179,7 @@ const MohatsibDashboard = () => {
                             <tbody className="divide-y divide-slate-800/50 text-xl lg:text-2xl font-bold text-slate-300">
                                 {globalRecords.length === 0 ? (
                                     <tr>
-                                        <td colSpan="11" className="p-24 text-center text-slate-500 font-semibold bg-transparent">
+                                        <td colSpan="13" className="p-24 text-center text-slate-500 font-semibold bg-transparent">
                                             <ShieldAlert size={56} className="mx-auto text-slate-700 mb-4" />
                                             <span className="text-2xl">No Mohtasib records recorded globally.</span>
                                         </td>
@@ -168,8 +191,18 @@ const MohatsibDashboard = () => {
                                             <td className="p-4 pl-5 text-center font-mono text-slate-500 text-lg border-r border-slate-900/50">{index + 1}</td>
                                             
                                             {/* Event Date */}
-                                            <td className="p-4 font-mono text-lg text-amber-500/90 whitespace-nowrap">
+                                            <td className="p-4 font-mono text-lg text-slate-400 whitespace-nowrap">
                                                 {item.event_date ? new Date(item.event_date).toLocaleDateString('en-GB') : '-'}
+                                            </td>
+
+                                            {/* Appearance Date */}
+                                            <td className="p-4 font-mono text-lg text-amber-500/90 whitespace-nowrap">
+                                                {item.appearance_date ? new Date(item.appearance_date).toLocaleDateString('en-GB') : '-'}
+                                            </td>
+
+                                            {/* Appearance Time */}
+                                            <td className="p-4 font-mono text-lg text-emerald-400/95 whitespace-nowrap">
+                                                {formatTime12h(item.appearance_time)}
                                             </td>
                                             
                                             {/* Directed To / Recipient */}
@@ -181,6 +214,11 @@ const MohatsibDashboard = () => {
                                             <td className="p-4 text-slate-200 text-xl max-w-[150px] truncate">
                                                 {item.letter_from || '-'}
                                             </td>
+
+                                            {/* Secretariat */}
+                                            <td className="p-4 text-slate-200 text-xl max-w-[150px] truncate">
+                                                {item.secretariat || '-'}
+                                            </td>
                                             
                                             {/* Reference No */}
                                             <td className="p-4 font-mono text-lg text-blue-400/90 tracking-wider max-w-[180px] truncate">
@@ -190,11 +228,6 @@ const MohatsibDashboard = () => {
                                             {/* Subject */}
                                             <td className="p-4 text-slate-300 font-bold max-w-xs truncate uppercase text-xl lg:text-2xl">
                                                 {item.subject || '-'}
-                                            </td>
-                                            
-                                            {/* Target Official */}
-                                            <td className="p-4 text-slate-300 text-xl max-w-[160px] truncate">
-                                                {item.target_official || '-'}
                                             </td>
                                             
                                             {/* Assigned To */}
@@ -228,7 +261,7 @@ const MohatsibDashboard = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </div> 
     );
 };
 

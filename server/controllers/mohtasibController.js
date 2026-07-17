@@ -44,7 +44,7 @@ export const checkMohtasibPermission = async (req, res) => {
 };
 
 // 2. Insert new Mohtasib Record
-export const createMohtasibRecord = async (req, res) => {
+export const createMohtasibRecord = async (req, res) => { 
     try {
         const userEmail = req.user?.email;
         const { 
@@ -52,8 +52,10 @@ export const createMohtasibRecord = async (req, res) => {
             letter_from, 
             reference_no, 
             event_date, 
+            appearance_date,
+            appearance_time,
+            secretariat,
             subject, 
-            target_official, 
             action_required, 
             assigned_to, 
             letter_stage, 
@@ -68,15 +70,15 @@ export const createMohtasibRecord = async (req, res) => {
         const query = `
             INSERT INTO mohtasib_info (
                 user_id, letter_directed_to, letter_from, reference_no, 
-                event_date, subject, target_official, action_required, 
+                event_date, appearance_date, appearance_time, secretariat, subject, action_required, 
                 assigned_to, letter_stage, status
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
             RETURNING *
         `;
         const result = await authDb.query(query, [
             userId, letter_directed_to, letter_from, reference_no, 
-            event_date, subject, target_official, action_required, 
+            event_date, appearance_date || null, appearance_time || null, secretariat, subject, action_required, 
             assigned_to, letter_stage, status
         ]);
 
@@ -96,7 +98,7 @@ export const getUserMohtasibRecords = async (req, res) => {
 
         const query = `
             SELECT id, letter_directed_to, letter_from, reference_no, 
-                   event_date, subject, target_official, action_required, 
+                   event_date, appearance_date, appearance_time, secretariat, subject, action_required, 
                    assigned_to, letter_stage, status, created_at 
             FROM mohtasib_info 
             WHERE user_id = $1 
@@ -122,8 +124,10 @@ export const updateMohtasibRecord = async (req, res) => {
             letter_from, 
             reference_no, 
             event_date, 
+            appearance_date,
+            appearance_time,
+            secretariat,
             subject, 
-            target_official, 
             action_required, 
             assigned_to, 
             letter_stage, 
@@ -133,15 +137,15 @@ export const updateMohtasibRecord = async (req, res) => {
         const updateQuery = `
             UPDATE mohtasib_info 
             SET letter_directed_to = $1, letter_from = $2, reference_no = $3, 
-                event_date = $4, subject = $5, target_official = $6, 
-                action_required = $7, assigned_to = $8, letter_stage = $9, 
-                status = $10, updated_at = NOW()
-            WHERE id = $11 AND user_id = $12 RETURNING *
+                event_date = $4, appearance_date = $5, appearance_time = $6, secretariat = $7, subject = $8, 
+                action_required = $9, assigned_to = $10, letter_stage = $11, 
+                status = $12, updated_at = NOW()
+            WHERE id = $13 AND user_id = $14 RETURNING *
         `;
         const result = await authDb.query(updateQuery, [
             letter_directed_to, letter_from, reference_no, 
-            event_date, subject, target_official, action_required, 
-            assigned_to, letter_stage, status, id, userId
+            event_date, appearance_date || null, appearance_time || null, secretariat, subject, 
+            action_required, assigned_to, letter_stage, status, id, userId
         ]);
 
         if (result.rows.length === 0) {
@@ -188,8 +192,10 @@ export const getAllMohtasibRecordsForDashboard = async (req, res) => {
                 m.letter_from, 
                 m.reference_no, 
                 m.event_date, 
+                m.appearance_date,
+                m.appearance_time,
+                m.secretariat,
                 m.subject, 
-                m.target_official, 
                 m.action_required, 
                 m.assigned_to, 
                 m.letter_stage, 
