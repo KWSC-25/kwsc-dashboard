@@ -32,6 +32,7 @@ import newKpiRoutes from './routes/NewKpiRoutes.js';
 import hydrantChartsRoutes from './routes/HydrantChartsRoutes.js';
 import ZoneComplaintsRoutes from './routes/ZoneComplaintRoutes.js';
 import eciRoutes from './routes/eciRoutes.js';
+import mohtasibRoutes from './routes/mohtasibRouter.js';
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, 
     max: 3, 
@@ -72,6 +73,8 @@ app.use('/api/newkpis', protect, dbSelector, newKpiRoutes);
 app.use('/api/hydrantCharts', protect, dbSelector, hydrantChartsRoutes);
 app.use('/api/zone-complaints', protect, dbSelector, ZoneComplaintsRoutes);
 app.use('/api/eci', protect, dbSelector, eciRoutes);
+app.use('/api/mohtasib', protect, dbSelector, mohtasibRoutes);
+
 
 
 

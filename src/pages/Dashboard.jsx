@@ -27,6 +27,8 @@ import ComplaintZoneHeader from '../components/Zone-complaintHeader';
 import ZoneComplaintDashboard from '../components/ZoneComplaintDashboard';
 import EciHeader from '../components/ECI-Header';
 import EciDashboard from '../components/ExecutiveCommitteeDashboard';
+import MohtasibHeader from '../components/mohtasib-header';
+import MohatsibDashboard from '../components/MohatsibDashboard';
 const Dashboard = () => {
     const location = useLocation();
     // It checks if 'location.state.initialTab' exists; otherwise, it defaults to 'complaint'
@@ -71,6 +73,8 @@ const Dashboard = () => {
             <option value="lcms">LCMS DASHBOARD</option>
             <option value="zonecomplaint">Zone wise Complaint DASHBOARD</option>
             <option value="eci">Executive Committee DASHBOARD</option>
+            <option value="mohtasib">Mohtasib DASHBOARD</option>
+
 
 
             
@@ -91,6 +95,8 @@ const Dashboard = () => {
                 <ComplaintZoneHeader>{SystemSelector}</ComplaintZoneHeader>
             ) : activeSystem === 'eci' ? (
                 <EciHeader>{SystemSelector}</EciHeader>
+            ) : activeSystem === 'mohtasib' ? (
+                <MohtasibHeader>{SystemSelector}</MohtasibHeader>
             ) : (
                 <LcmsHeader>{SystemSelector}</LcmsHeader>
 
@@ -315,12 +321,16 @@ const Dashboard = () => {
                     <LcmsDashboard /> // We will create this
                 )}
                 {activeSystem === 'zonecomplaint' && (
-                    <ZoneComplaintDashboard /> // We will create this
+                    <ZoneComplaintDashboard /> 
                 )}
 
                 {activeSystem === 'eci' && (
-                    <EciDashboard /> // We will create this
+                    <EciDashboard /> 
                 )}
+
+                {activeSystem === 'mohtasib' && (
+                    <MohatsibDashboard /> 
+                )}          
             </div>
         </div>
     );

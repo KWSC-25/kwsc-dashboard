@@ -55,6 +55,9 @@ export const getDatabase = async (type) => {
     if (type === 'eci') {
         targetType = 'auth'; 
     }
+    if (type === 'mohtasib') {
+        targetType = 'auth'; 
+    }
     if (type === 'hydrantkpi') {
         targetType = 'hydrant'; 
 

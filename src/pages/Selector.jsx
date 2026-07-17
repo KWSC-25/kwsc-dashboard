@@ -79,6 +79,14 @@ const Selector = () => {
             path: '/dashboard'
         },
         {
+            id: 'mohtasib',
+            title: 'Mohtasib Dashboard',
+            desc: 'Monitor complaints from mohtasib',
+            icon: <Presentation size={40} color="#64748b" />,
+            active: true,
+            path: '/dashboard'
+        },
+        {
             id: 'mci',
             title: 'Manhole Cover Inventory System',
             desc: 'Track Inventory Usage',

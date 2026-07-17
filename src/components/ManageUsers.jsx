@@ -14,7 +14,7 @@ const ManageUsers = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
-    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: [], can_upload: false });
+    const [formData, setFormData] = useState({ username: '', email: '', password: '', role: 'viewer', max_sessions: 2, allowed_dashboards: [], can_upload: false, can_manage_mohtasib: false });
     const fetchUsers = async () => {
         try {
             setLoading(true);
@@ -42,7 +42,8 @@ const ManageUsers = () => {
                 role: user.role,
                 max_sessions: user.max_sessions || 2,
                 allowed_dashboards: user.allowed_dashboards || [],
-                can_upload: !!user.can_upload // Force clean true/false state evaluation
+                can_upload: !!user.can_upload,
+                can_manage_mohtasib: !!user.can_manage_mohtasib
             });
         } else {
             setEditMode(false);
@@ -52,8 +53,9 @@ const ManageUsers = () => {
                 password: '', 
                 role: 'viewer', 
                 max_sessions: 2, 
-                allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint', 'chlorination', 'wmp', 'eci'],
-                can_upload: false // Default to false for completely new user setups
+                allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint', 'chlorination', 'wmp', 'eci', 'mohtasib'],
+                can_upload: false,
+                can_manage_mohtasib: false 
             });
         }
         setShowModal(true);
@@ -286,7 +288,9 @@ const ManageUsers = () => {
                                     { id: 'zonecomplaint', label: 'ZoneWise Complaint Dashboard' },
                                     { id: 'chlorination', label: 'Chlorination Dashboard' },
                                     { id: 'wmp', label: 'Work Management Portal'},
-                                    { id: 'eci', label: 'Executive Committee Dashboard'}
+                                    { id: 'eci', label: 'Executive Committee Dashboard'},
+                                    { id: 'mohtasib', label: 'Mohtasib Dashboard'}
+
 
 
 
@@ -325,6 +329,20 @@ const ManageUsers = () => {
                                 />
                                 <label htmlFor="can_upload_checkbox" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
                                     Allow to upload ECI materials
+                                </label>
+                            </div>
+
+                            {/* Mohtasib Administrative Management Permission Flag */}
+                            <div className="flex items-center gap-3 border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer mt-2">
+                                <input 
+                                    id="can_manage_mohtasib_checkbox"
+                                    type="checkbox"
+                                    className="w-5 h-5 text-blue-600 border-2 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                                    checked={formData.can_manage_mohtasib}
+                                    onChange={(e) => setFormData({ ...formData, can_manage_mohtasib: e.target.checked })}
+                                />
+                                <label htmlFor="can_manage_mohtasib_checkbox" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
+                                    Allow to manage Mohtasib entries
                                 </label>
                             </div>
 
