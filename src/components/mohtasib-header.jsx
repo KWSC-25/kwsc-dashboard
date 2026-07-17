@@ -11,7 +11,8 @@ const MohtasibHeader = ({ children }) => {
     return (
         <header className="hmp-header-main">
             <div className="title-group">
-                <h1><span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '2rem', marginLeft: '30px'}}>MOHTASIB DASHBOARD</small></span></h1>
+                <h1><span><small style={{ fontWeight: 700, color: '#8493a5', fontSize: '2rem', marginLeft: '30px'}}>MOHTASIB OMBUDSMAN DASHBOARD</small></span></h1>
+
             </div>
             
             <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '15px' , marginRight:'10px'}}>
