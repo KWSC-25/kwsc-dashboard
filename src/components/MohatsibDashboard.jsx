@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Settings, AlertCircle, ArrowLeft, ShieldAlert, X, Eye, Calendar, Clock, Briefcase } from 'lucide-react';
+import { Settings, AlertCircle, ArrowLeft, ShieldAlert, X, Eye, Calendar, Clock, Briefcase, Search } from 'lucide-react';
 import api from '../utils/api';
 import MohtasibForm from './MohtasibForm';
 
@@ -11,6 +9,7 @@ const MohatsibDashboard = () => {
     const [dashboardLoading, setDashboardLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [globalRecords, setGlobalRecords] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     
     // Modal state management for tracking detailed views
     const [selectedRecord, setSelectedRecord] = useState(null);
@@ -140,6 +139,7 @@ const MohatsibDashboard = () => {
         // Active only if date is in the future, yet falls within the 48 hour threshold
         return timeDifferenceMs > 0 && timeDifferenceMs <= fortyEightHoursInMs;
     };
+    
     const handleOpenDetails = (record) => {
         setSelectedRecord(record);
         setIsModalOpen(true);
@@ -156,6 +156,14 @@ const MohatsibDashboard = () => {
         appearanceDate.setHours(0, 0, 0, 0);
         return appearanceDate < today;
     };
+
+    // Derived State: Filter global items based on user criteria (Ref Number or Subject Content)
+    const filteredRecords = globalRecords.filter(item => {
+        const refNo = (item.reference_no || '').toLowerCase();
+        const subject = (item.subject || '').toLowerCase();
+        const searchClean = searchTerm.toLowerCase();
+        return refNo.includes(searchClean) || subject.includes(searchClean);
+    });
 
     if (isManagingPanel) {
         return (
@@ -192,20 +200,49 @@ const MohatsibDashboard = () => {
                 </div>
             )}
 
-            {/* Top Header Action Row */}
-            <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
-                <div>
+{/* Top Header Action Row with unified flex layout */}
+            <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4 gap-4">
+                <div className="flex-shrink-0">
                     <span className="bg-amber-500 text-slate-950 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-md mr-3 inline-block vertical-middle">SCHEDULE</span>
-                    <h1 className="text-3xl font-black text-white inline-block tracking-wide uppercase align-middle">Upcoming & Centralized Hearings/Events</h1>
+                    <h1 className="text-2xl font-black text-white inline-block tracking-wide uppercase align-middle">
+                        Upcoming Hearings/Events ({filteredRecords.length})
+                    </h1>
                 </div>
-                <button
-                    onClick={handleManagementNavigation}
-                    disabled={actionLoading}
-                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white disabled:text-slate-500 font-bold text-sm px-5 py-2.5 rounded-lg transition-all shadow-md cursor-pointer disabled:cursor-not-allowed select-none border border-transparent"
-                >
-                    <Settings size={16} />
-                    <span>{actionLoading ? 'Checking...' : 'Manage Index'}</span>
-                </button>
+
+                {/* Search Bar and Manage Button row container */}
+                <div className="flex items-center gap-4 flex-1 justify-end max-w-xl">
+                    {!dashboardLoading && globalRecords.length > 0 && (
+                        <div className="w-full relative">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                                <Search size={18} />
+                            </div>
+                            <input 
+                                type="text"
+                                placeholder="Search by Reference No or Subject Matter..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-slate-900/60 border border-white-800/90 focus:border-white-700 text-white placeholder-slate-500 text-sm font-bold pl-11 pr-4 py-2.5 rounded-xl outline-none shadow-inner transition-all focus:ring-1 focus:ring-slate-700"
+                            />
+                            {searchTerm && (
+                                <button 
+                                    onClick={() => setSearchTerm('')} 
+                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-white bg-transparent border-none cursor-pointer"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                    
+                    <button
+                        onClick={handleManagementNavigation}
+                        disabled={actionLoading}
+                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white disabled:text-slate-500 font-bold text-sm px-5 py-2.5 rounded-lg transition-all shadow-md cursor-pointer disabled:cursor-not-allowed select-none border border-transparent whitespace-nowrap"
+                    >
+                        <Settings size={16} />
+                        <span>{actionLoading ? 'Checking...' : 'Manage Index'}</span>
+                    </button>
+                </div>
             </div>
 
             {dashboardLoading ? (
@@ -218,10 +255,15 @@ const MohatsibDashboard = () => {
                     <ShieldAlert size={64} className="mx-auto text-slate-700 mb-4" />
                     <h3 className="text-2xl font-bold text-slate-400">No Mohtasib records recorded globally.</h3>
                 </div>
+            ) : filteredRecords.length === 0 ? (
+                <div className="p-24 text-center bg-slate-950/40 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-md">
+                    <AlertCircle size={48} className="mx-auto text-slate-600 mb-4" />
+                    <h3 className="text-xl font-bold text-slate-400">No parameters matched your explicit tracking search query.</h3>
+                </div>
             ) : (
                 /* Two Column Layout Matching the Shared Screen Visual Reference */
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
-                    {globalRecords.map((item, index) => {
+                    {filteredRecords.map((item, index) => {
                         const isAlertActive = checkIsImminentAlert(item.appearance_date, item.appearance_time);
                         const isCrossed = checkIsDateCrossed(item.appearance_date);
                         
