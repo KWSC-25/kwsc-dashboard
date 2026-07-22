@@ -378,7 +378,7 @@ const MohtasibForm = () => {
                         {/* Light Header */}
                         <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                             <h4 className="text-xl font-bold text-slate-800">
-                                {editingId ? "Modify Mohtasib Record" : "Introduce New Mohtasib Registry Entry"}
+                                {editingId ? "Modify Mohtasib Record" : "Introduce New OMBUDSMAN Registry Entry"}
                             </h4>
                             <button 
                                 onClick={() => setIsModalOpen(false)} 
