@@ -357,7 +357,7 @@ const MohatsibDashboard = () => {
                 {/* Pending */}
                 <div className="bg-amber-950/20 border border-amber-800/40 rounded-xl p-3.5 shadow-sm">
                     <div className="flex justify-between items-center text-amber-400 mb-1">
-                        <span className="text-xs font-bold uppercase tracking-wider">Pending</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Pending (Awaiting Action)</span>
                         <Clock3 size={16} />
                     </div>
                     <div className="text-2xl font-black text-amber-300 font-mono">{kpiStatusCounts.pending}</div>
