@@ -10,9 +10,42 @@ const MohtasibForm = () => {
     const [submitting, setSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
-    // Dropdown helpers
+    // Predefined Status Options
+    const STATUS_OPTIONS = [
+        'Pending (Awaiting Action)',
+        'Unresolved',
+        'In Process',
+        'Resolved & Closed'
+    ];
+
+    // Helper for Status Badge & Select Colors
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'Pending (Awaiting Action)':
+                return 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+            case 'Unresolved':
+                return 'bg-rose-100 text-rose-800 border-rose-300 font-bold';
+            case 'In Process':
+                return 'bg-blue-100 text-blue-800 border-blue-300 font-bold';
+            case 'Resolved & Closed':
+                return 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold';
+            default:
+                return 'bg-slate-100 text-slate-800 border-slate-300 font-bold';
+        }
+    };
+
+
+
+    // Dropdown helpers for Action Required
     const [actionSelectValue, setActionSelectValue] = useState('');
     const [customActionText, setCustomActionText] = useState('');
+
+    // Dropdown helpers for Department Assigned (Zone-I, Zone-II, etc.)
+    const [deptSelectValue, setDeptSelectValue] = useState('');
+    const [customDeptText, setCustomDeptText] = useState('');
+
+    // Predefined Dept options
+    const standardDepts = ['Zone-I', 'Zone-II', 'Zone-III', 'Zone-IV', 'WTM', 'CCO (RRG)', 'HRDA', 'Legal'];
 
     // Form inputs state
     const [formData, setFormData] = useState({
@@ -27,7 +60,11 @@ const MohtasibForm = () => {
         action_required: '',
         assigned_to: '',
         letter_stage: '',
-        status: ''
+        status: 'Pending (Awaiting Action)',
+        ceo_dak_receipt_no: '',
+        previous_letter_no: '',
+        department_assigned: '',
+        cc_to: ''
     });
 
     useEffect(() => {
@@ -51,6 +88,7 @@ const MohtasibForm = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Action Dropdown Handler
     const handleActionDropdownChange = (e) => {
         const val = e.target.value;
         setActionSelectValue(val);
@@ -67,6 +105,37 @@ const MohtasibForm = () => {
         setFormData(prev => ({ ...prev, action_required: val }));
     };
 
+    // Department Assigned Dropdown Handler
+    const handleDeptDropdownChange = (e) => {
+        const val = e.target.value;
+        setDeptSelectValue(val);
+        if (val !== 'other') {
+            setFormData(prev => ({ ...prev, department_assigned: val }));
+        } else {
+            setFormData(prev => ({ ...prev, department_assigned: customDeptText }));
+        }
+    };
+
+    const handleCustomDeptChange = (e) => {
+        const val = e.target.value;
+        setCustomDeptText(val);
+        setFormData(prev => ({ ...prev, department_assigned: val }));
+    };
+
+    // Helper to safely format YYYY-MM-DD without UTC timezone offset shift bug
+    const formatDateForInput = (dateStr) => {
+        if (!dateStr) return '';
+        return dateStr.split('T')[0];
+    };
+
+    // Format date string for local table view (DD/MM/YYYY) avoiding UTC backshift
+    const formatDateForTable = (dateStr) => {
+        if (!dateStr) return '-';
+        const cleanDate = dateStr.split('T')[0];
+        const [year, month, day] = cleanDate.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
     const openCreateModal = () => {
         setFormData({
             letter_directed_to: '',
@@ -80,16 +149,23 @@ const MohtasibForm = () => {
             action_required: '',
             assigned_to: '',
             letter_stage: '',
-            status: ''
+            status: 'Pending (Awaiting Action)',
+            ceo_dak_receipt_no: '',
+            previous_letter_no: '',
+            department_assigned: '',
+            cc_to: ''
         });
         setActionSelectValue('');
         setCustomActionText('');
+        setDeptSelectValue('');
+        setCustomDeptText('');
         setEditingId(null);
         setErrorMsg('');
         setIsModalOpen(true);
     };
 
     const openEditModal = (item) => {
+        // Setup Action Required
         const dbAction = item.action_required || '';
         if (dbAction === 'Appear in Person' || dbAction === 'Report Submission' || dbAction === '') {
             setActionSelectValue(dbAction);
@@ -99,7 +175,17 @@ const MohtasibForm = () => {
             setCustomActionText(dbAction);
         }
 
-        // Standardize Time formatting (HH:MM:SS -> HH:MM) for input compatibility
+        // Setup Department Assigned
+        const dbDept = item.department_assigned || '';
+        if (standardDepts.includes(dbDept) || dbDept === '') {
+            setDeptSelectValue(dbDept);
+            setCustomDeptText('');
+        } else {
+            setDeptSelectValue('other');
+            setCustomDeptText(dbDept);
+        }
+
+        // Standardize Time formatting (HH:MM:SS -> HH:MM)
         let initialTime = '';
         if (item.appearance_time) {
             const parts = item.appearance_time.split(':');
@@ -110,15 +196,19 @@ const MohtasibForm = () => {
             letter_directed_to: item.letter_directed_to || '',
             letter_from: item.letter_from || '',
             reference_no: item.reference_no || '',
-            event_date: item.event_date ? item.event_date.split('T')[0] : '',
-            appearance_date: item.appearance_date ? item.appearance_date.split('T')[0] : '',
+            event_date: formatDateForInput(item.event_date),
+            appearance_date: formatDateForInput(item.appearance_date),
             appearance_time: initialTime,
             secretariat: item.secretariat || '',
             subject: item.subject || '',
             action_required: dbAction,
             assigned_to: item.assigned_to || '',
             letter_stage: item.letter_stage || '',
-            status: item.status || ''
+            status: item.status,
+            ceo_dak_receipt_no: item.ceo_dak_receipt_no || '',
+            previous_letter_no: item.previous_letter_no || '',
+            department_assigned: dbDept,
+            cc_to: item.cc_to || ''
         });
 
         setEditingId(item.id);
@@ -187,10 +277,12 @@ const MohtasibForm = () => {
                 <div className="py-20 text-center font-bold text-xl text-slate-400">Syncing database feed...</div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse table-auto min-w-[1400px]">
+                    <table className="w-full text-left border-collapse table-auto min-w-[1800px]">
                         <thead>
                             <tr className="border-b border-slate-800 text-sm font-black tracking-widest text-slate-500 uppercase">
-                                <th className="p-4 pl-2 w-16">Seq</th>
+                                <th className="p-4 pl-2 w-12">Seq</th>
+                                <th className="p-4">CEO DAK Receipt No</th>
+                                <th className="p-4">Prev Letter / Hawal</th>
                                 <th className="p-4">Event Date</th>
                                 <th className="p-4">Appearance Date</th>
                                 <th className="p-4">Time</th>
@@ -198,6 +290,8 @@ const MohtasibForm = () => {
                                 <th className="p-4">From</th>
                                 <th className="p-4">Secretariat</th>
                                 <th className="p-4">Letter Ref No</th> 
+                                <th className="p-4">Dept Assigned</th>
+                                <th className="p-4">CC To</th>
                                 <th className="p-4">Subject</th>
                                 <th className="p-4">Action Required</th>
                                 <th className="p-4">Assigned To</th>
@@ -209,62 +303,67 @@ const MohtasibForm = () => {
                         <tbody className="divide-y divide-slate-800/60 text-lg font-bold text-slate-300">
                             {records.length === 0 ? (
                                 <tr>
-                                    <td colSpan="14" className="p-16 text-center text-slate-600">
+                                    <td colSpan="18" className="p-16 text-center text-slate-600">
                                         No entries found under your logged-in username scope.
                                     </td>
                                 </tr>
                             ) : (
-                                records.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-slate-900/20 transition-colors">
-                                        <td className="p-4 pl-2 font-mono text-slate-500 text-base">{index + 1}</td>
-                                        <td className="p-4 font-mono text-base whitespace-nowrap">
-                                            {item.event_date ? new Date(item.event_date).toLocaleDateString('en-GB') : '-'}
-                                        </td>
-                                        <td className="p-4 font-mono text-base whitespace-nowrap text-amber-500">
-                                            {item.appearance_date ? new Date(item.appearance_date).toLocaleDateString('en-GB') : '-'}
-                                        </td>
-                                        <td className="p-4 font-mono text-base whitespace-nowrap text-emerald-400">
-                                            {formatTime12h(item.appearance_time)}
-                                        </td>
-                                        <td className="p-4 text-white text-xl uppercase whitespace-nowrap">{item.letter_directed_to}</td>
-                                        <td className="p-4 whitespace-nowrap">{item.letter_from}</td>
-                                        <td className="p-4 whitespace-nowrap">{item.secretariat || '-'}</td>
-                                        <td className="p-4 font-mono text-base text-slate-400 whitespace-nowrap">{item.reference_no}</td>
-                                        <td className="p-4 max-w-xs truncate text-slate-300 uppercase" title={item.subject}>{item.subject || '-'}</td>
-                                        <td className="p-4 max-w-xs truncate" title={item.action_required}>{item.action_required || '-'}</td>
-                                        <td className="p-4 whitespace-nowrap">{item.assigned_to || '-'}</td>
-                                        <td className="p-4">
-                                            {item.letter_stage ? (
-                                                <span className="bg-slate-900 border border-slate-800 text-red-400 text-sm rounded-lg px-2.5 py-1 font-mono uppercase whitespace-nowrap">
-                                                    {item.letter_stage}
+                                records.map((item, index) => {
+                                    const normStatus = item.status;
+                                    return (
+                                        <tr key={item.id} className="hover:bg-slate-900/20 transition-colors">
+                                            <td className="p-4 pl-2 font-mono text-slate-500 text-base">{index + 1}</td>
+                                            <td className="p-4 font-mono text-base text-cyan-400 whitespace-nowrap">{item.ceo_dak_receipt_no || '-'}</td>
+                                            <td className="p-4 font-mono text-base text-slate-400 whitespace-nowrap">{item.previous_letter_no || '-'}</td>
+                                            <td className="p-4 font-mono text-base whitespace-nowrap">
+                                                {formatDateForTable(item.event_date)}
+                                            </td>
+                                            <td className="p-4 font-mono text-base whitespace-nowrap text-amber-500">
+                                                {formatDateForTable(item.appearance_date)}
+                                            </td>
+                                            <td className="p-4 font-mono text-base whitespace-nowrap text-emerald-400">
+                                                {formatTime12h(item.appearance_time)}
+                                            </td>
+                                            <td className="p-4 text-white text-xl uppercase whitespace-nowrap">{item.letter_directed_to}</td>
+                                            <td className="p-4 whitespace-nowrap">{item.letter_from}</td>
+                                            <td className="p-4 whitespace-nowrap">{item.secretariat || '-'}</td>
+                                            <td className="p-4 font-mono text-base text-slate-400 whitespace-nowrap">{item.reference_no}</td>
+                                            <td className="p-4 text-sky-400 whitespace-nowrap">{item.department_assigned || '-'}</td>
+                                            <td className="p-4 max-w-xs truncate text-slate-400" title={item.cc_to}>{item.cc_to || '-'}</td>
+                                            <td className="p-4 max-w-xs truncate text-slate-300 uppercase" title={item.subject}>{item.subject || '-'}</td>
+                                            <td className="p-4 max-w-xs truncate" title={item.action_required}>{item.action_required || '-'}</td>
+                                            <td className="p-4 whitespace-nowrap">{item.assigned_to || '-'}</td>
+                                            <td className="p-4">
+                                                {item.letter_stage ? (
+                                                    <span className="bg-slate-900 border border-slate-800 text-red-400 text-sm rounded-lg px-2.5 py-1 font-mono uppercase whitespace-nowrap">
+                                                        {item.letter_stage}
+                                                    </span>
+                                                ) : '-'}
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`border text-xs rounded-lg px-2.5 py-1 whitespace-nowrap uppercase tracking-wider ${getStatusStyle(normStatus)}`}>
+                                                    {normStatus}
                                                 </span>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="p-4">
-                                            {item.status ? (
-                                                <span className="bg-slate-900 border border-slate-800 text-blue-400 text-sm rounded-lg px-2.5 py-1 font-mono uppercase whitespace-nowrap">
-                                                    {item.status}
-                                                </span>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    onClick={() => openEditModal(item)}
-                                                    className="p-2 text-blue-400 hover:text-white hover:bg-blue-950/40 rounded-lg transition-all border border-transparent hover:border-blue-800/40 cursor-pointer"
-                                                >
-                                                    <Edit2 size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    className="p-2 text-red-400 hover:text-white hover:bg-red-950/40 rounded-lg transition-all border border-transparent hover:border-red-900/40 cursor-pointer"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        onClick={() => openEditModal(item)}
+                                                        className="p-2 text-blue-400 hover:text-white hover:bg-blue-950/40 rounded-lg transition-all border border-transparent hover:border-blue-800/40 cursor-pointer"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(item.id)}
+                                                        className="p-2 text-red-400 hover:text-white hover:bg-red-950/40 rounded-lg transition-all border border-transparent hover:border-red-900/40 cursor-pointer"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -274,7 +373,7 @@ const MohtasibForm = () => {
             {/* LIGHT THEME POPUP DIALOG */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-150 flex flex-col my-8">
+                    <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-150 flex flex-col my-8">
                         
                         {/* Light Header */}
                         <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
@@ -299,9 +398,36 @@ const MohtasibForm = () => {
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* CEO DAK Receipt Number */}
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">CEO DAK Receipt Number *</label>
+                                    <input 
+                                        type="text" 
+                                        name="ceo_dak_receipt_no" 
+                                        value={formData.ceo_dak_receipt_no} 
+                                        onChange={handleInputChange} 
+                                        required 
+                                        placeholder="e.g. DAK-2026-99"
+                                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                    />
+                                </div>
+
+                                {/* Previous Letter No. / Hawal */}
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Previous Letter No. / Hawal</label>
+                                    <input 
+                                        type="text" 
+                                        name="previous_letter_no" 
+                                        value={formData.previous_letter_no} 
+                                        onChange={handleInputChange} 
+                                        placeholder="e.g. HWL/882/2025"
+                                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                    />
+                                </div>
+
                                 {/* Directed To */}
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Letter Directed To *</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Letter Addressed To *</label>
                                     <input 
                                         type="text" 
                                         name="letter_directed_to" 
@@ -380,7 +506,7 @@ const MohtasibForm = () => {
                                     />
                                 </div>
 
-                                {/* Appearance Time - Protected input */}
+                                {/* Appearance Time */}
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Appearance Time *</label>
                                     <input 
@@ -417,17 +543,70 @@ const MohtasibForm = () => {
                                     />
                                 </div>
 
-                                {/* Status */}
+                                {/* Color-coded Dynamic Status Dropdown */}
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Status</label>
-                                    <input 
-                                        type="text" 
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Status *</label>
+                                    <select 
                                         name="status" 
                                         value={formData.status} 
                                         onChange={handleInputChange} 
-                                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
-                                    />
+                                        required
+                                        className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${getStatusStyle(formData.status)}`}
+                                    >
+                                        {STATUS_OPTIONS.map(opt => (
+                                            <option key={opt} value={opt} className="bg-white text-slate-800 font-normal">
+                                                {opt}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
+                            </div>
+
+                            {/* Department / Zone Assigned Dropdown + Manual Entry */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Department / Zone Assigned *</label>
+                                    <select 
+                                        value={deptSelectValue} 
+                                        onChange={handleDeptDropdownChange} 
+                                        required
+                                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                    >
+                                        <option value="">-- Choose Department / Zone --</option>
+                                        {standardDepts.map(dept => (
+                                            <option key={dept} value={dept}>{dept}</option>
+                                        ))}
+                                        <option value="other">Other (Type custom department...)</option>
+                                    </select>
+                                </div>
+
+                                {deptSelectValue === 'other' && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">Specify Custom Department *</label>
+                                        <input 
+                                            type="text" 
+                                            value={customDeptText} 
+                                            onChange={handleCustomDeptChange} 
+                                            required
+                                            placeholder="Write customized department here" 
+                                            className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Copy for Information / CC to */}
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Copy for Information / CC to</label>
+                                <input 
+                                    type="text" 
+                                    name="cc_to" 
+                                    value={formData.cc_to} 
+                                    onChange={handleInputChange} 
+                                    placeholder="e.g. Managing Director, Chief Engineer, Executive Engineer Zone-I (Separate multiple with commas)" 
+                                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                />
+                                <p className="text-xs text-slate-500 mt-1">You can enter multiple designated persons separated by commas.</p>
                             </div>
 
                             {/* Subject */}
@@ -443,7 +622,7 @@ const MohtasibForm = () => {
                             </div>
 
                             {/* Action Required dropdown & text field input split */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Action Required</label>
                                     <select 
@@ -493,7 +672,7 @@ const MohtasibForm = () => {
                     </div>
                 </div>
             )}
-        </div> 
+        </div>
     );
 };
 

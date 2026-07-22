@@ -59,7 +59,11 @@ export const createMohtasibRecord = async (req, res) => {
             action_required, 
             assigned_to, 
             letter_stage, 
-            status 
+            status,
+            ceo_dak_receipt_no,
+            previous_letter_no,
+            department_assigned,
+            cc_to
         } = req.body;
 
         const userId = await getUserIdByEmail(userEmail);
@@ -71,15 +75,17 @@ export const createMohtasibRecord = async (req, res) => {
             INSERT INTO mohtasib_info (
                 user_id, letter_directed_to, letter_from, reference_no, 
                 event_date, appearance_date, appearance_time, secretariat, subject, action_required, 
-                assigned_to, letter_stage, status
+                assigned_to, letter_stage, status, ceo_dak_receipt_no, previous_letter_no, 
+                department_assigned, cc_to
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
             RETURNING *
         `;
         const result = await authDb.query(query, [
             userId, letter_directed_to, letter_from, reference_no, 
             event_date, appearance_date || null, appearance_time || null, secretariat, subject, action_required, 
-            assigned_to, letter_stage, status
+            assigned_to, letter_stage, status, ceo_dak_receipt_no || null, previous_letter_no || null,
+            department_assigned || null, cc_to || null
         ]);
 
         return res.json({ success: true, message: "Mohtasib record saved successfully!", data: result.rows[0] });
@@ -99,7 +105,8 @@ export const getUserMohtasibRecords = async (req, res) => {
         const query = `
             SELECT id, letter_directed_to, letter_from, reference_no, 
                    event_date, appearance_date, appearance_time, secretariat, subject, action_required, 
-                   assigned_to, letter_stage, status, created_at 
+                   assigned_to, letter_stage, status, ceo_dak_receipt_no, previous_letter_no, 
+                   department_assigned, cc_to, created_at 
             FROM mohtasib_info 
             WHERE user_id = $1 
             ORDER BY created_at DESC
@@ -131,7 +138,11 @@ export const updateMohtasibRecord = async (req, res) => {
             action_required, 
             assigned_to, 
             letter_stage, 
-            status 
+            status,
+            ceo_dak_receipt_no,
+            previous_letter_no,
+            department_assigned,
+            cc_to
         } = req.body;
 
         const updateQuery = `
@@ -139,13 +150,16 @@ export const updateMohtasibRecord = async (req, res) => {
             SET letter_directed_to = $1, letter_from = $2, reference_no = $3, 
                 event_date = $4, appearance_date = $5, appearance_time = $6, secretariat = $7, subject = $8, 
                 action_required = $9, assigned_to = $10, letter_stage = $11, 
-                status = $12, updated_at = NOW()
-            WHERE id = $13 AND user_id = $14 RETURNING *
+                status = $12, ceo_dak_receipt_no = $13, previous_letter_no = $14, 
+                department_assigned = $15, cc_to = $16, updated_at = NOW()
+            WHERE id = $17 AND user_id = $18 RETURNING *
         `;
         const result = await authDb.query(updateQuery, [
             letter_directed_to, letter_from, reference_no, 
             event_date, appearance_date || null, appearance_time || null, secretariat, subject, 
-            action_required, assigned_to, letter_stage, status, id, userId
+            action_required, assigned_to, letter_stage, status, 
+            ceo_dak_receipt_no || null, previous_letter_no || null, 
+            department_assigned || null, cc_to || null, id, userId
         ]);
 
         if (result.rows.length === 0) {
@@ -200,6 +214,10 @@ export const getAllMohtasibRecordsForDashboard = async (req, res) => {
                 m.assigned_to, 
                 m.letter_stage, 
                 m.status, 
+                m.ceo_dak_receipt_no,
+                m.previous_letter_no,
+                m.department_assigned,
+                m.cc_to,
                 m.created_at,
                 du.username AS uploader_name
             FROM mohtasib_info m
