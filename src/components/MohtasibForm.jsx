@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, AlertCircle, Search } from 'lucide-react';
 import api from '../utils/api';
 
 const MohtasibForm = () => {
@@ -9,6 +9,7 @@ const MohtasibForm = () => {
     const [errorMsg, setErrorMsg] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Predefined Status Options
     const STATUS_OPTIONS = [
@@ -34,13 +35,11 @@ const MohtasibForm = () => {
         }
     };
 
-
-
     // Dropdown helpers for Action Required
     const [actionSelectValue, setActionSelectValue] = useState('');
     const [customActionText, setCustomActionText] = useState('');
 
-    // Dropdown helpers for Department Assigned (Zone-I, Zone-II, etc.)
+    // Dropdown helpers for Department Assigned
     const [deptSelectValue, setDeptSelectValue] = useState('');
     const [customDeptText, setCustomDeptText] = useState('');
 
@@ -49,6 +48,8 @@ const MohtasibForm = () => {
 
     // Form inputs state
     const [formData, setFormData] = useState({
+        case_no: '',
+        subject: '',
         letter_directed_to: '',
         letter_from: '',
         reference_no: '',
@@ -56,7 +57,6 @@ const MohtasibForm = () => {
         appearance_date: '',
         appearance_time: '',
         secretariat: '',
-        subject: '',
         action_required: '',
         assigned_to: '',
         letter_stage: '',
@@ -122,22 +122,45 @@ const MohtasibForm = () => {
         setFormData(prev => ({ ...prev, department_assigned: val }));
     };
 
-    // Helper to safely format YYYY-MM-DD without UTC timezone offset shift bug
+    // Corrected Local Date Extractor for Form Inputs (YYYY-MM-DD)
     const formatDateForInput = (dateStr) => {
         if (!dateStr) return '';
-        return dateStr.split('T')[0];
+        if (!dateStr.includes('T')) return dateStr;
+        
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr.split('T')[0];
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
-    // Format date string for local table view (DD/MM/YYYY) avoiding UTC backshift
+    // Corrected Local Date Formatter for Table View (DD/MM/YYYY)
     const formatDateForTable = (dateStr) => {
         if (!dateStr) return '-';
-        const cleanDate = dateStr.split('T')[0];
-        const [year, month, day] = cleanDate.split('-');
+        
+        if (!dateStr.includes('T')) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
         return `${day}/${month}/${year}`;
     };
 
     const openCreateModal = () => {
         setFormData({
+            case_no: '',
+            subject: '',
             letter_directed_to: '',
             letter_from: '',
             reference_no: '',
@@ -145,7 +168,6 @@ const MohtasibForm = () => {
             appearance_date: '',
             appearance_time: '',
             secretariat: '',
-            subject: '',
             action_required: '',
             assigned_to: '',
             letter_stage: '',
@@ -192,15 +214,19 @@ const MohtasibForm = () => {
             initialTime = `${parts[0]}:${parts[1]}`;
         }
 
+        // Support both appearance_date and hearing_date properties from DB response
+        const hearingDate = item.appearance_date || item.hearing_date || '';
+
         setFormData({
+            case_no: item.case_no || '',
+            subject: item.subject || '',
             letter_directed_to: item.letter_directed_to || '',
             letter_from: item.letter_from || '',
             reference_no: item.reference_no || '',
             event_date: formatDateForInput(item.event_date),
-            appearance_date: formatDateForInput(item.appearance_date),
+            appearance_date: formatDateForInput(hearingDate),
             appearance_time: initialTime,
             secretariat: item.secretariat || '',
-            subject: item.subject || '',
             action_required: dbAction,
             assigned_to: item.assigned_to || '',
             letter_stage: item.letter_stage || '',
@@ -257,6 +283,31 @@ const MohtasibForm = () => {
         return `${formattedHour}:${minuteStr} ${ampm}`;
     };
 
+    // Filter records across all search-relevant fields
+    const filteredRecords = records.filter(item => {
+        if (!searchTerm) return true;
+        const clean = searchTerm.toLowerCase().trim();
+        
+        const fieldsToSearch = [
+            item.case_no,
+            item.ceo_dak_receipt_no,
+            item.previous_letter_no,
+            item.reference_no,
+            item.letter_directed_to,
+            item.letter_from,
+            item.secretariat,
+            item.department_assigned,
+            item.cc_to,
+            item.subject,
+            item.action_required,
+            item.assigned_to,
+            item.letter_stage,
+            item.status
+        ];
+
+        return fieldsToSearch.some(val => val && String(val).toLowerCase().includes(clean));
+    });
+
     return (
         <div className="bg-transparent text-slate-200">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -273,21 +324,45 @@ const MohtasibForm = () => {
                 </button>
             </div>
 
+            {/* SEARCH BAR */}
+            <div className="mb-6">
+                <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <Search size={20} />
+                    </div>
+                    <input 
+                        type="text"
+                        placeholder="Search across uploaded entries (Case No, DAK Receipt, Ref No, Directed To, Subject, Dept...)"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 text-white placeholder-slate-400 text-base font-medium pl-12 pr-10 py-3 rounded-xl outline-none shadow-inner transition-all focus:ring-2 focus:ring-blue-500/30"
+                    />
+                    {searchTerm && (
+                        <button 
+                            onClick={() => setSearchTerm('')} 
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"
+                        >
+                            <X size={18} />
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {loading ? (
                 <div className="py-20 text-center font-bold text-xl text-slate-400">Syncing database feed...</div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse table-auto min-w-[1800px]">
+                    <table className="w-full text-left border-collapse table-auto min-w-[1900px]">
                         <thead>
                             <tr className="border-b border-slate-800 text-sm font-black tracking-widest text-slate-500 uppercase">
-                                <th className="p-4 pl-2 w-12">Seq</th>
+                                <th className="p-4 pl-2 w-12">S.NO</th>
+                                <th className="p-4">Case No</th>
                                 <th className="p-4">CEO DAK Receipt No</th>
                                 <th className="p-4">Prev Letter / Hawal</th>
-                                <th className="p-4">Event Date</th>
                                 <th className="p-4">Appearance Date</th>
                                 <th className="p-4">Time</th>
                                 <th className="p-4">Directed To</th>
-                                <th className="p-4">From</th>
+                                <th className="p-4">Letter From</th>
                                 <th className="p-4">Secretariat</th>
                                 <th className="p-4">Letter Ref No</th> 
                                 <th className="p-4">Dept Assigned</th>
@@ -303,23 +378,28 @@ const MohtasibForm = () => {
                         <tbody className="divide-y divide-slate-800/60 text-lg font-bold text-slate-300">
                             {records.length === 0 ? (
                                 <tr>
-                                    <td colSpan="18" className="p-16 text-center text-slate-600">
+                                    <td colSpan="19" className="p-16 text-center text-slate-600">
                                         No entries found under your logged-in username scope.
                                     </td>
                                 </tr>
+                            ) : filteredRecords.length === 0 ? (
+                                <tr>
+                                    <td colSpan="19" className="p-16 text-center text-slate-500 font-bold">
+                                        No records matched your search term.
+                                    </td>
+                                </tr>
                             ) : (
-                                records.map((item, index) => {
+                                filteredRecords.map((item, index) => {
                                     const normStatus = item.status;
+                                    const hearingDate = item.appearance_date || item.hearing_date;
                                     return (
                                         <tr key={item.id} className="hover:bg-slate-900/20 transition-colors">
                                             <td className="p-4 pl-2 font-mono text-slate-500 text-base">{index + 1}</td>
+                                            <td className="p-4 font-mono text-base text-amber-400 whitespace-nowrap">{item.case_no || '-'}</td>
                                             <td className="p-4 font-mono text-base text-cyan-400 whitespace-nowrap">{item.ceo_dak_receipt_no || '-'}</td>
                                             <td className="p-4 font-mono text-base text-slate-400 whitespace-nowrap">{item.previous_letter_no || '-'}</td>
-                                            <td className="p-4 font-mono text-base whitespace-nowrap">
-                                                {formatDateForTable(item.event_date)}
-                                            </td>
                                             <td className="p-4 font-mono text-base whitespace-nowrap text-amber-500">
-                                                {formatDateForTable(item.appearance_date)}
+                                                {formatDateForTable(hearingDate)}
                                             </td>
                                             <td className="p-4 font-mono text-base whitespace-nowrap text-emerald-400">
                                                 {formatTime12h(item.appearance_time)}
@@ -390,12 +470,35 @@ const MohtasibForm = () => {
 
                         {/* Form Area */}
                         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[75vh] space-y-5 text-slate-800">
-                            {errorMsg && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
-                                    <AlertCircle size={18} />
-                                    <span className="font-semibold text-sm">{errorMsg}</span>
+
+                            {/* Case Number & Subject Matter at Top */}
+                            <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-200/60">
+                                <div>
+                                    <label className="block text-sm font-black text-slate-800 mb-1">Case Number *</label>
+                                    <input 
+                                        type="text" 
+                                        name="case_no" 
+                                        value={formData.case_no} 
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="e.g. POS/242/KHE/2019/DG-II or WMS-ONL/23050/26"
+                                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                                    />
                                 </div>
-                            )}
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Subject Matter *</label>
+                                    <textarea 
+                                        name="subject" 
+                                        rows="2" 
+                                        value={formData.subject} 
+                                        onChange={handleInputChange} 
+                                        required
+                                        placeholder="Write subject matter of complaint..."
+                                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium resize-y"
+                                    ></textarea>
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* CEO DAK Receipt Number */}
@@ -414,7 +517,7 @@ const MohtasibForm = () => {
 
                                 {/* Previous Letter No. / Hawal */}
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Previous Letter No. / Hawal</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Previous Letter No. / Hawala</label>
                                     <input 
                                         type="text" 
                                         name="previous_letter_no" 
@@ -482,7 +585,7 @@ const MohtasibForm = () => {
 
                                 {/* Event Date */}
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Event Date *</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Letter Date *</label>
                                     <input 
                                         type="date" 
                                         name="event_date" 
@@ -609,18 +712,6 @@ const MohtasibForm = () => {
                                 <p className="text-xs text-slate-500 mt-1">You can enter multiple designated persons separated by commas.</p>
                             </div>
 
-                            {/* Subject */}
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Subject Matter</label>
-                                <textarea 
-                                    name="subject" 
-                                    rows="2" 
-                                    value={formData.subject} 
-                                    onChange={handleInputChange} 
-                                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium resize-y"
-                                ></textarea>
-                            </div>
-
                             {/* Action Required dropdown & text field input split */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
                                 <div>
@@ -650,6 +741,13 @@ const MohtasibForm = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {errorMsg && (
+                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+                                    <AlertCircle size={18} />
+                                    <span className="font-semibold text-sm">{errorMsg}</span>
+                                </div>
+                            )}
 
                             {/* Form Submission Footer */}
                             <div className="p-5 border-t border-slate-200 flex justify-end gap-3 bg-slate-50 -mx-6 -mb-6 mt-8 rounded-b-2xl">

@@ -9,12 +9,12 @@ const getUserIdByEmail = async (email) => {
 // 1. Verify if user can edit/input Mohtasib form records
 export const checkMohtasibPermission = async (req, res) => {
     try {
-        const userEmail = req.user?.email; 
+        const userEmail = req.user?.email;
 
         if (!userEmail) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "User context verification failed: email missing from session token." 
+            return res.status(400).json({
+                success: false,
+                message: "User context verification failed: email missing from session token."
             });
         }
 
@@ -26,39 +26,40 @@ export const checkMohtasibPermission = async (req, res) => {
         const result = await authDb.query(query, [userEmail]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "No user account record matches the current session context." 
+            return res.status(404).json({
+                success: false,
+                message: "No user account record matches the current session context."
             });
         }
 
         return res.json({ success: true, canManage: !!result.rows[0].can_manage_mohtasib });
-        
+
     } catch (err) {
         console.error("Mohtasib Permission Verification Error:", err);
-        return res.status(500).json({ 
-            success: false, 
-            message: "Internal processing crash while checking Mohtasib permissions." 
+        return res.status(500).json({
+            success: false,
+            message: "Internal processing crash while checking Mohtasib permissions."
         });
     }
 };
 
 // 2. Insert new Mohtasib Record
-export const createMohtasibRecord = async (req, res) => { 
+export const createMohtasibRecord = async (req, res) => {
     try {
         const userEmail = req.user?.email;
-        const { 
-            letter_directed_to, 
-            letter_from, 
-            reference_no, 
-            event_date, 
+        const {
+            case_no,
+            letter_directed_to,
+            letter_from,
+            reference_no,
+            event_date,
             appearance_date,
             appearance_time,
             secretariat,
-            subject, 
-            action_required, 
-            assigned_to, 
-            letter_stage, 
+            subject,
+            action_required,
+            assigned_to,
+            letter_stage,
             status,
             ceo_dak_receipt_no,
             previous_letter_no,
@@ -71,28 +72,52 @@ export const createMohtasibRecord = async (req, res) => {
             return res.status(404).json({ success: false, message: "User context not found." });
         }
 
-        const query = `
+        try {
+            // Optional explicit validation check before insert
+            const existingCheck = await authDb.query(
+                'SELECT id FROM mohtasib_info WHERE case_no = $1 AND reference_no = $2',
+                [case_no || null, reference_no]
+            );
+
+            if (existingCheck.rows.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `A record with Reference No "${reference_no}" already exists under Case No "${case_no}".`
+                });
+            }
+
+            const query = `
             INSERT INTO mohtasib_info (
-                user_id, letter_directed_to, letter_from, reference_no, 
+                user_id, case_no, letter_directed_to, letter_from, reference_no, 
                 event_date, appearance_date, appearance_time, secretariat, subject, action_required, 
                 assigned_to, letter_stage, status, ceo_dak_receipt_no, previous_letter_no, 
                 department_assigned, cc_to
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
             RETURNING *
         `;
-        const result = await authDb.query(query, [
-            userId, letter_directed_to, letter_from, reference_no, 
-            event_date, appearance_date || null, appearance_time || null, secretariat, subject, action_required, 
-            assigned_to, letter_stage, status, ceo_dak_receipt_no || null, previous_letter_no || null,
-            department_assigned || null, cc_to || null
-        ]);
+            const result = await authDb.query(query, [
+                userId, case_no || null, letter_directed_to, letter_from, reference_no,
+                event_date, appearance_date || null, appearance_time || null, secretariat, subject, action_required,
+                assigned_to, letter_stage, status, ceo_dak_receipt_no || null, previous_letter_no || null,
+                department_assigned || null, cc_to || null
+            ]);
 
-        return res.json({ success: true, message: "Mohtasib record saved successfully!", data: result.rows[0] });
+            return res.json({ success: true, message: "Mohtasib record saved successfully!", data: result.rows[0] });
+        } catch (err) {
+            console.error("Mohtasib Insertion Failure:", err);
+            return res.status(500).json({ success: false, message: "Server error during Mohtasib record initialization." });
+        }
     } catch (err) {
-        console.error("Mohtasib Insertion Failure:", err);
-        return res.status(500).json({ success: false, message: "Server error during Mohtasib record initialization." });
+        if (err.code === '23505') { // Postgres unique constraint violation
+            return res.status(400).json({
+                success: false,
+                message: `A record with Reference No "${reference_no}" already exists under Case No "${case_no}".`
+            });
+        }
     }
+
+
 };
 
 // 3. Get Logged-in User's added Mohtasib records
@@ -103,7 +128,7 @@ export const getUserMohtasibRecords = async (req, res) => {
         if (!userId) return res.status(404).json({ success: false, message: "User context not found." });
 
         const query = `
-            SELECT id, letter_directed_to, letter_from, reference_no, 
+            SELECT id, case_no, letter_directed_to, letter_from, reference_no, 
                    event_date, appearance_date, appearance_time, secretariat, subject, action_required, 
                    assigned_to, letter_stage, status, ceo_dak_receipt_no, previous_letter_no, 
                    department_assigned, cc_to, created_at 
@@ -126,18 +151,19 @@ export const updateMohtasibRecord = async (req, res) => {
         const userEmail = req.user?.email;
         const userId = await getUserIdByEmail(userEmail);
 
-        const { 
-            letter_directed_to, 
-            letter_from, 
-            reference_no, 
-            event_date, 
+        const {
+            case_no,
+            letter_directed_to,
+            letter_from,
+            reference_no,
+            event_date,
             appearance_date,
             appearance_time,
             secretariat,
-            subject, 
-            action_required, 
-            assigned_to, 
-            letter_stage, 
+            subject,
+            action_required,
+            assigned_to,
+            letter_stage,
             status,
             ceo_dak_receipt_no,
             previous_letter_no,
@@ -147,18 +173,18 @@ export const updateMohtasibRecord = async (req, res) => {
 
         const updateQuery = `
             UPDATE mohtasib_info 
-            SET letter_directed_to = $1, letter_from = $2, reference_no = $3, 
-                event_date = $4, appearance_date = $5, appearance_time = $6, secretariat = $7, subject = $8, 
-                action_required = $9, assigned_to = $10, letter_stage = $11, 
-                status = $12, ceo_dak_receipt_no = $13, previous_letter_no = $14, 
-                department_assigned = $15, cc_to = $16, updated_at = NOW()
-            WHERE id = $17 AND user_id = $18 RETURNING *
+            SET case_no = $1, letter_directed_to = $2, letter_from = $3, reference_no = $4, 
+                event_date = $5, appearance_date = $6, appearance_time = $7, secretariat = $8, subject = $9, 
+                action_required = $10, assigned_to = $11, letter_stage = $12, 
+                status = $13, ceo_dak_receipt_no = $14, previous_letter_no = $15, 
+                department_assigned = $16, cc_to = $17, updated_at = NOW()
+            WHERE id = $18 AND user_id = $19 RETURNING *
         `;
         const result = await authDb.query(updateQuery, [
-            letter_directed_to, letter_from, reference_no, 
-            event_date, appearance_date || null, appearance_time || null, secretariat, subject, 
-            action_required, assigned_to, letter_stage, status, 
-            ceo_dak_receipt_no || null, previous_letter_no || null, 
+            case_no || null, letter_directed_to, letter_from, reference_no,
+            event_date, appearance_date || null, appearance_time || null, secretariat, subject,
+            action_required, assigned_to, letter_stage, status,
+            ceo_dak_receipt_no || null, previous_letter_no || null,
             department_assigned || null, cc_to || null, id, userId
         ]);
 
@@ -181,7 +207,7 @@ export const deleteMohtasibRecord = async (req, res) => {
         const userId = await getUserIdByEmail(userEmail);
 
         const result = await authDb.query(
-            'DELETE FROM mohtasib_info WHERE id = $1 AND user_id = $2 RETURNING *', 
+            'DELETE FROM mohtasib_info WHERE id = $1 AND user_id = $2 RETURNING *',
             [id, userId]
         );
 
@@ -202,6 +228,7 @@ export const getAllMohtasibRecordsForDashboard = async (req, res) => {
         const query = `
             SELECT 
                 m.id, 
+                m.case_no,
                 m.letter_directed_to, 
                 m.letter_from, 
                 m.reference_no, 
@@ -228,9 +255,9 @@ export const getAllMohtasibRecordsForDashboard = async (req, res) => {
         return res.json({ success: true, data: result.rows });
     } catch (err) {
         console.error("Global Mohtasib Dashboard retrieval loop failure:", err);
-        return res.status(500).json({ 
-            success: false, 
-            message: "Failed to load dynamic Mohtasib dashboard parameters." 
+        return res.status(500).json({
+            success: false,
+            message: "Failed to load dynamic Mohtasib dashboard parameters."
         });
     }
 };

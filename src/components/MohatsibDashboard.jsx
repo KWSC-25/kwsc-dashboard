@@ -44,7 +44,8 @@ const MohatsibDashboard = () => {
             const pastRecords = [];
 
             rawRecords.forEach(record => {
-                const targetDate = record.appearance_date ? new Date(record.appearance_date) : null;
+                const rawAppearanceDate = record.appearance_date || record.hearing_date;
+                const targetDate = rawAppearanceDate ? new Date(rawAppearanceDate) : null;
                 if (targetDate) {
                     if (record.appearance_time) {
                         const [h, m, s] = record.appearance_time.split(':');
@@ -65,8 +66,10 @@ const MohatsibDashboard = () => {
 
             // ASCENDING for future
             upcomingRecords.sort((a, b) => {
-                const dateA = a.appearance_date ? new Date(a.appearance_date) : new Date(0);
-                const dateB = b.appearance_date ? new Date(b.appearance_date) : new Date(0);
+                const rawA = a.appearance_date || a.hearing_date;
+                const rawB = b.appearance_date || b.hearing_date;
+                const dateA = rawA ? new Date(rawA) : new Date(0);
+                const dateB = rawB ? new Date(rawB) : new Date(0);
                 if (dateA.getTime() === dateB.getTime()) {
                     const timeA = a.appearance_time || "00:00:00";
                     const timeB = b.appearance_time || "00:00:00";
@@ -77,8 +80,10 @@ const MohatsibDashboard = () => {
 
             // DESCENDING for past
             pastRecords.sort((a, b) => {
-                const dateA = a.appearance_date ? new Date(a.appearance_date) : new Date(0);
-                const dateB = b.appearance_date ? new Date(b.appearance_date) : new Date(0);
+                const rawA = a.appearance_date || a.hearing_date;
+                const rawB = b.appearance_date || b.hearing_date;
+                const dateA = rawA ? new Date(rawA) : new Date(0);
+                const dateB = rawB ? new Date(rawB) : new Date(0);
                 if (dateA.getTime() === dateB.getTime()) {
                     const timeA = a.appearance_time || "00:00:00";
                     const timeB = b.appearance_time || "00:00:00";
@@ -128,10 +133,24 @@ const MohatsibDashboard = () => {
         return `${formattedHour}:${minuteStr} ${ampm}`;
     };
 
+    // Corrected Local Date Formatter for Table View (DD/MM/YYYY)
     const formatDateForTable = (dateStr) => {
         if (!dateStr) return '-';
-        const cleanDate = dateStr.split('T')[0];
-        const [year, month, day] = cleanDate.split('-');
+        
+        if (!dateStr.includes('T')) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
         return `${day}/${month}/${year}`;
     };
 
@@ -205,6 +224,7 @@ const MohatsibDashboard = () => {
         const clean = searchTerm.toLowerCase().trim();
         
         const fieldsToSearch = [
+            item.case_no,
             item.reference_no,
             item.subject,
             item.ceo_dak_receipt_no,
@@ -220,6 +240,7 @@ const MohatsibDashboard = () => {
             item.action_required,
             item.event_date,
             item.appearance_date,
+            item.hearing_date,
             item.appearance_time
         ];
 
@@ -327,7 +348,7 @@ const MohatsibDashboard = () => {
                     </div>
                     <input 
                         type="text"
-                        placeholder="Search across all columns (DAK Receipt, Ref No, Directed To, Subject, Dept, Status...)..."
+                        placeholder="Search across all columns (DAK Receipt, Case No, Ref No, Directed To, Subject, Dept, Status...)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 text-white placeholder-slate-400 text-base font-medium pl-12 pr-10 py-3 rounded-xl outline-none shadow-inner transition-all focus:ring-2 focus:ring-blue-500/30"
@@ -433,8 +454,9 @@ const MohatsibDashboard = () => {
                     <table className="w-full text-left border-collapse table-auto min-w-[1700px]">
                         <thead>
                             <tr className="border-b border-slate-800 bg-slate-900/90 text-xs font-black tracking-widest text-slate-400 uppercase">
-                                <th className="p-4 pl-3 w-12 text-center">Seq</th>
+                                <th className="p-4 pl-3 w-12 text-center">S.No</th>
                                 <th className="p-4">CEO DAK Receipt</th>
+                                <th className="p-4">Case No</th>
                                 <th className="p-4">Ref No</th>
                                 <th className="p-4">Appearance Date & Time</th>
                                 <th className="p-4">Letter Directed To</th>
@@ -448,8 +470,9 @@ const MohatsibDashboard = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 text-sm font-semibold text-slate-300">
                             {filteredRecords.map((item, index) => {
-                                const isAlertActive = checkIsImminentAlert(item.appearance_date, item.appearance_time);
-                                const isCrossed = checkIsDateCrossed(item.appearance_date, item.appearance_time);
+                                const appearanceDateStr = item.appearance_date || item.hearing_date;
+                                const isAlertActive = checkIsImminentAlert(appearanceDateStr, item.appearance_time);
+                                const isCrossed = checkIsDateCrossed(appearanceDateStr, item.appearance_time);
                                 const normStatus = normalizeStatus(item.status);
 
                                 return (
@@ -473,6 +496,11 @@ const MohatsibDashboard = () => {
                                             {item.ceo_dak_receipt_no || '-'}
                                         </td>
 
+                                        {/* Case No */}
+                                        <td className="p-4 font-mono font-bold text-amber-400 whitespace-nowrap">
+                                            {item.case_no || '-'}
+                                        </td>
+
                                         {/* Ref No */}
                                         <td className="p-4 font-mono font-bold text-amber-400 whitespace-nowrap">
                                             {item.reference_no || '-'}
@@ -484,7 +512,7 @@ const MohatsibDashboard = () => {
                                                 <span className={`font-mono font-bold text-base ${
                                                     isAlertActive ? 'text-rose-400' : isCrossed ? 'text-slate-500 line-through' : 'text-amber-300'
                                                 }`}>
-                                                    {formatDateForTable(item.appearance_date)}
+                                                    {formatDateForTable(appearanceDateStr)}
                                                 </span>
                                                 <span className="font-mono text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                                                     <Clock size={12} className="text-slate-500" />
@@ -566,8 +594,11 @@ const MohatsibDashboard = () => {
                                     Full File Examination
                                 </span>
                                 <h2 className="text-xl font-black text-white mt-1.5 tracking-wide font-mono uppercase">
-                                    Ref: {selectedRecord.reference_no || 'N/A'}
+                                    Case No: {selectedRecord.case_no || 'N/A'}
                                 </h2>
+                                <h3 className="text-xl font-black text-white mt-1.5 tracking-wide font-mono uppercase">
+                                    Ref: {selectedRecord.reference_no || 'N/A'}
+                                </h3>
                             </div>
                             <button 
                                 onClick={() => setIsModalOpen(false)}
@@ -579,7 +610,7 @@ const MohatsibDashboard = () => {
 
                         {/* Complete Field View Grid */}
                         <div className="p-6 space-y-4 max-h-[72vh] overflow-y-auto text-slate-200">
-                            {checkIsImminentAlert(selectedRecord.appearance_date, selectedRecord.appearance_time) && (
+                            {checkIsImminentAlert(selectedRecord.appearance_date || selectedRecord.hearing_date, selectedRecord.appearance_time) && (
                                 <div className="p-4 bg-rose-950/40 border border-rose-900/80 rounded-xl flex items-start gap-3">
                                     <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={20} />
                                     <div>
@@ -616,7 +647,7 @@ const MohatsibDashboard = () => {
                                 <div>
                                     <label className="text-[11px] font-mono text-slate-500 font-bold uppercase block mb-1">Appearance Date & Time</label>
                                     <div className="text-sm font-bold font-mono text-amber-400 bg-slate-950/50 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
-                                        <span>{formatDateForTable(selectedRecord.appearance_date)}</span>
+                                        <span>{formatDateForTable(selectedRecord.appearance_date || selectedRecord.hearing_date)}</span>
                                         <span className="text-emerald-400">{formatTime12h(selectedRecord.appearance_time)}</span>
                                     </div>
                                 </div>
