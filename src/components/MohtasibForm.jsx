@@ -283,11 +283,13 @@ const MohtasibForm = () => {
         return `${formattedHour}:${minuteStr} ${ampm}`;
     };
 
-    // Filter records across all search-relevant fields
+    // Filter records across all search-relevant fields including dates
     const filteredRecords = records.filter(item => {
         if (!searchTerm) return true;
         const clean = searchTerm.toLowerCase().trim();
         
+        const hearingDate = item.appearance_date || item.hearing_date;
+
         const fieldsToSearch = [
             item.case_no,
             item.ceo_dak_receipt_no,
@@ -302,7 +304,13 @@ const MohtasibForm = () => {
             item.action_required,
             item.assigned_to,
             item.letter_stage,
-            item.status
+            item.status,
+            item.event_date,
+            formatDateForInput(item.event_date),
+            formatDateForTable(item.event_date),
+            hearingDate,
+            formatDateForInput(hearingDate),
+            formatDateForTable(hearingDate)
         ];
 
         return fieldsToSearch.some(val => val && String(val).toLowerCase().includes(clean));
@@ -332,7 +340,7 @@ const MohtasibForm = () => {
                     </div>
                     <input 
                         type="text"
-                        placeholder="Search across uploaded entries (Case No, DAK Receipt, Ref No, Directed To, Subject, Dept...)"
+                        placeholder="Search across uploaded entries (Case No, Dates, DAK Receipt, Ref No, Directed To, Subject, Dept...)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 text-white placeholder-slate-400 text-base font-medium pl-12 pr-10 py-3 rounded-xl outline-none shadow-inner transition-all focus:ring-2 focus:ring-blue-500/30"
