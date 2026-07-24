@@ -11,9 +11,13 @@ const MohatsibDashboard = () => {
     const [globalRecords, setGlobalRecords] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     
-    // Modal state management
+    // Full File Examination Modal state
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Zone / Department Specific Details Popup Modal state
+    const [selectedZone, setSelectedZone] = useState(null);
+    const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
 
     // Standard Department List for KPI mapping
     const STANDARD_DEPTS = ['Zone-I', 'Zone-II', 'Zone-III', 'Zone-IV', 'WTM', 'CCO (RRG)', 'HRDA', 'Legal'];
@@ -218,10 +222,19 @@ const MohatsibDashboard = () => {
         setIsModalOpen(true);
     };
 
-    // SEARCH FILTER OVER ALL DB COLUMNS
+    const handleOpenZoneModal = (deptName) => {
+        setSelectedZone(deptName);
+        setIsZoneModalOpen(true);
+    };
+
+    // SEARCH FILTER OVER ALL DB COLUMNS (INCLUDES FORMATTED & RAW DATES)
     const filteredRecords = globalRecords.filter(item => {
         if (!searchTerm) return true;
         const clean = searchTerm.toLowerCase().trim();
+
+        const rawAppearanceDate = item.appearance_date || item.hearing_date || '';
+        const formattedAppearanceDate = formatDateForTable(rawAppearanceDate);
+        const formattedEventDate = formatDateForTable(item.event_date);
         
         const fieldsToSearch = [
             item.case_no,
@@ -239,12 +252,23 @@ const MohatsibDashboard = () => {
             item.status,
             item.action_required,
             item.event_date,
-            item.appearance_date,
-            item.hearing_date,
+            formattedEventDate,
+            rawAppearanceDate,
+            formattedAppearanceDate,
             item.appearance_time
         ];
 
         return fieldsToSearch.some(val => val && String(val).toLowerCase().includes(clean));
+    });
+
+    // FILTERED RECORDS FOR DEPARTMENT / ZONE MODAL
+    const selectedZoneRecords = globalRecords.filter(item => {
+        if (!selectedZone) return false;
+        const dept = (item.department_assigned || '').trim();
+        if (selectedZone === 'Others') {
+            return !STANDARD_DEPTS.includes(dept);
+        }
+        return dept === selectedZone;
     });
 
     // KPI CALCULATIONS
@@ -348,7 +372,7 @@ const MohatsibDashboard = () => {
                     </div>
                     <input 
                         type="text"
-                        placeholder="Search across all columns (DAK Receipt, Case No, Ref No, Directed To, Subject, Dept, Status...)"
+                        placeholder="Search across all columns (DAK Receipt, Case No, Ref No, Directed To, Subject, Dept, Status, Dates...)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 text-white placeholder-slate-400 text-base font-medium pl-12 pr-10 py-3 rounded-xl outline-none shadow-inner transition-all focus:ring-2 focus:ring-blue-500/30"
@@ -412,22 +436,29 @@ const MohatsibDashboard = () => {
                 </div>
             </div>
 
-            {/* KPI ROW 2: DEPARTMENT ASSIGNED BREAKDOWN */}
+            {/* KPI ROW 2: DEPARTMENT ASSIGNED BREAKDOWN (INTERACTIVE CLICKABLE CARDS) */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6 shadow-sm">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-400 mb-3 tracking-wider">
                     <Building2 size={15} className="text-sky-400" />
-                    <span>Department / Zone Distribution</span>
+                    <span>Department / Zone Distribution (Click card to view details)</span>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
                     {STANDARD_DEPTS.map(dept => (
-                        <div key={dept} className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-2.5 text-center">
-                            <div className="text-[11px] font-bold text-slate-400 truncate">{dept}</div>
+                        <div 
+                            key={dept} 
+                            onClick={() => handleOpenZoneModal(dept)}
+                            className="bg-slate-950/60 border border-slate-800/80 hover:border-sky-500/60 hover:bg-slate-900 p-2.5 text-center cursor-pointer rounded-lg transition-all transform hover:-translate-y-0.5 group"
+                        >
+                            <div className="text-[11px] font-bold text-slate-400 group-hover:text-sky-300 truncate transition-colors">{dept}</div>
                             <div className="text-lg font-black text-sky-300 font-mono mt-0.5">{kpiDeptCounts[dept]}</div>
                         </div>
                     ))}
                     {/* Others */}
-                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-2.5 text-center">
-                        <div className="text-[11px] font-bold text-slate-400 truncate">Others</div>
+                    <div 
+                        onClick={() => handleOpenZoneModal('Others')}
+                        className="bg-slate-950/60 border border-slate-800/80 hover:border-purple-500/60 hover:bg-slate-900 p-2.5 text-center cursor-pointer rounded-lg transition-all transform hover:-translate-y-0.5 group"
+                    >
+                        <div className="text-[11px] font-bold text-slate-400 group-hover:text-purple-300 truncate transition-colors">Others</div>
                         <div className="text-lg font-black text-purple-300 font-mono mt-0.5">{kpiDeptCounts['Others']}</div>
                     </div>
                 </div>
@@ -638,7 +669,7 @@ const MohatsibDashboard = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-[11px] font-mono text-slate-500 font-bold uppercase block mb-1">Event Date</label>
+                                    <label className="text-[11px] font-mono text-slate-500 font-bold uppercase block mb-1">Letter Date</label>
                                     <div className="text-sm font-bold font-mono text-white bg-slate-950/50 p-2.5 rounded-lg border border-slate-800">
                                         {formatDateForTable(selectedRecord.event_date)}
                                     </div>
@@ -738,6 +769,114 @@ const MohatsibDashboard = () => {
                                 Close File
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* DEPARTMENT / ZONE RECORDS DETAILS POPUP MODAL */}
+            {isZoneModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col my-8">
+                        
+                        {/* Header */}
+                        <div className="bg-slate-950/80 p-5 border-b border-slate-800 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
+                                    <Building2 size={22} />
+                                </div>
+                                <div>
+                                    <span className="text-[10px] tracking-widest uppercase font-black px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-900/60">
+                                        Department Breakdown View
+                                    </span>
+                                    <h2 className="text-xl font-black text-white mt-1 tracking-wide font-mono uppercase">
+                                        {selectedZone} Records
+                                    </h2>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsZoneModalOpen(false)}
+                                className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-colors bg-transparent border-none cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Streamlined Modal Table Container */}
+                        <div className="p-6 overflow-y-auto max-h-[65vh]">
+                            {selectedZoneRecords.length === 0 ? (
+                                <div className="py-16 text-center text-slate-500 font-bold">
+                                    No records currently assigned to {selectedZone}.
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/40">
+                                    <table className="w-full text-left border-collapse table-auto min-w-[850px]">
+                                        <thead>
+                                            <tr className="border-b border-slate-800 bg-slate-950 text-xs font-black tracking-widest text-slate-400 uppercase">
+                                                <th className="p-3.5 pl-4 w-12 text-center">S.No</th>
+                                                <th className="p-3.5">CEO DAK Receipt</th>
+                                                <th className="p-3.5">Case No</th>
+                                                <th className="p-3.5">Ref No</th>
+                                                <th className="p-3.5">Appearance Date & Time</th>
+                                                <th className="p-3.5">Subject Matter</th>
+                                                <th className="p-3.5">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-800/60 text-xs font-semibold text-slate-300">
+                                            {selectedZoneRecords.map((item, idx) => {
+                                                const appearanceDateStr = item.appearance_date || item.hearing_date;
+                                                const normStatus = normalizeStatus(item.status);
+                                                return (
+                                                    <tr key={item.id || idx} className="hover:bg-slate-800/40 transition-colors">
+                                                        <td className="p-3.5 pl-4 font-mono text-slate-500 text-center font-bold">
+                                                            {idx + 1}
+                                                        </td>
+                                                        <td className="p-3.5 font-mono font-bold text-cyan-400 whitespace-nowrap">
+                                                            {item.ceo_dak_receipt_no || '-'}
+                                                        </td>
+                                                        <td className="p-3.5 font-mono font-bold text-amber-400 whitespace-nowrap">
+                                                            {item.case_no || '-'}
+                                                        </td>
+                                                        <td className="p-3.5 font-mono font-bold text-amber-400 whitespace-nowrap">
+                                                            {item.reference_no || '-'}
+                                                        </td>
+                                                        <td className="p-3.5 whitespace-nowrap font-mono">
+                                                            <span className="text-amber-300 font-bold">
+                                                                {formatDateForTable(appearanceDateStr)}
+                                                            </span>
+                                                            <span className="text-slate-500 ml-2">
+                                                                {formatTime12h(item.appearance_time)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-3.5 max-w-xs truncate text-slate-200 uppercase font-bold" title={item.subject}>
+                                                            {item.subject || '-'}
+                                                        </td>
+                                                        <td className="p-3.5 whitespace-nowrap">
+                                                            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${getStatusBadgeStyle(normStatus)}`}>
+                                                                {normStatus}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-950/80 p-4 border-t border-slate-800 flex justify-between items-center">
+                            <span className="text-xs text-slate-400 font-bold px-2">
+                                Total {selectedZone} Records: <span className="text-white font-mono">{selectedZoneRecords.length}</span>
+                            </span>
+                            <button 
+                                onClick={() => setIsZoneModalOpen(false)}
+                                className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition-colors border-none cursor-pointer"
+                            >
+                                Close Modal
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             )}
