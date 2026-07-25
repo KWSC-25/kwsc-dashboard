@@ -33,6 +33,12 @@ const MohatsibDashboard = () => {
     useEffect(() => {
         if (!isManagingPanel) {
             fetchMohtasibDashboardRecords();
+
+            const intervalId = setInterval(() => {
+                fetchMohtasibDashboardRecords();
+            }, 30 * 60 * 1000); // 30 minutes
+
+            return () => clearInterval(intervalId);
         }
     }, [isManagingPanel]);
 
@@ -843,7 +849,7 @@ const MohatsibDashboard = () => {
                                                             <span className="text-amber-300 font-bold">
                                                                 {formatDateForTable(appearanceDateStr)}
                                                             </span>
-                                                            <span className="text-slate-500 ml-2">
+                                                            <span className="text-green-500 ml-2">
                                                                 {formatTime12h(item.appearance_time)}
                                                             </span>
                                                         </td>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, AlertCircle, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Edit2, Trash2, X, AlertCircle, Search, ChevronDown } from 'lucide-react';
 import api from '../utils/api';
 
 const MohtasibForm = () => {
@@ -10,6 +10,10 @@ const MohtasibForm = () => {
     const [submitting, setSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Case Number Autocomplete & Dropdown States
+    const [isCaseDropdownOpen, setIsCaseDropdownOpen] = useState(false);
+    const caseDropdownRef = useRef(null);
 
     // Predefined Status Options
     const STATUS_OPTIONS = [
@@ -71,6 +75,17 @@ const MohtasibForm = () => {
         fetchUserRecords();
     }, []);
 
+    // Close Case No Dropdown on Outside Click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (caseDropdownRef.current && !caseDropdownRef.current.contains(event.target)) {
+                setIsCaseDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const fetchUserRecords = async () => {
         setLoading(true);
         try {
@@ -83,9 +98,24 @@ const MohtasibForm = () => {
         }
     };
 
+    // Derive Unique Existing Case Numbers from Database Feed
+    const existingCaseNumbers = Array.from(
+        new Set(records.map(r => r.case_no).filter(c => c && c.trim() !== ''))
+    );
+
+    // Filter Suggestions based on User Input
+    const filteredCaseNumbers = existingCaseNumbers.filter(c =>
+        c.toLowerCase().includes((formData.case_no || '').toLowerCase().trim())
+    );
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSelectCaseNumber = (caseNum) => {
+        setFormData(prev => ({ ...prev, case_no: caseNum }));
+        setIsCaseDropdownOpen(false);
     };
 
     // Action Dropdown Handler
@@ -214,7 +244,6 @@ const MohtasibForm = () => {
             initialTime = `${parts[0]}:${parts[1]}`;
         }
 
-        // Support both appearance_date and hearing_date properties from DB response
         const hearingDate = item.appearance_date || item.hearing_date || '';
 
         setFormData({
@@ -481,17 +510,54 @@ const MohtasibForm = () => {
 
                             {/* Case Number & Subject Matter at Top */}
                             <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-200/60">
-                                <div>
-                                    <label className="block text-sm font-black text-slate-800 mb-1">Case Number *</label>
-                                    <input 
-                                        type="text" 
-                                        name="case_no" 
-                                        value={formData.case_no} 
-                                        onChange={handleInputChange}
-                                        required
-                                        placeholder="e.g. POS/242/KHE/2019/DG-II or WMS-ONL/23050/26"
-                                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
-                                    />
+                                {/* Case Number Autocomplete Dropdown Field */}
+                                <div className="relative" ref={caseDropdownRef}>
+                                    <label className="block text-sm font-black text-slate-800 mb-1">
+                                        Case Number * <span className="text-xs font-normal text-slate-500">(Type to search or select existing case)</span>
+                                    </label>
+                                    <div className="relative flex items-center">
+                                        <input 
+                                            type="text" 
+                                            name="case_no" 
+                                            value={formData.case_no} 
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                setIsCaseDropdownOpen(true);
+                                            }}
+                                            onFocus={() => setIsCaseDropdownOpen(true)}
+                                            required
+                                            placeholder="e.g. POS/242/KHE/2019/DG-II or WMS-ONL/23050/26"
+                                            className="w-full bg-white border border-slate-300 rounded-lg pl-3 pr-10 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCaseDropdownOpen(!isCaseDropdownOpen)}
+                                            className="absolute right-2 text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer p-1"
+                                        >
+                                            <ChevronDown size={18} />
+                                        </button>
+                                    </div>
+
+                                    {/* Auto-suggest Search Dropdown */}
+                                    {isCaseDropdownOpen && (
+                                        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-52 overflow-y-auto divide-y divide-slate-100">
+                                            {filteredCaseNumbers.length > 0 ? (
+                                                filteredCaseNumbers.map((caseNum, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        onClick={() => handleSelectCaseNumber(caseNum)}
+                                                        className="px-4 py-2.5 hover:bg-amber-100/80 cursor-pointer text-slate-800 font-bold font-mono text-sm transition-colors flex justify-between items-center"
+                                                    >
+                                                        <span>{caseNum}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-3 text-slate-400 text-xs italic font-medium">
+                                                    {formData.case_no ? `No existing case matches "${formData.case_no}". Pressing Save will create this as a new case number.` : "No existing cases recorded yet."}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
