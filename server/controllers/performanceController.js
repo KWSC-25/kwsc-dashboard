@@ -44,15 +44,15 @@ LIMIT ${limit};`;
 
 export const getUnderperformingEngineers = async (req, res) => {
     try {
-        const [results] = await req.db.execute(getPerformanceQuery(req.query.typeId, 2, 'ASC'), [req.query.typeId]);
+        const [results] = await req.db.execute(getPerformanceQuery(req.query.typeId, 3, 'ASC'), [req.query.typeId]);
         res.json(results);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 export const getTopPerformers = async (req, res) => {
     try {
-        const [waterBest] = await req.db.execute(getPerformanceQuery(2, 3, 'DESC'), [2]);
-        const [sewBest] = await req.db.execute(getPerformanceQuery(1, 3, 'DESC'), [1]);
+        const [waterBest] = await req.db.execute(getPerformanceQuery(2, 4, 'DESC'), [2]);
+        const [sewBest] = await req.db.execute(getPerformanceQuery(1, 4, 'DESC'), [1]);
         res.json({ waterBest, sewBest });
     } catch (err) { res.status(500).json({ error: err.message }); }
 };
