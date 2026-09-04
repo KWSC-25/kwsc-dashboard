@@ -237,7 +237,13 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
 
             <div className="h-[850px] w-full rounded-lg overflow-hidden border border-slate-800 relative bg-[#060913]">
                 <MapContainer center={KarachiCenter} zoom={11} className="h-full w-full">
-                    <TileLayer url={verificationMode ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"} />
+                <TileLayer 
+                    url={verificationMode 
+                        ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                        : "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+                    } 
+                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+                />
 
                     {ucData && (
                         <GeoJSON 

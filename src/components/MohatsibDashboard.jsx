@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, AlertCircle, ArrowLeft, ShieldAlert, X, Eye, Clock, Search, Layers, Building2, CheckCircle2, Clock3, AlertTriangle, FileText, ChevronRight, ChevronDown, Folder } from 'lucide-react';
+import { Settings, AlertCircle, ArrowLeft, ShieldAlert, X, Eye, Clock, Search, Layers, Building2, CheckCircle2, Clock3, AlertTriangle, FileText } from 'lucide-react';
 import api from '../utils/api';
 import MohtasibForm from './MohtasibForm';
 
@@ -10,20 +10,10 @@ const MohatsibDashboard = () => {
     const [actionLoading, setActionLoading] = useState(false);
     const [globalRecords, setGlobalRecords] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // View Mode State: 'records' (flat table) vs 'cases' (grouped by case_no)
-    const [viewMode, setViewMode] = useState('records');
-
-    // Expanded Case Groups in Case View
-    const [expandedCases, setExpandedCases] = useState({});
-
-    // Full File Examination Modal state
+    
+    // Modal state management
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // Zone / Department Specific Details Popup Modal state
-    const [selectedZone, setSelectedZone] = useState(null);
-    const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
 
     // Standard Department List for KPI mapping
     const STANDARD_DEPTS = ['Zone-I', 'Zone-II', 'Zone-III', 'Zone-IV', 'WTM', 'CCO (RRG)', 'HRDA', 'Legal'];
@@ -39,12 +29,6 @@ const MohatsibDashboard = () => {
     useEffect(() => {
         if (!isManagingPanel) {
             fetchMohtasibDashboardRecords();
-
-            const intervalId = setInterval(() => {
-                fetchMohtasibDashboardRecords();
-            }, 30 * 60 * 1000); // 30 minutes
-
-            return () => clearInterval(intervalId);
         }
     }, [isManagingPanel]);
 
@@ -53,15 +37,14 @@ const MohatsibDashboard = () => {
         try {
             const res = await api.get('/mohtasib/all-records');
             const rawRecords = res.data.data || [];
-
+            
             const now = new Date();
 
             const upcomingRecords = [];
             const pastRecords = [];
 
             rawRecords.forEach(record => {
-                const rawAppearanceDate = record.appearance_date || record.hearing_date;
-                const targetDate = rawAppearanceDate ? new Date(rawAppearanceDate) : null;
+                const targetDate = record.appearance_date ? new Date(record.appearance_date) : null;
                 if (targetDate) {
                     if (record.appearance_time) {
                         const [h, m, s] = record.appearance_time.split(':');
@@ -82,10 +65,8 @@ const MohatsibDashboard = () => {
 
             // ASCENDING for future
             upcomingRecords.sort((a, b) => {
-                const rawA = a.appearance_date || a.hearing_date;
-                const rawB = b.appearance_date || b.hearing_date;
-                const dateA = rawA ? new Date(rawA) : new Date(0);
-                const dateB = rawB ? new Date(rawB) : new Date(0);
+                const dateA = a.appearance_date ? new Date(a.appearance_date) : new Date(0);
+                const dateB = b.appearance_date ? new Date(b.appearance_date) : new Date(0);
                 if (dateA.getTime() === dateB.getTime()) {
                     const timeA = a.appearance_time || "00:00:00";
                     const timeB = b.appearance_time || "00:00:00";
@@ -96,10 +77,8 @@ const MohatsibDashboard = () => {
 
             // DESCENDING for past
             pastRecords.sort((a, b) => {
-                const rawA = a.appearance_date || a.hearing_date;
-                const rawB = b.appearance_date || b.hearing_date;
-                const dateA = rawA ? new Date(rawA) : new Date(0);
-                const dateB = rawB ? new Date(rawB) : new Date(0);
+                const dateA = a.appearance_date ? new Date(a.appearance_date) : new Date(0);
+                const dateB = b.appearance_date ? new Date(b.appearance_date) : new Date(0);
                 if (dateA.getTime() === dateB.getTime()) {
                     const timeA = a.appearance_time || "00:00:00";
                     const timeB = b.appearance_time || "00:00:00";
@@ -151,21 +130,8 @@ const MohatsibDashboard = () => {
 
     const formatDateForTable = (dateStr) => {
         if (!dateStr) return '-';
-
-        if (!dateStr.includes('T')) {
-            const parts = dateStr.split('-');
-            if (parts.length === 3) {
-                return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
-            return dateStr;
-        }
-
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr;
-
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
+        const cleanDate = dateStr.split('T')[0];
+        const [year, month, day] = cleanDate.split('-');
         return `${day}/${month}/${year}`;
     };
 
@@ -199,7 +165,7 @@ const MohatsibDashboard = () => {
         if (!appearanceDateStr) return false;
         const now = new Date();
         const targetDateTime = new Date(appearanceDateStr);
-
+        
         if (appearanceTimeStr) {
             const [hours, minutes, seconds] = appearanceTimeStr.split(':');
             targetDateTime.setHours(parseInt(hours || 0, 10), parseInt(minutes || 0, 10), parseInt(seconds || 0, 10));
@@ -217,7 +183,7 @@ const MohatsibDashboard = () => {
         if (!appearanceDateStr) return true;
         const now = new Date();
         const targetDateTime = new Date(appearanceDateStr);
-
+        
         if (appearanceTimeStr) {
             const [hours, minutes, seconds] = appearanceTimeStr.split(':');
             targetDateTime.setHours(parseInt(hours || 0, 10), parseInt(minutes || 0, 10), parseInt(seconds || 0, 10));
@@ -233,26 +199,12 @@ const MohatsibDashboard = () => {
         setIsModalOpen(true);
     };
 
-    const handleOpenZoneModal = (deptName) => {
-        setSelectedZone(deptName);
-        setIsZoneModalOpen(true);
-    };
-
-    const toggleCaseExpand = (caseNo) => {
-        setExpandedCases(prev => ({ ...prev, [caseNo]: !prev[caseNo] }));
-    };
-
     // SEARCH FILTER OVER ALL DB COLUMNS
     const filteredRecords = globalRecords.filter(item => {
         if (!searchTerm) return true;
         const clean = searchTerm.toLowerCase().trim();
-
-        const rawAppearanceDate = item.appearance_date || item.hearing_date || '';
-        const formattedAppearanceDate = formatDateForTable(rawAppearanceDate);
-        const formattedEventDate = formatDateForTable(item.event_date);
-
+        
         const fieldsToSearch = [
-            item.case_no,
             item.reference_no,
             item.subject,
             item.ceo_dak_receipt_no,
@@ -267,36 +219,11 @@ const MohatsibDashboard = () => {
             item.status,
             item.action_required,
             item.event_date,
-            formattedEventDate,
-            rawAppearanceDate,
-            formattedAppearanceDate,
+            item.appearance_date,
             item.appearance_time
         ];
 
         return fieldsToSearch.some(val => val && String(val).toLowerCase().includes(clean));
-    });
-
-    // GROUPED RECORDS BY CASE NUMBER
-    const caseGroups = filteredRecords.reduce((acc, item) => {
-        const caseKey = item.case_no ? item.case_no.trim() : 'UNASSIGNED CASE';
-        if (!acc[caseKey]) acc[caseKey] = [];
-        acc[caseKey].push(item);
-        return acc;
-    }, {});
-
-    // UNIQUE CASE COUNT (ALL RECORDS)
-    const totalUniqueCases = new Set(
-        globalRecords.map(item => item.case_no ? item.case_no.trim() : null).filter(Boolean)
-    ).size;
-
-    // FILTERED RECORDS FOR DEPARTMENT / ZONE MODAL
-    const selectedZoneRecords = globalRecords.filter(item => {
-        if (!selectedZone) return false;
-        const dept = (item.department_assigned || '').trim();
-        if (selectedZone === 'Others') {
-            return !STANDARD_DEPTS.includes(dept);
-        }
-        return dept === selectedZone;
     });
 
     // KPI CALCULATIONS
@@ -321,12 +248,14 @@ const MohatsibDashboard = () => {
     };
 
     globalRecords.forEach(item => {
+        // Status KPI mapping
         const norm = normalizeStatus(item.status);
         if (norm === STATUS_KEYS.PENDING) kpiStatusCounts.pending++;
         else if (norm === STATUS_KEYS.UNRESOLVED) kpiStatusCounts.unresolved++;
         else if (norm === STATUS_KEYS.IN_PROCESS) kpiStatusCounts.inProcess++;
         else if (norm === STATUS_KEYS.RESOLVED) kpiStatusCounts.resolved++;
 
+        // Department KPI mapping
         const dept = (item.department_assigned || '').trim();
         if (STANDARD_DEPTS.includes(dept)) {
             kpiDeptCounts[dept]++;
@@ -390,75 +319,39 @@ const MohatsibDashboard = () => {
                 </div>
             </div>
 
-            {/* SEARCH BAR & VIEW TOGGLES */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+            {/* ALL-COLUMN SEARCH BAR */}
+            <div className="mb-6">
                 <div className="relative w-full">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                         <Search size={20} />
                     </div>
-                    <input
+                    <input 
                         type="text"
-                        placeholder="Search across all columns (DAK Receipt, Case No, Ref No, Directed To, Subject, Dept, Status, Dates...)"
+                        placeholder="Search across all columns (DAK Receipt, Ref No, Directed To, Subject, Dept, Status...)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 text-white placeholder-slate-400 text-base font-medium pl-12 pr-10 py-3 rounded-xl outline-none shadow-inner transition-all focus:ring-2 focus:ring-blue-500/30"
                     />
                     {searchTerm && (
-                        <button
-                            onClick={() => setSearchTerm('')}
+                        <button 
+                            onClick={() => setSearchTerm('')} 
                             className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"
                         >
                             <X size={18} />
                         </button>
                     )}
                 </div>
-
-                {/* View Mode Toggle Controls */}
-                <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700/80 shrink-0 self-stretch sm:self-auto justify-center">
-                    <button
-                        onClick={() => setViewMode('records')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border-none cursor-pointer flex items-center gap-2 ${viewMode === 'records'
-                            ? 'bg-blue-600 text-white shadow-md'
-                            : 'text-slate-400 hover:text-white bg-transparent'
-                            }`}
-                    >
-                        <Layers size={14} />
-                        <span>All Records</span>
-                    </button>
-                    <button
-                        onClick={() => setViewMode('cases')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border-none cursor-pointer flex items-center gap-2 ${viewMode === 'cases'
-                            ? 'bg-amber-600 text-white shadow-md'
-                            : 'text-slate-400 hover:text-white bg-transparent'
-                            }`}
-                    >
-                        <Folder size={14} />
-                        <span>Case View</span>
-                    </button>
-                </div>
             </div>
 
-            {/* KPI ROW 1: STATUS & CASE COUNTS */}
+            {/* KPI ROW 1: STATUS SUMMARY COUNTS */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-                {/* Total Records & Total Cases Card (Clickable to Toggle View) */}
-                <div
-                    className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 shadow-sm transition-all group"
-                >
+                {/* Total Rows */}
+                <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 shadow-sm">
                     <div className="flex justify-between items-center text-slate-400 mb-1">
-                        <span className="text-xs font-bold uppercase tracking-wider transition-colors">Total Records</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Total Records</span>
                         <Layers size={16} className="text-blue-400" />
                     </div>
-                    <div className="flex items-baseline gap-3">
-                        <div className="flex flex-col">
-                            <span className="text-2xl font-black text-white font-mono">{kpiStatusCounts.total}</span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase">References</span>
-                        </div>
-                        <span className="text-slate-600 font-bold text-lg">/</span>
-                        <div className="flex flex-col">
-                            <span className="text-2xl font-black text-amber-400 font-mono">{totalUniqueCases}</span>
-                            <span className="text-[10px] text-amber-400/80 font-bold uppercase">Cases</span>
-                        </div>
-                    </div>
+                    <div className="text-2xl font-black text-white font-mono">{kpiStatusCounts.total}</div>
                 </div>
 
                 {/* Pending */}
@@ -502,31 +395,24 @@ const MohatsibDashboard = () => {
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6 shadow-sm">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-400 mb-3 tracking-wider">
                     <Building2 size={15} className="text-sky-400" />
-                    <span>Department / Zone Distribution (Click card to view details)</span>
+                    <span>Department / Zone Distribution</span>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
                     {STANDARD_DEPTS.map(dept => (
-                        <div
-                            key={dept}
-                            onClick={() => handleOpenZoneModal(dept)}
-                            className="bg-slate-950/60 border border-slate-800/80 hover:border-sky-500/60 hover:bg-slate-900 p-2.5 text-center cursor-pointer rounded-lg transition-all transform hover:-translate-y-0.5 group"
-                        >
-                            <div className="text-[11px] font-bold text-slate-400 group-hover:text-sky-300 truncate transition-colors">{dept}</div>
+                        <div key={dept} className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-2.5 text-center">
+                            <div className="text-[11px] font-bold text-slate-400 truncate">{dept}</div>
                             <div className="text-lg font-black text-sky-300 font-mono mt-0.5">{kpiDeptCounts[dept]}</div>
                         </div>
                     ))}
                     {/* Others */}
-                    <div
-                        onClick={() => handleOpenZoneModal('Others')}
-                        className="bg-slate-950/60 border border-slate-800/80 hover:border-purple-500/60 hover:bg-slate-900 p-2.5 text-center cursor-pointer rounded-lg transition-all transform hover:-translate-y-0.5 group"
-                    >
-                        <div className="text-[11px] font-bold text-slate-400 group-hover:text-purple-300 truncate transition-colors">Others</div>
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-2.5 text-center">
+                        <div className="text-[11px] font-bold text-slate-400 truncate">Others</div>
                         <div className="text-lg font-black text-purple-300 font-mono mt-0.5">{kpiDeptCounts['Others']}</div>
                     </div>
                 </div>
             </div>
 
-            {/* MAIN DATA TABLES */}
+            {/* MAIN CONTENT DATA TABLE */}
             {dashboardLoading ? (
                 <div className="p-24 text-center bg-transparent">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
@@ -542,15 +428,13 @@ const MohatsibDashboard = () => {
                     <AlertCircle size={48} className="mx-auto text-slate-600 mb-4" />
                     <h3 className="text-xl font-bold text-slate-400">No entries matched your cross-column search query.</h3>
                 </div>
-            ) : viewMode === 'records' ? (
-                /* VIEW 1: ORIGINAL SEQUENTIAL RECORD VIEW */
+            ) : (
                 <div className="overflow-x-auto bg-slate-950/50 border border-slate-800 rounded-2xl shadow-xl backdrop-blur-md">
                     <table className="w-full text-left border-collapse table-auto min-w-[1700px]">
                         <thead>
                             <tr className="border-b border-slate-800 bg-slate-900/90 text-xs font-black tracking-widest text-slate-400 uppercase">
-                                <th className="p-4 pl-3 w-12 text-center">S.No</th>
+                                <th className="p-4 pl-3 w-12 text-center">Seq</th>
                                 <th className="p-4">CEO DAK Receipt</th>
-                                <th className="p-4">Case No</th>
                                 <th className="p-4">Ref No</th>
                                 <th className="p-4">Appearance Date & Time</th>
                                 <th className="p-4">Letter Directed To</th>
@@ -564,38 +448,43 @@ const MohatsibDashboard = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 text-sm font-semibold text-slate-300">
                             {filteredRecords.map((item, index) => {
-                                const appearanceDateStr = item.appearance_date || item.hearing_date;
-                                const isAlertActive = checkIsImminentAlert(appearanceDateStr, item.appearance_time);
-                                const isCrossed = checkIsDateCrossed(appearanceDateStr, item.appearance_time);
+                                const isAlertActive = checkIsImminentAlert(item.appearance_date, item.appearance_time);
+                                const isCrossed = checkIsDateCrossed(item.appearance_date, item.appearance_time);
                                 const normStatus = normalizeStatus(item.status);
 
                                 return (
-                                    <tr
+                                    <tr 
                                         key={item.id || index}
-                                        className={`transition-colors duration-200 ${isAlertActive
-                                            ? 'animate-pulse-subtle'
-                                            : isCrossed
-                                                ? 'bg-slate-950/40 opacity-45 hover:opacity-75'
-                                                : 'hover:bg-slate-900/40'
-                                            }`}
+                                        className={`transition-colors duration-200 ${
+                                            isAlertActive 
+                                                ? 'animate-pulse-subtle' 
+                                                : isCrossed
+                                                    ? 'bg-slate-950/40 opacity-45 hover:opacity-75'
+                                                    : 'hover:bg-slate-900/40'
+                                        }`}
                                     >
+                                        {/* Seq */}
                                         <td className="p-4 pl-3 font-mono text-slate-500 font-bold text-center">
                                             {index + 1}
                                         </td>
+
+                                        {/* CEO DAK Receipt No */}
                                         <td className="p-4 font-mono font-bold text-cyan-400 whitespace-nowrap">
                                             {item.ceo_dak_receipt_no || '-'}
                                         </td>
-                                        <td className="p-4 font-mono font-bold text-amber-400 whitespace-nowrap">
-                                            {item.case_no || '-'}
-                                        </td>
+
+                                        {/* Ref No */}
                                         <td className="p-4 font-mono font-bold text-amber-400 whitespace-nowrap">
                                             {item.reference_no || '-'}
                                         </td>
+
+                                        {/* Appearance Date & Time */}
                                         <td className="p-4 whitespace-nowrap">
                                             <div className="flex flex-col">
-                                                <span className={`font-mono font-bold text-base ${isAlertActive ? 'text-rose-400' : isCrossed ? 'text-slate-500 line-through' : 'text-amber-300'
-                                                    }`}>
-                                                    {formatDateForTable(appearanceDateStr)}
+                                                <span className={`font-mono font-bold text-base ${
+                                                    isAlertActive ? 'text-rose-400' : isCrossed ? 'text-slate-500 line-through' : 'text-amber-300'
+                                                }`}>
+                                                    {formatDateForTable(item.appearance_date)}
                                                 </span>
                                                 <span className="font-mono text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                                                     <Clock size={12} className="text-slate-500" />
@@ -613,28 +502,42 @@ const MohatsibDashboard = () => {
                                                 )}
                                             </div>
                                         </td>
+
+                                        {/* Directed To */}
                                         <td className="p-4 text-white font-bold uppercase whitespace-nowrap max-w-xs truncate" title={item.letter_directed_to}>
                                             {item.letter_directed_to || '-'}
                                         </td>
+
+                                        {/* From */}
                                         <td className="p-4 uppercase whitespace-nowrap max-w-xs truncate" title={item.letter_from}>
                                             {item.letter_from || '-'}
                                         </td>
+
+                                        {/* Dept Assigned */}
                                         <td className="p-4 whitespace-nowrap">
                                             <span className="bg-sky-950/60 text-sky-300 border border-sky-800/50 text-xs px-2.5 py-1 rounded-lg font-bold">
                                                 {item.department_assigned || '-'}
                                             </span>
                                         </td>
+
+                                        {/* Secretariat */}
                                         <td className="p-4 whitespace-nowrap text-slate-400">
                                             {item.secretariat || '-'}
                                         </td>
+
+                                        {/* Subject */}
                                         <td className="p-4 max-w-md truncate uppercase text-slate-300" title={item.subject}>
                                             {item.subject || '-'}
                                         </td>
+
+                                        {/* Status */}
                                         <td className="p-4 whitespace-nowrap">
                                             <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border ${getStatusBadgeStyle(normStatus)}`}>
                                                 {normStatus}
                                             </span>
                                         </td>
+
+                                        {/* Action / View Button */}
                                         <td className="p-4 text-center whitespace-nowrap">
                                             <button
                                                 onClick={() => handleOpenDetails(item)}
@@ -650,120 +553,6 @@ const MohatsibDashboard = () => {
                         </tbody>
                     </table>
                 </div>
-            ) : (
-                /* VIEW 2: CASE-WISE EXPANDABLE TABULAR VIEW */
-                <div className="space-y-3">
-                    {Object.keys(caseGroups).map((caseNo, cIdx) => {
-                        const records = caseGroups[caseNo];
-                        const isExpanded = !!expandedCases[caseNo];
-
-                        return (
-                            <div key={caseNo} className="bg-slate-950/60 border border-slate-800 rounded-2xl shadow-lg overflow-hidden transition-all">
-                                {/* Case Group Accordion Header */}
-                                <div
-                                    onClick={() => toggleCaseExpand(caseNo)}
-                                    className="p-4 bg-slate-900/90 hover:bg-slate-900 flex items-center justify-between cursor-pointer border-b border-slate-800/60 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <button className="text-slate-400 bg-transparent border-none cursor-pointer">
-                                            {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-                                        </button>
-                                        <Folder size={20} className="text-slate-400" />
-                                        <span className="font-mono font-black text-slate-300 text-base">{caseNo}</span>
-                                        <span className="bg-amber-950/80 text-amber-300 border border-amber-800/80 text-xs font-bold px-2.5 py-0.5 rounded-md ml-2">
-                                            {records.length} {records.length === 1 ? 'Reference Entry' : 'References Entries'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Expanded Reference Rows */}
-                                {isExpanded && (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left border-collapse table-auto min-w-[1200px]">
-                                            <thead>
-                                                <tr className="bg-slate-950/90 text-[11px] font-black tracking-widest text-slate-400 uppercase border-b border-slate-800">
-                                                    <th className="p-3 pl-6 w-12 text-center">Ref S.No</th>
-                                                    <th className="p-3">Reference No</th>
-                                                    <th className="p-3">CEO DAK Receipt</th>
-                                                    <th className="p-3">Subject</th>
-                                                    <th className="p-3">Appearance Date & Time</th>
-                                                    <th className="p-3">Directed To</th>
-                                                    <th className="p-3">Dept Assigned</th>
-                                                    <th className="p-3">Status</th>
-                                                    <th className="p-3 text-center">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-800/40 text-xs font-semibold text-slate-300">
-                                                {records.map((item, rIdx) => {
-                                                    const appearanceDateStr = item.appearance_date || item.hearing_date;
-                                                    const subject = item.subject;
-                                                    const isAlertActive = checkIsImminentAlert(appearanceDateStr, item.appearance_time);
-                                                    const isCrossed = checkIsDateCrossed(appearanceDateStr, item.appearance_time);
-                                                    const normStatus = normalizeStatus(item.status);
-
-                                                    return (
-                                                        <tr
-                                                            key={item.id || rIdx}
-                                                            className={`transition-colors ${isAlertActive
-                                                                ? 'animate-pulse-subtle'
-                                                                : isCrossed
-                                                                    ? 'bg-slate-950/40 opacity-50'
-                                                                    : 'hover:bg-slate-900/40'
-                                                                }`}
-                                                        >
-                                                            <td className="p-3 pl-6 font-mono text-slate-500 font-bold text-center">
-                                                                {rIdx + 1}
-                                                            </td>
-                                                            <td className="p-3 font-mono font-bold text-amber-300 whitespace-nowrap">
-                                                                {item.reference_no || '-'}
-                                                            </td>
-                                                            <td className="p-3 font-mono font-bold text-cyan-400 whitespace-nowrap">
-                                                                {item.ceo_dak_receipt_no || '-'}
-                                                            </td>
-                                                            <td className="p-3 pl-6 font-mono text-slate-500 font-normal text-left">
-                                                                {item.subject}
-                                                            </td>
-                                                            <td className="p-3 whitespace-nowrap font-mono">
-                                                                <span className={isAlertActive ? 'text-rose-400 font-bold' : isCrossed ? 'text-slate-500 line-through' : 'text-amber-300'}>
-                                                                    {formatDateForTable(appearanceDateStr)}
-                                                                </span>
-                                                                <span className="text-slate-400 ml-2">
-                                                                    {formatTime12h(item.appearance_time)}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-3 font-bold uppercase text-white truncate max-w-xs">
-                                                                {item.letter_directed_to || '-'}
-                                                            </td>
-                                                            <td className="p-3 whitespace-nowrap">
-                                                                <span className="bg-sky-950/60 text-sky-300 border border-sky-800/50 text-[11px] px-2 py-0.5 rounded font-bold">
-                                                                    {item.department_assigned || '-'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-3 whitespace-nowrap">
-                                                                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${getStatusBadgeStyle(normStatus)}`}>
-                                                                    {normStatus}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-3 text-center whitespace-nowrap">
-                                                                <button
-                                                                    onClick={() => handleOpenDetails(item)}
-                                                                    className="inline-flex items-center gap-1 bg-blue-600/20 hover:bg-blue-600 border border-blue-500/40 text-blue-300 hover:text-white text-xs font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer"
-                                                                >
-                                                                    <Eye size={13} />
-                                                                    <span>View Record</span>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
             )}
 
             {/* FULL DETAILS POPUP MODAL */}
@@ -777,13 +566,10 @@ const MohatsibDashboard = () => {
                                     Full File Examination
                                 </span>
                                 <h2 className="text-xl font-black text-white mt-1.5 tracking-wide font-mono uppercase">
-                                    Case No: {selectedRecord.case_no || 'N/A'}
-                                </h2>
-                                <h3 className="text-xl font-black text-white mt-1.5 tracking-wide font-mono uppercase">
                                     Ref: {selectedRecord.reference_no || 'N/A'}
-                                </h3>
+                                </h2>
                             </div>
-                            <button
+                            <button 
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-colors bg-transparent border-none cursor-pointer"
                             >
@@ -793,7 +579,7 @@ const MohatsibDashboard = () => {
 
                         {/* Complete Field View Grid */}
                         <div className="p-6 space-y-4 max-h-[72vh] overflow-y-auto text-slate-200">
-                            {checkIsImminentAlert(selectedRecord.appearance_date || selectedRecord.hearing_date, selectedRecord.appearance_time) && (
+                            {checkIsImminentAlert(selectedRecord.appearance_date, selectedRecord.appearance_time) && (
                                 <div className="p-4 bg-rose-950/40 border border-rose-900/80 rounded-xl flex items-start gap-3">
                                     <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={20} />
                                     <div>
@@ -821,7 +607,7 @@ const MohatsibDashboard = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-[11px] font-mono text-slate-500 font-bold uppercase block mb-1">Letter Date</label>
+                                    <label className="text-[11px] font-mono text-slate-500 font-bold uppercase block mb-1">Event Date</label>
                                     <div className="text-sm font-bold font-mono text-white bg-slate-950/50 p-2.5 rounded-lg border border-slate-800">
                                         {formatDateForTable(selectedRecord.event_date)}
                                     </div>
@@ -830,7 +616,7 @@ const MohatsibDashboard = () => {
                                 <div>
                                     <label className="text-[11px] font-mono text-slate-500 font-bold uppercase block mb-1">Appearance Date & Time</label>
                                     <div className="text-sm font-bold font-mono text-amber-400 bg-slate-950/50 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
-                                        <span>{formatDateForTable(selectedRecord.appearance_date || selectedRecord.hearing_date)}</span>
+                                        <span>{formatDateForTable(selectedRecord.appearance_date)}</span>
                                         <span className="text-emerald-400">{formatTime12h(selectedRecord.appearance_time)}</span>
                                     </div>
                                 </div>
@@ -924,115 +710,7 @@ const MohatsibDashboard = () => {
                     </div>
                 </div>
             )}
-
-            {/* DEPARTMENT / ZONE RECORDS DETAILS POPUP MODAL */}
-            {isZoneModalOpen && (
-                <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-                    <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col my-8">
-
-                        {/* Header */}
-                        <div className="bg-slate-950/80 p-5 border-b border-slate-800 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
-                                    <Building2 size={22} />
-                                </div>
-                                <div>
-                                    <span className="text-[10px] tracking-widest uppercase font-black px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-900/60">
-                                        Department Breakdown View
-                                    </span>
-                                    <h2 className="text-xl font-black text-white mt-1 tracking-wide font-mono uppercase">
-                                        {selectedZone} Records
-                                    </h2>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setIsZoneModalOpen(false)}
-                                className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-colors bg-transparent border-none cursor-pointer"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Streamlined Modal Table Container */}
-                        <div className="p-6 overflow-y-auto max-h-[65vh]">
-                            {selectedZoneRecords.length === 0 ? (
-                                <div className="py-16 text-center text-slate-500 font-bold">
-                                    No records currently assigned to {selectedZone}.
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/40">
-                                    <table className="w-full text-left border-collapse table-auto min-w-[850px]">
-                                        <thead>
-                                            <tr className="border-b border-slate-800 bg-slate-950 text-xs font-black tracking-widest text-slate-400 uppercase">
-                                                <th className="p-3.5 pl-4 w-12 text-center">S.No</th>
-                                                <th className="p-3.5">CEO DAK Receipt</th>
-                                                <th className="p-3.5">Case No</th>
-                                                <th className="p-3.5">Ref No</th>
-                                                <th className="p-3.5">Appearance Date & Time</th>
-                                                <th className="p-3.5">Subject Matter</th>
-                                                <th className="p-3.5">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-800/60 text-xs font-semibold text-slate-300">
-                                            {selectedZoneRecords.map((item, idx) => {
-                                                const appearanceDateStr = item.appearance_date || item.hearing_date;
-                                                const normStatus = normalizeStatus(item.status);
-                                                return (
-                                                    <tr key={item.id || idx} className="hover:bg-slate-800/40 transition-colors">
-                                                        <td className="p-3.5 pl-4 font-mono text-slate-500 text-center font-bold">
-                                                            {idx + 1}
-                                                        </td>
-                                                        <td className="p-3.5 font-mono font-bold text-cyan-400 whitespace-nowrap">
-                                                            {item.ceo_dak_receipt_no || '-'}
-                                                        </td>
-                                                        <td className="p-3.5 font-mono font-bold text-amber-400 whitespace-nowrap">
-                                                            {item.case_no || '-'}
-                                                        </td>
-                                                        <td className="p-3.5 font-mono font-bold text-amber-400 whitespace-nowrap">
-                                                            {item.reference_no || '-'}
-                                                        </td>
-                                                        <td className="p-3.5 whitespace-nowrap font-mono">
-                                                            <span className="text-amber-300 font-bold">
-                                                                {formatDateForTable(appearanceDateStr)}
-                                                            </span>
-                                                            <span className="text-green-500 ml-2">
-                                                                {formatTime12h(item.appearance_time)}
-                                                            </span>
-                                                        </td>
-                                                        <td className="p-3.5 max-w-xs truncate text-slate-200 uppercase font-bold" title={item.subject}>
-                                                            {item.subject || '-'}
-                                                        </td>
-                                                        <td className="p-3.5 whitespace-nowrap">
-                                                            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${getStatusBadgeStyle(normStatus)}`}>
-                                                                {normStatus}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="bg-slate-950/80 p-4 border-t border-slate-800 flex justify-between items-center">
-                            <span className="text-xs text-slate-400 font-bold px-2">
-                                Total {selectedZone} Records: <span className="text-white font-mono">{selectedZoneRecords.length}</span>
-                            </span>
-                            <button
-                                onClick={() => setIsZoneModalOpen(false)}
-                                className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition-colors border-none cursor-pointer"
-                            >
-                                Close Modal
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            )}
-        </div>
+        </div> 
     );
 };
 
