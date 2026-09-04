@@ -240,9 +240,9 @@ const ZoneComplaintMap = ({ onBackToDashboard, globalFilters = { typeId: 'ALL', 
                 <TileLayer 
                     url={verificationMode 
                         ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-                        : "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+                        : "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
                     } 
-                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+                    attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
                 />
 
                     {ucData && (
