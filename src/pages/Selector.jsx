@@ -58,7 +58,7 @@ const Selector = () => {
             desc: 'Monitor live water chlorination system indicators',
             icon: <Activity size={40} color="#eab308" />, // Yellow theme icon
             active: true,
-            path: 'https://kwssip.muraqib.theadtec.com',
+            path: 'https://kwsc.muraqib.theadtec.com/login',
             isExternal: true // Custom property to track direct link routing
         },
         {
