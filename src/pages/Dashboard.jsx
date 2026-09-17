@@ -29,6 +29,8 @@ import EciHeader from '../components/ECI-Header';
 import EciDashboard from '../components/ExecutiveCommitteeDashboard';
 import MohtasibHeader from '../components/mohtasib-header';
 import MohatsibDashboard from '../components/MohatsibDashboard';
+import EfilingDashboard from '../components/EfilingDashboard';
+import EfilingHeader from '../components/Efiling-Header';
 const Dashboard = () => {
     const location = useLocation();
     // It checks if 'location.state.initialTab' exists; otherwise, it defaults to 'complaint'
@@ -74,6 +76,8 @@ const Dashboard = () => {
             <option value="zonecomplaint">Zone wise Complaint DASHBOARD</option>
             <option value="eci">Executive Committee DASHBOARD</option>
             <option value="mohtasib">Mohtasib DASHBOARD</option>
+            <option value="efiling">Efiling DASHBOARD</option>
+
 
 
 
@@ -81,7 +85,7 @@ const Dashboard = () => {
         </select>
     );
 
-
+ 
     return (
         <div className="dashboard-fixed-container">
             {/* Header Logic */}
@@ -95,6 +99,8 @@ const Dashboard = () => {
                 <ComplaintZoneHeader>{SystemSelector}</ComplaintZoneHeader>
             ) : activeSystem === 'eci' ? (
                 <EciHeader>{SystemSelector}</EciHeader>
+            ) : activeSystem === 'efiling' ? (
+                <EfilingHeader>{SystemSelector}</EfilingHeader>
             ) : activeSystem === 'mohtasib' ? (
                 <MohtasibHeader>{SystemSelector}</MohtasibHeader>
             ) : (
@@ -330,7 +336,11 @@ const Dashboard = () => {
 
                 {activeSystem === 'mohtasib' && (
                     <MohatsibDashboard /> 
-                )}          
+                )}      
+
+                {activeSystem === 'efiling' && (
+                    <EfilingDashboard /> 
+                )}      
             </div>
         </div>
     );

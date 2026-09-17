@@ -53,7 +53,7 @@ const ManageUsers = () => {
                 password: '', 
                 role: 'viewer', 
                 max_sessions: 2, 
-                allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint', 'chlorination', 'wmp', 'eci', 'mohtasib'],
+                allowed_dashboards: ['complaint', 'hydrant', 'lcms', 'hydrantkpi', 'zonecomplaint', 'chlorination', 'wmp', 'eci', 'mohtasib', 'efiling'],
                 can_upload: false,
                 can_manage_mohtasib: false 
             });
@@ -289,7 +289,9 @@ const ManageUsers = () => {
                                     { id: 'chlorination', label: 'Chlorination Dashboard' },
                                     { id: 'wmp', label: 'Work Management Portal'},
                                     { id: 'eci', label: 'Executive Committee Dashboard'},
-                                    { id: 'mohtasib', label: 'Mohtasib Dashboard'}
+                                    { id: 'mohtasib', label: 'Mohtasib Dashboard'},
+                                    { id: 'efiling', label: 'Efiling Dashboard'}
+
 
 
 

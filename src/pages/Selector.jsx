@@ -87,6 +87,14 @@ const Selector = () => {
             path: '/dashboard'
         },
         {
+            id: 'efiling',
+            title: 'Electronic Filing System',
+            desc: 'Track files moving across departments',
+            icon: <ShelvingUnit size={40} color="#64748b" />,
+            active: true,
+            path: '/dashboard'
+        },
+        {
             id: 'mci',
             title: 'Manhole Cover Inventory System',
             desc: 'Track Inventory Usage',

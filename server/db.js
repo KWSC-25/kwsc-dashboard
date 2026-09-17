@@ -1,7 +1,7 @@
 /* global process */
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-import pkg from 'pg';
+import pkg from 'pg'; 
 const { Pool } = pkg;
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -46,8 +46,8 @@ const pools = {};
 
 export const getDatabase = async (type) => {
     // 🌟 ALIAS STRATEGY: If 'hydrantkpi' is requested, cleanly route it to use the 'hydrant' pool instead
-    if (type === 'chlorination') {
-        console.log(`ℹ️ [CHLORINATION] requested: Skipping database connection pool initialization.`);
+    if (type === 'chlorination' || type === 'efiling') {
+        console.log(`ℹ️ [${type.toUpperCase()}] requested: Skipping database connection pool initialization.`);
         return null; 
     }
     let targetType = type;
