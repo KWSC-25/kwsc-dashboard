@@ -30,7 +30,7 @@ const EfilingDashboard = () => {
     const fetchEfilingStats = async (year) => {
         setLoading(true);
         try {
-            const apiUrl = import.meta.env.VITE_EFILING_API_URL || 'http://localhost:3000/api/dashboard/stats';
+            const apiUrl = import.meta.env.VITE_EFILING_API_URL ;
             const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
             const response = await axios.get(apiUrl, {
