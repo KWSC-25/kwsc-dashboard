@@ -70,6 +70,12 @@ const EfilingDashboard = () => {
         return new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(amount);
     };
 
+    const formatInMillions = (val) => {
+        const amount = Number(val) || 0;
+        const millions = amount / 1000000;
+        return `PKR ${millions.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M`;
+    };
+
     const extractStatusCounts = (dist) => {
         if (!dist || typeof dist !== 'object') return { draft: 0, inProgress: 0 };
         let draft = 0;
@@ -233,7 +239,12 @@ const EfilingDashboard = () => {
                         <div className="p-2.5 bg-teal-500/10 text-indigo-400 rounded-xl"><Coins size={22} /></div>
                     </div>
                     <div className="mt-4">
-                        <h3 className="text-2xl font-black text-indigo-400 tracking-tight">{formatCurrency(totalEstimatedAmount)}</h3>
+                        <h3 
+                            className="text-2xl font-black text-indigo-400 tracking-tight cursor-help" 
+                            title={formatCurrency(totalEstimatedAmount)}
+                        >
+                            {formatInMillions(totalEstimatedAmount)}
+                        </h3>
                         <div className="mt-4 inline-flex items-center gap-2 px-2.5 py-2 rounded-lg bg-teal-500/10 border border-teal-500/20 text-xs font-semibold text-indigo-300">
                             <span>Estimated Total Cost</span>
                         </div>
@@ -288,8 +299,11 @@ const EfilingDashboard = () => {
                                                 <td className="py-3.5 px-4 text-center font-extrabold text-blue-400 text-base">
                                                     {cat.total_files || 0}
                                                 </td>
-                                                <td className="py-3.5 px-4 text-center font-extrabold text-emerald-400 text-base">
-                                                    {formatCurrency(cat.total_estimated_cost)}
+                                                <td 
+                                                    className="py-3.5 px-4 text-right font-extrabold text-emerald-400 text-base cursor-help"
+                                                    title={formatCurrency(cat.total_estimated_cost)}
+                                                >
+                                                    {formatInMillions(cat.total_estimated_cost)}
                                                 </td>
                                                 <td className="py-3.5 px-4 text-center">
                                                     <div className="flex items-center justify-center gap-2">
@@ -317,8 +331,11 @@ const EfilingDashboard = () => {
                                                         <td className="py-3 px-4 text-center text-xs font-bold text-slate-300">
                                                             {type.total_files || 0}
                                                         </td>
-                                                        <td className="py-3 px-4 text-center text-xs font-bold text-emerald-300">
-                                                            {formatCurrency(type.total_estimated_cost)}
+                                                        <td 
+                                                            className="py-3 px-4 text-right text-xs font-bold text-emerald-300 cursor-help"
+                                                            title={formatCurrency(type.total_estimated_cost)}
+                                                        >
+                                                            {formatInMillions(type.total_estimated_cost)}
                                                         </td>
                                                         <td className="py-3 px-4 text-center">
                                                             <div className="flex items-center justify-center gap-2 opacity-90">
