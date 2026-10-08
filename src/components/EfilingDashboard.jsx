@@ -11,7 +11,7 @@ import {
   ChevronRight, 
   ChevronLeft,
   Calendar,
-  Coins
+  Coins, Search, User
 } from 'lucide-react';
 
 const EfilingDashboard = () => {
@@ -21,6 +21,16 @@ const EfilingDashboard = () => {
     const [selectedYear, setSelectedYear] = useState('2026-27');
     const [expandedCategories, setExpandedCategories] = useState({});
 
+
+    // Tracking state
+    const [trackFileNumber, setTrackFileNumber] = useState('');
+    const [trackedFile, setTrackedFile] = useState(null);
+    const [trackingLoading, setTrackingLoading] = useState(false);
+    const [trackingError, setTrackingError] = useState(null);
+
+    // Dropdown state
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 5;
@@ -54,6 +64,66 @@ const EfilingDashboard = () => {
         }
     };
 
+    // Fetch autocomplete suggestions as user types
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (!trackFileNumber.trim()) {
+                setSuggestions([]);
+                return;
+            }
+            try {
+                const baseUrl = import.meta.env.VITE_EFILING_API_URL;
+                const searchUrl = baseUrl.replace('/stats', '/file-numbers');
+                const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
+
+                const res = await axios.get(searchUrl, {
+                    params: { q: trackFileNumber.trim() },
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.data?.success) {
+                    setSuggestions(res.data.files || []);
+                }
+            } catch (err) {
+                console.error("Failed to load file suggestions", err);
+            }
+        };
+
+        const timer = setTimeout(fetchSuggestions, 300);
+        return () => clearTimeout(timer);
+    }, [trackFileNumber]);
+
+    // Perform file lookup
+    const handleTrackFile = async (selectedNumber) => {
+        const targetNumber = (typeof selectedNumber === 'string' ? selectedNumber : trackFileNumber).trim();
+        if (!targetNumber) return;
+
+        setTrackFileNumber(targetNumber);
+        setShowSuggestions(false);
+        setTrackingLoading(true);
+        setTrackingError(null);
+        setTrackedFile(null);
+
+        try {
+            const baseUrl = import.meta.env.VITE_EFILING_API_URL;
+            const trackUrl = baseUrl.replace('/stats', '/track-file');
+            const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
+
+            const response = await axios.get(trackUrl, {
+                params: { file_number: targetNumber },
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data?.success) {
+                setTrackedFile(response.data.file);
+            } else {
+                setTrackingError('File not found');
+            }
+        } catch (err) {
+            setTrackingError(err.response?.data?.message || err.response?.data?.error || 'File not found');
+        } finally {
+            setTrackingLoading(false);
+        }
+    };
     useEffect(() => {
         fetchEfilingStats(selectedYear);
         setCurrentPage(1); // Reset to page 1 on year change
@@ -254,6 +324,111 @@ const EfilingDashboard = () => {
 
             </div>
 
+            {/* ==================== FILE TRACKING SECTION ==================== */}
+            <div className="bg-[#0e1626]/90 border border-slate-800/80 rounded-2xl shadow-2xl p-6 flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+                    <div>
+                        <h3 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
+                            <Search size={22} className="text-blue-400" />
+                            File Tracking & Status
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-1">Search or select any file number to check its current location, assignee, and status.</p>
+                    </div>
+
+                    <form onSubmit={(e) => { e.preventDefault(); handleTrackFile(); }} className="flex items-center gap-3 w-full md:w-auto relative">
+                        <div className="relative flex-1 md:w-96">
+                            <input
+                                type="text"
+                                placeholder="Search or enter File No..."
+                                value={trackFileNumber}
+                                onChange={(e) => {
+                                    setTrackFileNumber(e.target.value);
+                                    setShowSuggestions(true);
+                                }}
+                                onFocus={() => setShowSuggestions(true)}
+                                className="w-full bg-[#141e33] border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                            />
+
+                            {/* Dropdown Suggestions List */}
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute left-0 right-0 top-full mt-2 bg-[#121c30] border border-slate-700 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-800">
+                                    {suggestions.map((item) => (
+                                        <div
+                                            key={item.file_number}
+                                            onClick={() => handleTrackFile(item.file_number)}
+                                            className="p-3 hover:bg-slate-800/80 cursor-pointer transition-colors flex flex-col gap-0.5"
+                                        >
+                                            <span className="text-sm font-bold text-blue-400">{item.file_number}</span>
+                                            <span className="text-xs text-slate-400 truncate">{item.subject}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={trackingLoading || !trackFileNumber.trim()}
+                            className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
+                        >
+                            {trackingLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                            Track
+                        </button>
+                    </form>
+                </div>
+
+                {/* Tracking Results Area */}
+                {trackingError && (
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-rose-400 text-sm font-semibold flex items-center gap-2">
+                        <AlertTriangle size={18} />
+                        {trackingError}
+                    </div>
+                )}
+
+                {trackedFile && (
+                    <div className="bg-[#121c30]/80 border border-slate-800 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Status */}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Current Status</span>
+                            <span className="inline-flex items-center w-fit px-3 py-1 rounded-full text-xs font-extrabold bg-blue-500/10 border border-blue-500/30 text-blue-400 mt-1">
+                                {trackedFile.status_name || 'N/A'}
+                            </span>
+                        </div>
+
+                        {/* Assigned To */}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Currently Assigned To</span>
+                            <span className="text-base font-extrabold text-amber-400 flex items-center gap-1.5 mt-0.5">
+                                <User size={16} />
+                                {trackedFile.assigned_to_user || 'Unassigned'}
+                            </span>
+                            {trackedFile.assigned_to_designation && (
+                                <span className="text-xs text-slate-400 font-medium">{trackedFile.assigned_to_designation}</span>
+                            )}
+                        </div>
+
+                        {/* Department */}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                            <span className="text-sm font-bold text-slate-200 mt-1">
+                                {trackedFile.department_name || 'N/A'}
+                            </span>
+                        </div>
+
+                        {/* Creator */}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Created By</span>
+                            <span className="text-sm font-bold text-slate-200 mt-1">
+                                {trackedFile.creator_user || 'N/A'}
+                            </span>
+                            {trackedFile.creator_designation && (
+                                <span className="text-xs text-slate-400 font-medium">{trackedFile.creator_designation}</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Category Wise Table */}
             <div className="bg-[#0e1626]/90 border border-slate-800/80 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="p-6 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between">
@@ -391,6 +566,9 @@ const EfilingDashboard = () => {
                     </div>
                 </div>
             </div>
+
+
+
 
         </div>
     );
