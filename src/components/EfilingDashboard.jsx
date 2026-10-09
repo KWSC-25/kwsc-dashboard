@@ -11,7 +11,9 @@ import {
   ChevronRight, 
   ChevronLeft,
   Calendar,
-  Coins, Search, User
+  Coins, 
+  Search, 
+  User
 } from 'lucide-react';
 
 const EfilingDashboard = () => {
@@ -20,7 +22,6 @@ const EfilingDashboard = () => {
     const [error, setError] = useState(null);
     const [selectedYear, setSelectedYear] = useState('2026-27');
     const [expandedCategories, setExpandedCategories] = useState({});
-
 
     // Tracking state
     const [trackFileNumber, setTrackFileNumber] = useState('');
@@ -31,19 +32,26 @@ const EfilingDashboard = () => {
     // Dropdown state
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 5;
 
     const FISCAL_YEARS = ['2026-27', '2025-26'];
 
+    // Safe URL base builder: strips trailing slashes and /stats if present
+    const getApiBaseUrl = () => {
+        const rawUrl = import.meta.env.VITE_EFILING_API_URL || 'http://localhost:3000/api/dashboard/stats';
+        return rawUrl.replace(/\/stats\/?$/, '').replace(/\/$/, '');
+    };
+
     const fetchEfilingStats = async (year) => {
         setLoading(true);
         try {
-            const apiUrl = import.meta.env.VITE_EFILING_API_URL ;
+            const baseUrl = getApiBaseUrl();
             const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
-            const response = await axios.get(apiUrl, {
+            const response = await axios.get(`${baseUrl}/stats`, {
                 params: { year },
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -72,11 +80,10 @@ const EfilingDashboard = () => {
                 return;
             }
             try {
-                const baseUrl = import.meta.env.VITE_EFILING_API_URL;
-                const searchUrl = baseUrl.replace('/stats', '/file-numbers');
+                const baseUrl = getApiBaseUrl();
                 const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
-                const res = await axios.get(searchUrl, {
+                const res = await axios.get(`${baseUrl}/file-numbers`, {
                     params: { q: trackFileNumber.trim() },
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -104,11 +111,10 @@ const EfilingDashboard = () => {
         setTrackedFile(null);
 
         try {
-            const baseUrl = import.meta.env.VITE_EFILING_API_URL;
-            const trackUrl = baseUrl.replace('/stats', '/track-file');
+            const baseUrl = getApiBaseUrl();
             const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
-            const response = await axios.get(trackUrl, {
+            const response = await axios.get(`${baseUrl}/track-file`, {
                 params: { file_number: targetNumber },
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -124,6 +130,7 @@ const EfilingDashboard = () => {
             setTrackingLoading(false);
         }
     };
+
     useEffect(() => {
         fetchEfilingStats(selectedYear);
         setCurrentPage(1); // Reset to page 1 on year change
@@ -428,7 +435,6 @@ const EfilingDashboard = () => {
                     </div>
                 )}
             </div>
-
             {/* Category Wise Table */}
             <div className="bg-[#0e1626]/90 border border-slate-800/80 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="p-6 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between">
@@ -566,7 +572,6 @@ const EfilingDashboard = () => {
                     </div>
                 </div>
             </div>
-
 
 
 
