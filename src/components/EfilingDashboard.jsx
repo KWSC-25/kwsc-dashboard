@@ -39,19 +39,18 @@ const EfilingDashboard = () => {
 
     const FISCAL_YEARS = ['2026-27', '2025-26'];
 
-    // Safe URL base builder: strips trailing slashes and /stats if present
-    const getApiBaseUrl = () => {
-        const rawUrl = import.meta.env.VITE_EFILING_API_URL || 'http://localhost:3000/api/dashboard/stats';
-        return rawUrl.replace(/\/stats\/?$/, '').replace(/\/$/, '');
+    // Direct endpoint fetch
+    const getApiEndpoint = () => {
+        return import.meta.env.VITE_EFILING_API_URL || 'http://localhost:3000/api/dashboard/stats';
     };
 
     const fetchEfilingStats = async (year) => {
         setLoading(true);
         try {
-            const baseUrl = getApiBaseUrl();
+            const apiUrl = getApiEndpoint();
             const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
-            const response = await axios.get(`${baseUrl}/stats`, {
+            const response = await axios.get(apiUrl, {
                 params: { year },
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -80,11 +79,14 @@ const EfilingDashboard = () => {
                 return;
             }
             try {
-                const baseUrl = getApiBaseUrl();
+                const apiUrl = getApiEndpoint();
                 const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
-                const res = await axios.get(`${baseUrl}/file-numbers`, {
-                    params: { q: trackFileNumber.trim() },
+                const res = await axios.get(apiUrl, {
+                    params: { 
+                        action: 'search',
+                        q: trackFileNumber.trim() 
+                    },
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (res.data?.success) {
@@ -111,11 +113,14 @@ const EfilingDashboard = () => {
         setTrackedFile(null);
 
         try {
-            const baseUrl = getApiBaseUrl();
+            const apiUrl = getApiEndpoint();
             const token = import.meta.env.VITE_EFILING_BEARER_TOKEN;
 
-            const response = await axios.get(`${baseUrl}/track-file`, {
-                params: { file_number: targetNumber },
+            const response = await axios.get(apiUrl, {
+                params: { 
+                    action: 'track',
+                    file_number: targetNumber 
+                },
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -435,6 +440,7 @@ const EfilingDashboard = () => {
                     </div>
                 )}
             </div>
+
             {/* Category Wise Table */}
             <div className="bg-[#0e1626]/90 border border-slate-800/80 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="p-6 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between">
@@ -572,8 +578,6 @@ const EfilingDashboard = () => {
                     </div>
                 </div>
             </div>
-
-
 
         </div>
     );
